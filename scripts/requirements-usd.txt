@@ -1,0 +1,2 @@
+# OpenUSD official Python bindings. Tested on Apple Silicon with Python 3.10.
+usd-core==26.8

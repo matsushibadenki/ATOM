@@ -102,9 +102,9 @@
     "vendor/threex/crates/renderer/src/cube.wgsl": "80f75cd3c39f9568e70fd9d11273fdb0a8c5567f842bac6bd1bae5755f80da71"
   },
   "local_additions_sha256": {
-    "vendor/threex/crates/renderer/src/region_tests.rs": "a5d80f580bb08526589dd8fe660452c5c11781cda5e6cfc5ba590559bf0a261d",
-    "vendor/threex/crates/renderer/src/guides.rs": "5ee11b884b8053fecae81cf74bb0192d79d1208749cb3f796ac16127a8aa89c1",
-    "vendor/threex/crates/renderer/src/guides.wgsl": "3c855d6dda338b92cad322a268d0721a482adef445edab8386ce3360b4ce5778"
+    "vendor/threex/crates/renderer/src/region_tests.rs": "d217d708c27907ba6705a0cb05b808d491bf7700ed78b6dd126bcb9c502aceb7",
+    "vendor/threex/crates/renderer/src/guides.rs": "93882fde102544b6f94180940e6511002a9d541b90322f91d80903fb5b1e0187",
+    "vendor/threex/crates/renderer/src/guides.wgsl": "eee105eb225e90110c5f1de193c8a4beb335445377754228661de22d4b3d2690"
   },
   "panel_reference_imports": [
     {

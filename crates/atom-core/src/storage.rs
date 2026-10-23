@@ -5,7 +5,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-const MAX_BYTES: u64 = 2 * 1024 * 1024;
+const MAX_BYTES: u64 = 64 * 1024 * 1024;
 /// An advisory lock protects cooperating ATOM processes. External edits are detected on save.
 pub struct ProjectStore {
     path: PathBuf,
@@ -47,11 +47,14 @@ impl ProjectStore {
     }
     pub fn load(&mut self) -> Result<Option<Project>> {
         let bytes = read_optional(&self.path)?;
-        let project = bytes
+        let mut project = bytes
             .as_deref()
             .map(serde_json::from_slice::<Project>)
             .transpose()?;
-        if let Some(p) = &project {
+        if let Some(p) = &mut project {
+            if matches!(p.schema_version, 1 | 2) {
+                p.schema_version = crate::SCHEMA_VERSION;
+            }
             p.validate()?;
         }
         self.baseline = bytes;

@@ -116,3 +116,9 @@ base revision、target modules、tensor layout、tokenizer、量子化方式を�
 既存リポジトリのPython環境へ学習依存を追加しない。
 
 本設計では起動コマンドを実行しておらず、APIのlive確認、GPU利用、性能、学習互換性は未確認。
+
+## 6. 外部AIからATOMを操作する入口（追加予定）
+
+🟠 [Next] `atom-mcp`は外部AIがATOMのRust Control APIを呼ぶ入口とする。上記RuntimeGatewayはATOMからvLLM-apple／Strataへ推論を依頼する経路であり、接続方向とプロセス所有権を分ける。MCP clientごとに別Documentを生成せず、GUI・CLIと同じ状態、命令検証、Undo／Redo、JobManagerを利用する。
+
+🔴 [Later] 各社AIには検証済みのMCP接続profileまたはfunction calling bridgeを提供する。vLLM-apple／StrataをそのままATOMのMCP serverとは扱わない。tools／構造化出力の組合せをprobeし、非対応なら既存SkillPlanの検証経路を使う。API案と実装順は[ロードマップ](ROADMAP.md#mcp主要aiからのアクセスと制御)に記載した。

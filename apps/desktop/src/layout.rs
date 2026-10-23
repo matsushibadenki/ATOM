@@ -670,12 +670,12 @@ pub struct Group {
 impl Group {
     pub fn content(&self, scale: f64) -> [u32; 4] {
         let [x, y, w, h] = self.rect;
-        let header = (64. * scale).round().min(h as f64) as u32;
+        let header = (96. * scale).round().min(h as f64) as u32;
         [x, y + header, w, h - header]
     }
     pub fn chrome(&self, scale: f64) -> [u32; 4] {
         let [x, y, w, h] = self.rect;
-        [x, y, w, (64. * scale).round().min(h as f64) as u32]
+        [x, y, w, (96. * scale).round().min(h as f64) as u32]
     }
 }
 #[derive(Clone, Debug, Serialize)]

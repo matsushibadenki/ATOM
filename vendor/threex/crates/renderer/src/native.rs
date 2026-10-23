@@ -252,6 +252,12 @@ pub struct WgpuSurface {
 }
 impl WgpuSurface {
     /// Host-owned physical region, updated together with layout and camera aspect.
+    pub fn set_imported_meshes<'a>(
+        &mut self,
+        meshes: impl IntoIterator<Item = crate::imported::MeshView<'a>>,
+    ) -> Result<(), String> {
+        self.renderer.set_imported_meshes(meshes)
+    }
     pub fn set_guides(&mut self, view: Option<crate::guides::GuideView>) {
         self.renderer.set_guides(view);
     }

@@ -10,7 +10,7 @@ default-members = ["crates/atom-core", "crates/atom-cli"]
 [workspace.dependencies]
 wgpu = "=27.0.1"
 bytemuck = { version = "1.25", features = ["derive"] }
-serde = { version = "1", features = ["derive"] }
+serde = { version = "1", features = ["derive", "rc"] }
 serde_json = "1"
 
 [profile.release]

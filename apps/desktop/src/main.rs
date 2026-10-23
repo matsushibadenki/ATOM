@@ -1,6 +1,8 @@
+mod assets;
 mod camera;
 mod camera_input;
 mod layout;
+mod transform;
 mod viewport;
 mod window_placement;
 mod workspace;
@@ -77,6 +79,9 @@ async fn save(webview: tauri::Webview) -> Result<Snapshot, UiError> {
         let state = app.state::<Shared>();
         let mut session = state.0.lock().map_err(|_| error("internal_error"))?;
         let Session { core, store } = &mut *session;
+        if core.has_preview() {
+            return Err(error("edit_busy"));
+        }
         store.save(core.project())?;
         core.mark_saved();
         let snapshot = core.snapshot();
@@ -128,8 +133,83 @@ async fn validate_workflow(
     };
     Ok(atom_core::workflow::validate_tasks(&document).await?)
 }
+#[tauri::command]
+fn physics_catalog(webview: tauri::Webview) -> Result<serde_json::Value, UiError> {
+    authorize(&webview)?;
+    use atom_core::{GravityPreset as G, MaterialPreset as M};
+    let gravity = [G::Earth, G::Moon, G::Mars, G::Zero].map(|preset| atom_core::Gravity {
+        preset,
+        vector: preset.vector().unwrap(),
+    });
+    let materials = [
+        M::Wood,
+        M::Steel,
+        M::Aluminum,
+        M::Rubber,
+        M::Plastic,
+        M::Glass,
+        M::Concrete,
+        M::Ice,
+    ]
+    .map(atom_core::PhysicalMaterial::preset);
+    Ok(serde_json::json!({"gravity":gravity,"materials":materials}))
+}
+#[tauri::command]
+async fn simulate(
+    webview: tauri::Webview,
+    expected_revision: u64,
+    project_id: atom_core::Uuid,
+    steps: u32,
+) -> Result<Snapshot, UiError> {
+    authorize(&webview)?;
+    if !matches!(steps, 1 | 500 | 1000) {
+        return Err(error("invalid_project"));
+    }
+    let app = webview.app_handle().clone();
+    let (project, token) = {
+        let state = app.state::<Shared>();
+        let mut session = state.0.lock().map_err(|_| error("internal_error"))?;
+        let token = session
+            .core
+            .begin_simulation(expected_revision, project_id)?;
+        let _ = app.emit("atom://changed", session.core.snapshot());
+        (session.core.project().clone(), token)
+    };
+    let result =
+        tauri::async_runtime::spawn_blocking(move || atom_core::mujoco::run(&project, steps))
+            .await
+            .unwrap_or(Err(atom_core::Error::PhysicsFailed));
+    let (result, snapshot) = {
+        let state = app.state::<Shared>();
+        let mut session = state.0.lock().map_err(|_| error("internal_error"))?;
+        let result = session.core.finish_simulation(token, result, steps);
+        (result, session.core.snapshot())
+    };
+    transform::publish(&app, &snapshot);
+    let redraw = app.clone();
+    let _ = app.run_on_main_thread(move || viewport::draw(&redraw));
+    Ok(result?)
+}
+#[tauri::command]
+fn reset_simulation(webview: tauri::Webview) -> Result<Snapshot, UiError> {
+    authorize(&webview)?;
+    let state = webview.state::<Shared>();
+    let mut session = state.0.lock().map_err(|_| error("internal_error"))?;
+    // The worker is bounded; reset is available after it completes, never an unbounded cancel claim.
+    if session.core.snapshot().simulation_running {
+        return Err(error("edit_busy"));
+    }
+    let snapshot = session.core.reset_simulation();
+    drop(session);
+    let app = webview.app_handle().clone();
+    transform::publish(&app, &snapshot);
+    let redraw = app.clone();
+    let _ = app.run_on_main_thread(move || viewport::draw(&redraw));
+    Ok(snapshot)
+}
 fn main() {
     let result = tauri::Builder::default()
+        .manage(assets::Jobs::default())
         .manage(viewport::Preview::default())
         .manage(camera::State::default())
         .setup(|app| {
@@ -164,6 +244,8 @@ fn main() {
             )));
             app.manage(workspace::Workspace::load(path));
             workspace::initialize(app.handle())?;
+            #[cfg(target_os = "macos")]
+            transform::install_history_menu(app.handle())?;
             app.wry_plugin(camera_input::Bridge {
                 app: app.handle().clone(),
             });
@@ -172,7 +254,14 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             camera::camera_state,
             camera::camera_command,
+            transform::transform_command,
             snapshot,
+            assets::asset_catalog,
+            assets::import_asset,
+            assets::cancel_asset_import,
+            physics_catalog,
+            simulate,
+            reset_simulation,
             edit,
             save,
             reload,
@@ -238,7 +327,7 @@ fn main() {
                 if state
                     .0
                     .lock()
-                    .map(|s| s.core.snapshot().dirty)
+                    .map(|s| s.core.snapshot().dirty || s.core.has_preview())
                     .unwrap_or(true)
                 {
                     api.prevent_close();

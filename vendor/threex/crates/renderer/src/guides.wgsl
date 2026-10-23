@@ -5,6 +5,10 @@ struct View {
     eye_distance: vec4<f32>,
     region: vec4<f32>,
     options: vec4<f32>, // grid, axes, physical scale, grid step
+    gizmo_origin: vec4<f32>,
+    gizmo_x: vec4<f32>,
+    gizmo_y: vec4<f32>,
+    gizmo_z: vec4<f32>,
 }
 @group(0) @binding(0) var<uniform> view: View;
 @group(1) @binding(0) var mask: texture_2d<f32>;
@@ -58,18 +62,30 @@ struct AxisOut { @builtin(position) position:vec4<f32>, @location(0) color:vec3<
     let corners=array<vec2<f32>,6>(vec2(0.,-1.),vec2(1.,-1.),vec2(1.,1.),vec2(0.,-1.),vec2(1.,1.),vec2(0.,1.));
     let directions=array<vec3<f32>,3>(vec3(1.,0.,0.),vec3(0.,1.,0.),vec3(0.,0.,1.));
     let colors=array<vec3<f32>,3>(vec3(0.65,0.20,0.13),vec3(0.20,0.48,0.26),vec3(0.18,0.34,0.60));
-    var a=view.vp*vec4(0.,0.,0.,1.);
-    var b=view.vp*vec4(directions[axis]*max(view.options.w*3.,3.),1.);
-    var out:AxisOut;out.color=colors[axis];
+    let is_gizmo=axis>=3u;let index=axis%3u;
+    let basis=array<vec3<f32>,3>(view.gizmo_x.xyz,view.gizmo_y.xyz,view.gizmo_z.xyz);
+    let origin=select(vec3(0.),view.gizmo_origin.xyz,is_gizmo);
+    let extent=select(max(view.options.w*3.,3.),view.gizmo_x.w,is_gizmo);
+    var a=view.vp*vec4(origin,1.);
+    var b=view.vp*vec4(origin+select(directions[index],basis[index],is_gizmo)*extent,1.);
+    var out:AxisOut;out.color=colors[index];
+    if is_gizmo {out.color=mix(out.color,vec3(1.,0.72,0.25),select(0.,0.75,i32(index)==i32(view.gizmo_y.w)));}
     if (a.z<0. && b.z<0.) || (a.w<=0. && b.w<=0.) {out.position=vec4(2.,2.,1.,1.);return out;}
     if a.z<0. {a=mix(a,b,(-a.z)/(b.z-a.z));}
     if b.z<0. {b=mix(b,a,(-b.z)/(a.z-b.z));}
     let start=a.xy/max(a.w,1e-6);let end=b.xy/max(b.w,1e-6);
     let direction=(end-start)*view.region.zw;
     let n=vec2(-direction.y,direction.x)*inverseSqrt(max(dot(direction,direction),1e-10));
+    if vertex>=6u {
+        let points=array<vec2<f32>,3>(vec2(0.,0.),vec2(-8.,4.),vec2(-8.,-4.));
+        let shape=points[vertex-6u]*view.options.z;
+        let forward=direction*inverseSqrt(max(dot(direction,direction),1e-10));
+        let offset=(forward*shape.x+n*shape.y)*2./view.region.zw;
+        b.x+=offset.x*b.w;b.y+=offset.y*b.w;out.position=b;return out;
+    }
     let corner=corners[vertex];var clip=mix(a,b,corner.x);
-    clip.x+=n.x*corner.y*2.*view.options.z/view.region.z*clip.w;
-    clip.y+=n.y*corner.y*2.*view.options.z/view.region.w*clip.w;
+    clip.x+=n.x*corner.y*select(2.,3.,is_gizmo)*view.options.z/view.region.z*clip.w;
+    clip.y+=n.y*corner.y*select(2.,3.,is_gizmo)*view.options.z/view.region.w*clip.w;
     out.position=clip;return out;
 }
 @fragment fn axis_color(input:AxisOut)->@location(0) vec4<f32>{return vec4(input.color,0.9);}

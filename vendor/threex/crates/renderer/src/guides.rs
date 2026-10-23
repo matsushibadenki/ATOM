@@ -1,6 +1,14 @@
 //! ATOM editor guides: GPU-only grid, axes and visible-silhouette selection mask.
 use wgpu::util::DeviceExt;
 #[derive(Clone, Debug)]
+pub struct Gizmo {
+    pub origin: [f32; 3],
+    pub axes: [[f32; 3]; 3],
+    pub size: f32,
+    pub selected_axis: Option<u32>,
+    pub mode: u32,
+}
+#[derive(Clone, Debug)]
 pub struct GuideView {
     pub selected: Option<[f32; 16]>,
     pub selected_index: u32,
@@ -9,6 +17,7 @@ pub struct GuideView {
     pub scale: f32,
     pub grid: bool,
     pub axes: bool,
+    pub gizmo: Option<Gizmo>,
 }
 pub(crate) struct Guides {
     uniform: wgpu::Buffer,
@@ -16,6 +25,7 @@ pub(crate) struct Guides {
     mask_layout: wgpu::BindGroupLayout,
     grid: wgpu::RenderPipeline,
     axes: wgpu::RenderPipeline,
+    gizmo: wgpu::RenderPipeline,
     selected: wgpu::RenderPipeline,
     outline: wgpu::RenderPipeline,
     mask: Option<(wgpu::TextureView, wgpu::BindGroup, [u32; 2])>,
@@ -29,7 +39,7 @@ impl Guides {
     ) -> Self {
         let uniform = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("editor guide view"),
-            contents: &[0; 240],
+            contents: &[0; 304],
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
         });
         let layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
@@ -131,6 +141,7 @@ impl Guides {
         };
         let grid = make("fullscreen", "grid", format, true, false, &standard);
         let axes = make("axes", "axis_color", format, true, false, &standard);
+        let gizmo = make("axes", "axis_color", format, false, false, &standard);
         // Reuse the exact opaque vertex entry point, binding and instance buffer.
         // A separately compiled model/VP expression can disagree at near/far extremes.
         let selected = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
@@ -149,6 +160,7 @@ impl Guides {
             mask_layout,
             grid,
             axes,
+            gizmo,
             selected,
             outline,
             mask: None,
@@ -173,7 +185,7 @@ impl Guides {
         let Some(inverse) = inverse(vp) else {
             return;
         };
-        let mut data = [0f32; 60];
+        let mut data = [0f32; 76];
         data[..16].copy_from_slice(vp);
         data[16..32].copy_from_slice(&inverse);
         if let Some(model) = view.selected {
@@ -188,6 +200,16 @@ impl Guides {
             view.scale.clamp(0.5, 4.),
             grid_step(view.distance),
         ]);
+        if let Some(gizmo) = &view.gizmo {
+            data[60..63].copy_from_slice(&gizmo.origin);
+            data[63] = 1.;
+            data[64..67].copy_from_slice(&gizmo.axes[0]);
+            data[67] = gizmo.size;
+            data[68..71].copy_from_slice(&gizmo.axes[1]);
+            data[71] = gizmo.selected_axis.map_or(-1., |i| i as f32);
+            data[72..75].copy_from_slice(&gizmo.axes[2]);
+            data[75] = gizmo.mode as f32;
+        }
         queue.write_buffer(&self.uniform, 0, bytemuck::cast_slice(&data));
         let attachment = |texture, load| {
             Some(wgpu::RenderPassColorAttachment {
@@ -305,6 +327,17 @@ impl Guides {
             pass.set_bind_group(0, &self.bind, &[]);
             pass.set_bind_group(1, bind, &[]);
             pass.draw(0..3, 0..1);
+        }
+        if view.gizmo.is_some() {
+            let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                label: Some("transform handles"),
+                color_attachments: &[attachment(target, wgpu::LoadOp::Load)],
+                ..Default::default()
+            });
+            viewport(&mut pass);
+            pass.set_pipeline(&self.gizmo);
+            pass.set_bind_group(0, &self.bind, &[]);
+            pass.draw(0..9, 3..6);
         }
     }
 }

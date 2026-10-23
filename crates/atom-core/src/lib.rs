@@ -1,14 +1,22 @@
 //! Window-independent project owner. UI reads snapshots; all edits use revisions.
+pub mod assets;
+mod editor;
+pub mod mujoco;
+pub mod physics;
+pub mod robots;
 mod storage;
+pub use editor::AppCore;
+pub use physics::{Gravity, GravityPreset, MaterialPreset, PhysicalMaterial, PhysicsSpec};
+pub use robots::RobotTemplate;
 pub mod workflow;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
 pub use storage::ProjectStore;
-use uuid::Uuid;
+pub use uuid::Uuid;
 
 pub const NEUTRAL_MATERIAL: [f32; 3] = [0.62, 0.58, 0.51];
 
-pub const SCHEMA_VERSION: u32 = 1;
+pub const SCHEMA_VERSION: u32 = 3;
 pub const MAX_OBJECTS: usize = 256;
 
 #[derive(Debug, thiserror::Error)]
@@ -23,22 +31,37 @@ pub enum Error {
     Locked,
     #[error("project file changed outside this session")]
     ExternalChange,
+    #[error("an edit or simulation preview is active")]
+    EditBusy,
+    #[error("no history in this direction")]
+    HistoryEmpty,
+    #[error("MuJoCo Python runtime unavailable; set ATOM_MUJOCO_PYTHON")]
+    PhysicsUnavailable,
+    #[error("MuJoCo simulation failed or exceeded its budget")]
+    PhysicsFailed,
     #[error("unsaved changes")]
     Unsaved,
+    #[error("OpenUSD: {0}")]
+    Asset(String),
     #[error("I/O: {0}")]
     Io(#[from] std::io::Error),
     #[error("JSON: {0}")]
     Json(#[from] serde_json::Error),
 }
 impl Error {
-    pub fn code(&self) -> &'static str {
+    pub fn code(&self) -> &str {
         match self {
             Self::Conflict(_) => "revision_conflict",
             Self::Version => "unsupported_version",
             Self::Invalid(_) => "invalid_project",
             Self::Locked => "project_locked",
             Self::ExternalChange => "external_change",
+            Self::EditBusy => "edit_busy",
+            Self::HistoryEmpty => "history_empty",
+            Self::PhysicsUnavailable => "physics_unavailable",
+            Self::PhysicsFailed => "physics_failed",
             Self::Unsaved => "unsaved_changes",
+            Self::Asset(code) => code,
             Self::Io(_) => "io_error",
             Self::Json(_) => "invalid_json",
         }
@@ -54,6 +77,16 @@ pub struct SceneObject {
     pub rotation: [f32; 3],
     pub scale: [f32; 3],
     pub color: [f32; 3],
+    #[serde(default)]
+    pub label: String,
+    #[serde(default)]
+    pub material: PhysicalMaterial,
+    #[serde(default)]
+    pub fixed: bool,
+    #[serde(default)]
+    pub mesh_ref: Option<Uuid>,
+    #[serde(default)]
+    pub mass_override: Option<f64>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -64,6 +97,12 @@ pub struct Project {
     pub name: String,
     pub objects: Vec<SceneObject>,
     pub workflow: unge_core::Document,
+    #[serde(default)]
+    pub physics: PhysicsSpec,
+    #[serde(default)]
+    pub robots: Vec<robots::Robot>,
+    #[serde(default)]
+    pub assets: Vec<assets::ImportedAsset>,
 }
 impl Project {
     pub fn new(name: &str) -> Result<Self> {
@@ -73,12 +112,20 @@ impl Project {
             name: name.into(),
             objects: vec![SceneObject {
                 id: 1,
-                position: [0., 0., 0.],
+                position: [0., 1., 0.],
                 rotation: [0.35, 0.5, 0.],
                 scale: [1.; 3],
                 color: NEUTRAL_MATERIAL,
+                label: String::new(),
+                material: PhysicalMaterial::default(),
+                fixed: false,
+                mesh_ref: None,
+                mass_override: None,
             }],
             workflow: workflow::initial_document()?,
+            physics: PhysicsSpec::default(),
+            robots: Vec::new(),
+            assets: Vec::new(),
         };
         project.validate()?;
         Ok(project)
@@ -97,8 +144,45 @@ impl Project {
         if self.objects.len() > MAX_OBJECTS {
             return Err(Error::Invalid("object capacity".into()));
         }
+        self.physics.validate()?;
+        if self.assets.len() > 32
+            || self
+                .assets
+                .iter()
+                .map(|a| a.mesh.positions.len())
+                .sum::<usize>()
+                > 900_000
+        {
+            return Err(Error::Invalid("asset capacity".into()));
+        }
+        let mut asset_ids = BTreeSet::new();
+        for a in &self.assets {
+            a.validate()?;
+            if !asset_ids.insert(a.id) {
+                return Err(Error::Invalid("duplicate asset".into()));
+            }
+        }
+        let mut robot_ids = BTreeSet::new();
+        for robot in &self.robots {
+            robot.validate(&self.objects)?;
+            for link in &robot.links {
+                if !robot_ids.insert(link.object_id) {
+                    return Err(Error::Invalid("duplicate robot membership".into()));
+                }
+            }
+        }
         let mut ids = BTreeSet::new();
         for o in &self.objects {
+            o.material.validate()?;
+            if o.mesh_ref.is_some_and(|id| !asset_ids.contains(&id))
+                || o.mass_override
+                    .is_some_and(|m| !m.is_finite() || !(0.000001..=1e9).contains(&m))
+            {
+                return Err(Error::Invalid("object asset/mass".into()));
+            }
+            if o.label.len() > 64 || o.label.chars().any(char::is_control) {
+                return Err(Error::Invalid("object label".into()));
+            }
             if o.id == 0
                 || !ids.insert(o.id)
                 || !o
@@ -162,12 +246,71 @@ impl Project {
     }
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct Transform {
+    pub position: [f32; 3],
+    /// XYZ Euler angles, radians. UI authoring uses degrees.
+    pub rotation: [f32; 3],
+    pub scale: [f32; 3],
+}
+impl From<&SceneObject> for Transform {
+    fn from(o: &SceneObject) -> Self {
+        Self {
+            position: o.position,
+            rotation: o.rotation,
+            scale: o.scale,
+        }
+    }
+}
+impl Transform {
+    pub fn assign(&self, object: &mut SceneObject) {
+        object.position = self.position;
+        object.rotation = self.rotation;
+        object.scale = self.scale;
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
 pub enum Command {
-    Rename { name: String },
+    Rename {
+        name: String,
+    },
     AddBox,
-    RemoveBox { id: u32 },
+    RemoveBox {
+        id: u32,
+    },
+    Transform {
+        id: u32,
+        transform: Transform,
+    },
+    SetGravity {
+        gravity: Gravity,
+    },
+    SetMaterial {
+        id: Option<u32>,
+        material: PhysicalMaterial,
+    },
+    SetFixed {
+        id: u32,
+        fixed: bool,
+    },
+    SetFloor {
+        enabled: bool,
+    },
+    AddRobot {
+        template: RobotTemplate,
+    },
+    #[serde(skip)]
+    ImportAsset {
+        asset: Box<assets::ImportedAsset>,
+        position: [f32; 3],
+        scale: [f32; 3],
+        mass: Option<f64>,
+    },
+    Undo,
+    Redo,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -182,109 +325,22 @@ pub struct EditRequest {
 pub struct Snapshot {
     pub project_id: Uuid,
     pub revision: u64,
+    /// Orders previews, cancellations and save acknowledgements within a revision.
+    pub sequence: u64,
     pub name: String,
     pub dirty: bool,
+    pub previewing: bool,
+    pub can_undo: bool,
+    pub can_redo: bool,
+    pub undo_depth: usize,
+    pub redo_depth: usize,
     pub objects: Vec<SceneObject>,
+    pub physics: PhysicsSpec,
+    pub robots: Vec<robots::Robot>,
+    pub simulation_running: bool,
+    pub simulation: Option<mujoco::SimulationResult>,
+    pub asset_importing: bool,
+    pub assets: Vec<assets::AssetSummary>,
     pub workflow_nodes: usize,
     pub workflow_edges: usize,
-}
-pub struct AppCore {
-    project: Project,
-    scene: threex_core::Scene,
-    revision: u64,
-    dirty: bool,
-    next_object_id: u32,
-}
-impl AppCore {
-    pub fn new(project: Project) -> Result<Self> {
-        let scene = project.render_scene()?;
-        let next_object_id = project
-            .objects
-            .iter()
-            .map(|o| o.id)
-            .max()
-            .unwrap_or(0)
-            .checked_add(1)
-            .ok_or_else(|| Error::Invalid("object identity exhausted".into()))?;
-        Ok(Self {
-            project,
-            scene,
-            revision: 0,
-            dirty: false,
-            next_object_id,
-        })
-    }
-    pub fn snapshot(&self) -> Snapshot {
-        Snapshot {
-            project_id: self.project.id,
-            revision: self.revision,
-            name: self.project.name.clone(),
-            dirty: self.dirty,
-            objects: self.project.objects.clone(),
-            workflow_nodes: self.project.workflow.graph().nodes().len(),
-            workflow_edges: self.project.workflow.graph().edges().len(),
-        }
-    }
-    pub fn project(&self) -> &Project {
-        &self.project
-    }
-    pub fn scene(&self) -> &threex_core::Scene {
-        &self.scene
-    }
-    pub fn mark_saved(&mut self) {
-        self.dirty = false;
-    }
-    pub fn apply(&mut self, request: EditRequest) -> Result<Snapshot> {
-        if request.expected_revision != self.revision || request.project_id != self.project.id {
-            return Err(Error::Conflict(self.revision));
-        }
-        let revision = self
-            .revision
-            .checked_add(1)
-            .ok_or_else(|| Error::Invalid("revision exhausted".into()))?;
-        let mut candidate = self.project.clone();
-        let mut next = self.next_object_id;
-        match request.command {
-            Command::Rename { name } => candidate.name = name.trim().into(),
-            Command::AddBox => {
-                next = next
-                    .checked_add(1)
-                    .ok_or_else(|| Error::Invalid("object identity exhausted".into()))?;
-                candidate.objects.push(SceneObject {
-                    id: self.next_object_id,
-                    position: [(candidate.objects.len() % 4) as f32 * 1.4, 0., 0.],
-                    rotation: [0.35, 0.5, 0.],
-                    scale: [0.7; 3],
-                    color: NEUTRAL_MATERIAL,
-                });
-            }
-            Command::RemoveBox { id } => {
-                if !candidate.objects.iter().any(|o| o.id == id) {
-                    return Err(Error::Invalid("missing object".into()));
-                }
-                candidate.objects.retain(|o| o.id != id);
-            }
-        }
-        // Validate and derive before publishing; rejected edits never partially mutate state.
-        let scene = candidate.render_scene()?;
-        self.project = candidate;
-        self.scene = scene;
-        self.revision = revision;
-        self.dirty = true;
-        self.next_object_id = next;
-        Ok(self.snapshot())
-    }
-    pub fn reload(&mut self, project: Project) -> Result<()> {
-        if self.dirty {
-            return Err(Error::Unsaved);
-        }
-        let revision = self
-            .revision
-            .checked_add(1)
-            .ok_or_else(|| Error::Invalid("revision exhausted".into()))?;
-        let mut replacement = Self::new(project)?;
-        replacement.revision = revision;
-        *self = replacement;
-        Ok(())
-    }
 }

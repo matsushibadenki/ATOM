@@ -13,3 +13,5 @@ futures = "0.3"
 threex-core = { path = "../../vendor/threex/crates/core" }
 unge-core = { path = "../../vendor/unge/crates/unge-core" }
 unge-executor = { path = "../../vendor/unge/crates/unge-executor" }
+
+sha2 = "0.10"

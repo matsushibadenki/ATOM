@@ -1,0 +1,791 @@
+{
+  "schema_version": 3,
+  "id": "a2083c86-5dac-4d45-a9e7-b7f17952db8b",
+  "name": "dual_arm",
+  "objects": [
+    {
+      "id": 1,
+      "position": [
+        0.0,
+        0.42,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.45,
+        0.8,
+        0.35
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "base",
+      "material": {
+        "preset": "aluminum",
+        "density": 2700.0,
+        "friction": [
+          0.4,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": true
+    },
+    {
+      "id": 2,
+      "position": [
+        -0.32,
+        0.85,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.16,
+        0.18,
+        0.18
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "left_shoulder",
+      "material": {
+        "preset": "aluminum",
+        "density": 2700.0,
+        "friction": [
+          0.4,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false
+    },
+    {
+      "id": 3,
+      "position": [
+        -0.52,
+        0.85,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.26,
+        0.12,
+        0.12
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "left_upper_arm",
+      "material": {
+        "preset": "aluminum",
+        "density": 2700.0,
+        "friction": [
+          0.4,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false
+    },
+    {
+      "id": 4,
+      "position": [
+        -0.72,
+        0.85,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.12,
+        0.14,
+        0.14
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "left_elbow",
+      "material": {
+        "preset": "aluminum",
+        "density": 2700.0,
+        "friction": [
+          0.4,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false
+    },
+    {
+      "id": 5,
+      "position": [
+        -0.9,
+        0.85,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.24,
+        0.1,
+        0.1
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "left_forearm",
+      "material": {
+        "preset": "aluminum",
+        "density": 2700.0,
+        "friction": [
+          0.4,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false
+    },
+    {
+      "id": 6,
+      "position": [
+        -1.07,
+        0.85,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.1,
+        0.12,
+        0.12
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "left_wrist",
+      "material": {
+        "preset": "aluminum",
+        "density": 2700.0,
+        "friction": [
+          0.4,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false
+    },
+    {
+      "id": 7,
+      "position": [
+        -1.2,
+        0.85,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.16,
+        0.08,
+        0.16
+      ],
+      "color": [
+        0.35,
+        0.33,
+        0.3
+      ],
+      "label": "left_gripper",
+      "material": {
+        "preset": "rubber",
+        "density": 1100.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false
+    },
+    {
+      "id": 8,
+      "position": [
+        0.32,
+        0.85,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.16,
+        0.18,
+        0.18
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "right_shoulder",
+      "material": {
+        "preset": "aluminum",
+        "density": 2700.0,
+        "friction": [
+          0.4,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false
+    },
+    {
+      "id": 9,
+      "position": [
+        0.52,
+        0.85,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.26,
+        0.12,
+        0.12
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "right_upper_arm",
+      "material": {
+        "preset": "aluminum",
+        "density": 2700.0,
+        "friction": [
+          0.4,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false
+    },
+    {
+      "id": 10,
+      "position": [
+        0.72,
+        0.85,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.12,
+        0.14,
+        0.14
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "right_elbow",
+      "material": {
+        "preset": "aluminum",
+        "density": 2700.0,
+        "friction": [
+          0.4,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false
+    },
+    {
+      "id": 11,
+      "position": [
+        0.9,
+        0.85,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.24,
+        0.1,
+        0.1
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "right_forearm",
+      "material": {
+        "preset": "aluminum",
+        "density": 2700.0,
+        "friction": [
+          0.4,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false
+    },
+    {
+      "id": 12,
+      "position": [
+        1.07,
+        0.85,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.1,
+        0.12,
+        0.12
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "right_wrist",
+      "material": {
+        "preset": "aluminum",
+        "density": 2700.0,
+        "friction": [
+          0.4,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false
+    },
+    {
+      "id": 13,
+      "position": [
+        1.2,
+        0.85,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.16,
+        0.08,
+        0.16
+      ],
+      "color": [
+        0.35,
+        0.33,
+        0.3
+      ],
+      "label": "right_gripper",
+      "material": {
+        "preset": "rubber",
+        "density": 1100.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false
+    }
+  ],
+  "workflow": {
+    "schema_version": 1,
+    "engine_version": "0.1.0",
+    "plugin_versions": {},
+    "graph": {
+      "id": "cc96e457-8a32-43eb-80ab-361e20f04505",
+      "name": "Untitled",
+      "nodes": {
+        "52c9e6c3-df45-4a1e-b7aa-07e9bf073db9": {
+          "id": "52c9e6c3-df45-4a1e-b7aa-07e9bf073db9",
+          "type_id": "atom.task_set",
+          "inputs": [],
+          "outputs": [
+            {
+              "name": "tasks",
+              "data_type": {
+                "kind": "json"
+              },
+              "cardinality": "single",
+              "required": true
+            }
+          ],
+          "properties": {}
+        },
+        "82d1446d-a4db-4903-a7ec-29b464bf7796": {
+          "id": "82d1446d-a4db-4903-a7ec-29b464bf7796",
+          "type_id": "atom.validate_tasks",
+          "inputs": [
+            {
+              "name": "tasks",
+              "data_type": {
+                "kind": "json"
+              },
+              "cardinality": "single",
+              "required": true
+            }
+          ],
+          "outputs": [
+            {
+              "name": "count",
+              "data_type": {
+                "kind": "int"
+              },
+              "cardinality": "single",
+              "required": true
+            }
+          ],
+          "properties": {}
+        }
+      },
+      "edges": {
+        "278c23f7-2ceb-497d-8e55-01abac92b122": {
+          "id": "278c23f7-2ceb-497d-8e55-01abac92b122",
+          "from": {
+            "node": "52c9e6c3-df45-4a1e-b7aa-07e9bf073db9",
+            "port": "tasks"
+          },
+          "to": {
+            "node": "82d1446d-a4db-4903-a7ec-29b464bf7796",
+            "port": "tasks"
+          }
+        }
+      },
+      "groups": {}
+    },
+    "placement": {
+      "52c9e6c3-df45-4a1e-b7aa-07e9bf073db9": {
+        "x": 40.0,
+        "y": 80.0,
+        "width": 180.0,
+        "height": 90.0
+      },
+      "82d1446d-a4db-4903-a7ec-29b464bf7796": {
+        "x": 360.0,
+        "y": 80.0,
+        "width": 180.0,
+        "height": 90.0
+      }
+    }
+  },
+  "physics": {
+    "gravity": {
+      "preset": "earth",
+      "vector": [
+        0.0,
+        0.0,
+        -9.80665
+      ]
+    },
+    "floor": {
+      "preset": "concrete",
+      "density": 2300.0,
+      "friction": [
+        0.8,
+        0.005,
+        0.0001
+      ]
+    },
+    "floor_enabled": true
+  },
+  "robots": [
+    {
+      "template": "dual_arm",
+      "root": 1,
+      "links": [
+        {
+          "object_id": 1,
+          "parent": null,
+          "anchor": [
+            0.0,
+            0.42,
+            0.0
+          ],
+          "axis": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "range": [
+            -1.0,
+            1.0
+          ]
+        },
+        {
+          "object_id": 2,
+          "parent": 1,
+          "anchor": [
+            -0.25,
+            0.82,
+            0.0
+          ],
+          "axis": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "range": [
+            -2.5,
+            2.5
+          ]
+        },
+        {
+          "object_id": 3,
+          "parent": 2,
+          "anchor": [
+            -0.38,
+            0.85,
+            0.0
+          ],
+          "axis": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "range": [
+            -1.5,
+            1.5
+          ]
+        },
+        {
+          "object_id": 4,
+          "parent": 3,
+          "anchor": [
+            -0.67,
+            0.85,
+            0.0
+          ],
+          "axis": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "range": [
+            -2.0,
+            2.0
+          ]
+        },
+        {
+          "object_id": 5,
+          "parent": 4,
+          "anchor": [
+            -0.78,
+            0.85,
+            0.0
+          ],
+          "axis": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "range": [
+            -1.5,
+            1.5
+          ]
+        },
+        {
+          "object_id": 6,
+          "parent": 5,
+          "anchor": [
+            -1.03,
+            0.85,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -2.5,
+            2.5
+          ]
+        },
+        {
+          "object_id": 7,
+          "parent": 6,
+          "anchor": [
+            -1.12,
+            0.85,
+            0.0
+          ],
+          "axis": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "range": [
+            -1.0,
+            1.0
+          ]
+        },
+        {
+          "object_id": 8,
+          "parent": 1,
+          "anchor": [
+            0.25,
+            0.82,
+            0.0
+          ],
+          "axis": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "range": [
+            -2.5,
+            2.5
+          ]
+        },
+        {
+          "object_id": 9,
+          "parent": 8,
+          "anchor": [
+            0.38,
+            0.85,
+            0.0
+          ],
+          "axis": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "range": [
+            -1.5,
+            1.5
+          ]
+        },
+        {
+          "object_id": 10,
+          "parent": 9,
+          "anchor": [
+            0.67,
+            0.85,
+            0.0
+          ],
+          "axis": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "range": [
+            -2.0,
+            2.0
+          ]
+        },
+        {
+          "object_id": 11,
+          "parent": 10,
+          "anchor": [
+            0.78,
+            0.85,
+            0.0
+          ],
+          "axis": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "range": [
+            -1.5,
+            1.5
+          ]
+        },
+        {
+          "object_id": 12,
+          "parent": 11,
+          "anchor": [
+            1.03,
+            0.85,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -2.5,
+            2.5
+          ]
+        },
+        {
+          "object_id": 13,
+          "parent": 12,
+          "anchor": [
+            1.12,
+            0.85,
+            0.0
+          ],
+          "axis": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "range": [
+            -1.0,
+            1.0
+          ]
+        }
+      ]
+    }
+  ]
+}

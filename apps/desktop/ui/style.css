@@ -33,7 +33,7 @@ body[data-drop="left"] #panelView,body[data-drop="right"] #panelView{border-colo
 #floatPanel,#floatGroup,#returnGroup{width:24px;height:24px;background:transparent;border-color:transparent}
 .dock-controls{display:flex;align-items:center;gap:4px;padding:3px 6px;height:32px;min-height:32px;border-bottom:1px solid var(--color-border)}
 .dock-controls select{height:24px;font-size:10px;min-width:0}.dock-controls #dockTarget{flex:1;max-width:none}.dock-controls #dockZone{width:66px;flex-shrink:0}.dock-controls button{width:23px;height:23px}.dock-controls .info{margin-left:auto}
-#panelView{border:0}body[data-view="viewport"] #panelView{height:64px}body[data-view="viewport"] .status{display:none}body[data-view="viewport"] .status[data-error="true"]{display:flex;position:absolute;top:32px;left:0;right:0;height:32px;background:var(--color-background)}
+#panelView{border:0}body[data-view="viewport"] #panelView{height:96px}body[data-view="viewport"] .status{display:none}body[data-view="viewport"] .status[data-error="true"]{display:flex;position:absolute;top:32px;left:0;right:0;height:32px;background:var(--color-background)}
 body[data-drop]:not([data-drop=""]) .panel-title{box-shadow:inset 0 0 0 1px var(--color-accent)}
 #splitter{display:none}body[data-split="true"] #toolbarView,body[data-split="true"] #panelView,body[data-split="true"] .status{display:none}
 body[data-split="true"] #splitter{display:block;width:100vw;height:100vh;background:var(--color-border);touch-action:none;outline:none}
@@ -47,3 +47,23 @@ body[data-split="true"] #splitter{display:block;width:100vw;height:100vh;backgro
 #cameraTools{display:none;align-items:center;gap:2px}body[data-view="viewport"] #cameraTools{display:flex}#cameraTools button{width:23px;height:23px;background:transparent;border-color:transparent}#cameraTools .info{margin:0 3px}.scene-actions{display:flex;gap:4px}li[data-selected="true"]{background:var(--color-hover);box-shadow:inset 2px 0 var(--color-accent)}li button.object-name{width:auto;height:auto;min-width:0;justify-content:flex-start;white-space:nowrap;text-align:left;color:inherit;font-size:11px;padding:3px 0}li button.object-name[aria-pressed="true"]{color:var(--color-accent)}
 
 #cameraTools button{width:20px;height:23px;padding:2px}#cameraTools svg{width:14px;height:14px}
+
+.transform-tools{display:none;height:32px;min-height:32px;align-items:center;gap:3px;padding:3px 5px;border-bottom:1px solid var(--color-border)}body[data-view="viewport"] .transform-tools{display:flex}.transform-tools button{width:23px;height:23px;padding:3px;background:transparent;border-color:transparent}.transform-tools button[aria-pressed="true"]{background:var(--color-hover);color:var(--color-accent)}.transform-tools select{height:24px;width:60px;font-size:10px}.transform-spacer{flex:1}.transform-tools .info{margin-left:2px}
+#transformInspector{flex-shrink:0;border-top:1px solid var(--color-border);padding:7px 6px 8px}.inspector-head{display:flex;justify-content:space-between;align-items:center;margin:0 3px 5px;color:var(--color-muted);font-size:10px}#transformFields{padding:0;margin:0;border:0;min-width:0;display:grid;gap:4px}.transform-row{display:grid;grid-template-columns:18px repeat(3,minmax(0,1fr));gap:4px;align-items:center}.transform-mark{display:flex;justify-content:center;color:var(--color-muted)}.transform-mark svg{width:13px;height:13px}.transform-cell{min-width:0;position:relative}.transform-cell>span{position:absolute;left:5px;top:5px;font-size:9px;pointer-events:none;opacity:.8}.transform-cell>span[data-axis="0"]{color:#da897b}.transform-cell>span[data-axis="1"]{color:#9bc59e}.transform-cell>span[data-axis="2"]{color:#96b5d8}.transform-number{width:100%;height:25px;padding:3px 2px 3px 17px;font-size:10px;font-variant-numeric:tabular-nums}.transform-number:disabled{opacity:.4}#objects{flex:1;min-height:60px}.toolbar #undo,.toolbar #redo{width:25px}
+
+.transform-number::-webkit-inner-spin-button,.transform-number::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+
+/* Physics authoring remains usable in the narrow dock and in floating groups. */
+#sceneContent{display:none;overflow:auto}body[data-view="scene"] #sceneContent{display:block}
+#objects{min-height:70px;max-height:180px;overflow:auto}#objects li .object-name{overflow:hidden;text-overflow:ellipsis}
+.physics-section{border-bottom:1px solid var(--color-border);padding:5px 7px}
+.physics-section summary{display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-size:11px;color:var(--color-muted);padding:3px 1px;list-style:none}
+.physics-section summary::before{content:'▸';margin-right:5px}.physics-section[open] summary::before{content:'▾'}.physics-section summary>span:first-of-type{flex:1}
+.physics-fields{border:0;padding:3px 0;margin:0;min-width:0;display:grid;gap:5px}.physics-fields:disabled{opacity:.5}
+.setting-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(70px,1fr);gap:5px;align-items:center;font-size:10px}
+.setting-row>span{overflow-wrap:anywhere}.setting-row input,.setting-row select{width:100%;max-width:none;min-width:0;height:25px;padding:2px 5px;font-size:10px}
+.vector-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.check-row{display:flex;align-items:center;gap:5px;font-size:10px;min-height:24px}.check-row input{margin:0}.check-row output{margin-left:auto}
+.friction-fields{display:grid;gap:4px}.material-target{padding:4px 0}.template-row,.simulation-controls{display:flex;gap:5px;align-items:center;padding:7px}.template-row select{flex:1;min-width:0;max-width:none}.template-row .info{flex-shrink:0}.simulation-controls{flex-wrap:wrap}.simulation-controls output{flex:1;min-width:90px;overflow-wrap:anywhere}
+
+.asset-input{display:grid;gap:3px;font-size:10px;color:var(--color-muted)}.asset-input input,.asset-search input,#assetPackage{width:100%;min-width:0;height:25px;padding:3px 5px;font-size:10px}.asset-search{display:flex;gap:4px;align-items:center}.asset-search input{flex:1}.asset-search button,.asset-actions button{width:25px;height:25px}.asset-actions{display:flex;gap:6px;align-items:center}.asset-actions output{min-width:0;overflow-wrap:anywhere}#assetSelection{display:flex;gap:6px;align-items:center;margin-top:5px}#assetInfo{flex:1;min-width:0;overflow-wrap:anywhere}
+#jointSummary,#jointAxes{font-size:10px;color:var(--color-muted);font-variant-numeric:tabular-nums;margin:3px;overflow-wrap:anywhere;line-height:1.5}#jointSummary:empty,#jointAxes:empty{display:none}

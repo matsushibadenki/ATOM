@@ -42,8 +42,11 @@ ThreeX／UNGEの閲覧後、描画・ノード編集・ウインドウ合成を�
 MuJoCoのCPU物理を最初の基準にし、wgpuは描画・センサー画像処理に使用する。
 接触ソルバーまで初期段階で自作することは避ける。
 MuJoCoのMJX／Warp、Genesis、Isaac Lab／Newtonは別バックエンド候補とし、同じ性能・物理挙動を仮定しない。
-特にIsaac Labの確認できた3.0 beta資料はNewtonによるkit-less構成を説明しており、Isaac Sim必須という前提では設計しない。
-ただし当該資料の導入対象はWindows／Linuxであり、Macの初期必須依存にはしない。[S1–S5]
+2026-10-23の再調査ではIsaac Lab 3.0正式版を確認した。Newton／OV Librariesによるkit-less構成と物理・描画・可視化の分離を採用判断に反映し、Isaac Sim必須という前提にはしない。
+公式導入経路はWindows／Linuxを対象としており、Macの初期必須依存にはしない。[S1–S5]
+
+RoboCasa365はエンジンと区別し、公式robosuite環境・課題・データ・評価を保持するTaskSuiteAdapterとして接続する。
+共通契約、M0-A〜M7の実装順、公式評価と研究profileの分離は[追加ロードマップ](ROADMAP.md#統合ロボット学習環境への拡張設計)を設計上の基準とする。
 
 ## 3. 全体構成
 
@@ -156,6 +159,26 @@ Schema、対象の存在、前提条件、ワークスペース、関節速度�
 座標は右手系・Z-up・SI単位を基準とし、quaternion順序、関節順序、actionの絶対／差分表現をスキーマに明記する。
 URDFの入力ではMuJoCoに必要な慣性・駆動・接触設定の欠落を検出する。見た目が読み込めただけで物理互換と判定しない。
 初期の保存正本はMJCFと資産manifestとする。
+
+### 重力・物性・媒質の拡張予定
+
+🟠 [Next] RustのProjectDocumentに`PhysicsSpec`を設け、`GravitySpec`、`PhysicalMaterial`／`ContactPair`、`MediumSpec`を保存する。地球・月・火星・無重力のpresetと数値ベクトル、物体ごとの素材・摩擦、密度・質量・慣性を扱う。見た目の素材と物性を分離し、Y-upの編集座標からZ-upの物理座標への変換をRustで行う。Inspector、CLI、外部AIは同じ命令と履歴を使い、各ウインドウは状態を所有しない。
+
+🔴 [Later] 重力と媒質を独立に選べるようにし、水中の浮力・抵抗・部分浸水から、自由表面を持つ液体と剛体の連成へ進める。粒子・格子・センサーの大容量データはRust／Worker／GPUに保持する。設定の保存だけで物理対応完了とは扱わず、backendへ適用した値と検証結果を記録する。詳細と受け入れ条件は[ロードマップ](ROADMAP.md#重力素材摩擦液体の設定)を正本とする。
+
+### 外部AIの制御入口
+
+🟠 [Next] Rust Control APIにローカルIPC経由の`atom-mcp` bridgeを接続する。外部AIとGUIが共有Documentを操作し、能力照会、設定検証、実験実行、job停止、結果取得を共通化する。revisionとidempotency keyで競合・重複を防ぎ、切断後もjobを追跡する。ATOMから推論を依頼するRuntimeGatewayとは責務を分ける。
+
+🔴 [Later] 遠隔Streamable HTTPと各社AIのfunction calling bridgeを追加する。接続profileは製品・版ごとに実測し、未検証の接続は⭕️ [Pending]とする。API案・認可・資源制限・三言語の導入支援は[ロードマップ](ROADMAP.md#mcp主要aiからのアクセスと制御)を参照する。
+
+### 実装済みのOpenUSD資産経路
+
+Rustの`assets`がSDK Workerの実行・中止・時間上限を管理し、取り込み中の共有文書をrevision付きで予約する。Hugging Faceは公開datasetのSimReady v1 packageをcommitに固定して取得し、BOM／各ファイルのSHA-256を検証。ローカルUSDは親フォルダー内の依存を検証してコピーする。元データはプロジェクト横の`.asset-cache`に保持する。
+
+schema v3のProjectは、`SceneObject.mesh_ref`、Arc共有の不変`TriangleMesh`、出典・license・SDK版・変換上の近似を保持する。保存文書には表示メッシュを含める。UI Snapshotは資産summaryと物体の参照・姿勢だけを返し、頂点・index・textureを渡さない。wgpuはhashで共有するGPU bufferを所有し、変形ではinstance行列だけを更新する。ThreeXのコピー済みrendererに追加した経路であり、元ThreeX repoは変更していない。
+
+現在はフレーム0の表示形状を単一静的メッシュへ合成する。通常instance、単位・座標、Mesh／Cubeを対象とし、関節は表示姿勢で固定する。MuJoCoへのmeshは凸包collisionで、compilerによるmesh座標の補正を表示姿勢から除く。USD physics全体の等価変換ではない。詳細と未対応は[ロードマップ](ROADMAP.md#hugging-faceopenusd2026-10-23)を参照。
 
 ## 7. 二つの学習経路
 

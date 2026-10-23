@@ -86,7 +86,7 @@ UNGEのpanel_preferencesを参考に、`dock-layout.windows.json`へホスト別
 
 ## 検証
 
-- 🟢 [Done] 通常workspace test：168 passed、0 failed、11 ignored（実GPU5＋benchmark6）。
+- 🟢 [Done] 通常workspace test：175 passed、0 failed、11 ignored（実GPU5＋benchmark6）。
 - 🟢 [Done] 実GPU試験：5 passed。非均等スケールの箱で3面の明暗差をピクセルから検証。領域のピクセル一致、領域外clear、不正領域拒否、背景clear後のScene stamp・GPUバッファ保持と再描画一致。
 - 🟢 [Done] ツリー操作1000遷移、中央結合／4方向分割、選択、全浮動／復帰先消失、古いrevision・不正値拒否。
 - 🟢 [Done] DPI 1／1.25／2とゼロ・極小サイズで領域の被覆／非重複、v1・v2移行／v3復元／未知version保全、プレビュー非永続化。
@@ -126,7 +126,7 @@ UNGEのコピー済み`host/input.rs`を参考に、固定版tauri-runtime-wry 2
 
 - 🟢 [Done] カメラ回転・パン・ズーム、縦長／横長フォーカス、回転箱の手前判定・背景・背後拒否、距離と角度の制限を自動検証。
 - 🟢 [Done] macOS実操作で一覧／3D選択、Fフォーカス、左ドラッグ回転、パンアイコン＋ドラッグ、ホイールズームを確認。浮動3Dで回転・ズームし、再ドッキング後の視点・選択保持を確認。
-- 🟢 [Done] 通常168テストと実GPU5テスト、Clippy、format、JS構文、開発版build。
+- 🟢 [Done] 通常175テストと実GPU5テスト、Clippy、format、JS構文、開発版build。
 - ⭕️ [Pending] 別OS・跨モニターDPI・物理トラックパッドのピンチ入力の実機確認。ピンチ専用ジェスチャーは未実装で、現在はホイール相当のスクロールを使用。
 
 ![選択オブジェクトへのフォーカス](validation/camera-focus.png)
@@ -152,11 +152,32 @@ ThreeXのATOM内コピーに`guides.rs`／`guides.wgsl`を追加した。グリ�
 選択形状を本体と同じ頂点シェーダー・カメラ／インスタンスバッファ・invariant位置出力で、既存の深度に対してR8マスクへ描き、その可視シルエットをGPU内で膨張して外側のみ合成する。完全に隠れた箱には輪郭を出さない。輪郭合成は選択箱の投影領域＋太さの範囲へ限定し、サイズ変更時だけマスク資源を作り直す。Scene stampや頂点・インスタンスバッファを更新しない。
 現在の選択形状はアプリが扱う箱に対応する。将来の任意メッシュは同じマスクパスへの形状接続が必要。ガイド設定はRustの共有camera状態が所有し、再起動時は両方表示へ戻る。GPU画像・マスク・深度をJSへ送らない。
 
-- 🟢 [Done] 通常168テスト、実GPU5テスト、Clippy、format、JS構文、開発版build。
+- 🟢 [Done] 通常175テスト、実GPU5テスト、Clippy、format、JS構文、開発版build。
 - 🟢 [Done] 実GPUのピクセル検証：外周の色とDPIによる太さ、面内部の色保持、完全遮蔽時の輪郭非表示、選択解除時の復元、領域外の保持、グリッド／軸の切替、マスクのresize、Scene stamp／インスタンス保持。
 - 🟢 [Done] CPU検証：VP逆変換、輪郭の投影領域クリップ、既存材質の保存値保持とカスタム色の維持。
+- 🟢 [Done] macOS実操作：選択／背景解除、グリッド・軸の個別切替とリセット後の設定保持、浮動・再ドッキング、拡大フォーカスでの面内部への輪郭漏れ解消を確認。
 - ⭕️ [Pending] Windows／Linux、実機での跨モニターDPIと他GPU。
+
+![輪郭・グリッド・ニュートラル材質](validation/selection-grid-neutral.png)
 
 English: Selected boxes receive a thin amber silhouette. The XZ grid and world axes can be toggled independently; X is red, Y green/up, Z blue. Sand-gray materials and neutral fill lighting replace the initial blue preset without rewriting existing project values. Rendering and selection masks stay on the Rust/GPU side.
 
 简体中文：选中的方块显示细琥珀色轮廓。XZ网格与世界坐标轴可独立切换，X为红色、Y为绿色（向上）、Z为蓝色。默认材质改为温暖的砂灰色，辅光改为中性色；旧项目的默认蓝色仅调整显示，不改写原保存值。渲染与选择遮罩均保留在Rust／GPU侧。
+
+
+## オブジェクト変形とUndo／Redo（2026-10-23）
+
+- 🟢 [Done] 選択した箱をWで移動、Eで回転、Rでスケール。Vでカメラ・選択へ戻る。XYZキー／選択欄で軸を制限し、同じ軸キーで自由へ戻す。
+- 🟢 [Done] 3Dの軸ハンドルか選択した箱をドラッグ。自由移動はカメラ平面、移動の軸はワールド、スケールの軸は物体のローカル座標。回転はXYZ Euler成分を変更する。
+- 🟢 [Done] シーン下部のXYZ入力。回転は度、内部はラジアン。Enter／blurで確定、Escで中止。スケールは正の値のみ。
+- 🟢 [Done] 1ドラッグ／1入力確定を1履歴にまとめる。Esc・描画領域外への移動・フォーカス喪失・配置変更はドラッグを中止する。Alt＋左で視点回転、右・中／Shift＋左でパン、ホイールでズームできる。
+- 🟢 [Done] 共通ツールバー／3DビューのUndo・Redo、⌘Z／⌘⇧Z。macOSのEditメニューも文書履歴へ接続。Windows／LinuxのキーはCtrl。名前変更・追加・削除も履歴の対象。カメラ／パネル配置は対象外。
+- 🟢 [Done] Rust AppCoreが文書・最大128件の履歴・一時プレビューを所有。プレビュー中は他ウインドウの文書編集・保存を拒否し、commit時だけ文書revisionを進める。sequenceでプレビュー・中止を含む応答の順序を判定する。
+- 🟢 [Done] Undoで保存時点へ戻ると「保存済み」に戻る。Undo後の新規編集はRedoを破棄。IDはUndo後にも再利用しない。保存は変形値を含み、履歴は再起動／再読込で消える。
+- 🟢 [Done] 通常175テスト、実GPU5テスト。履歴上限・保存時点・分岐・競合・不正値・中止・座標計算を検証。GPUでは3モードのハンドル描画と領域外への非描画を確認。
+- 🟠 [Next] スナップ、回転リング、スケール専用の端点形状。現在は3モードとも色分けした軸矢印を使う。
+- ⭕️ [Pending] Windows／Linuxの実画面操作、複数モニターDPIの実機検証。
+
+English: W/E/R transform the selected object, V selects camera navigation, X/Y/Z constrain axes. Each drag is one shared Undo step. XYZ fields use degrees for rotation. History is session-only (128 entries).
+
+简体中文：W/E/R分别移动、旋转、缩放选中物体，V返回相机操作，X/Y/Z约束轴。每次拖动只产生一条共享撤销记录。旋转输入使用角度；历史记录仅在本次运行中保留（最多128条）。

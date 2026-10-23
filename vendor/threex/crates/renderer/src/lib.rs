@@ -2,6 +2,7 @@ pub mod batching;
 mod gather;
 pub mod geometry;
 pub mod guides;
+pub mod imported;
 pub mod mesh_resources;
 use mesh_resources::{MeshBudget, MeshBudgetStatus, MeshCache};
 #[cfg(not(target_arch = "wasm32"))]
@@ -52,6 +53,7 @@ pub struct Renderer {
     pub device: wgpu::Device,
     pub queue: wgpu::Queue,
     pipeline: wgpu::RenderPipeline,
+    imported: imported::Imported,
     guides: guides::Guides,
     guide_view: Option<guides::GuideView>,
     geometries: [MeshBuffers; 3],
@@ -144,7 +146,9 @@ impl Renderer {
             })
         });
         let guides = guides::Guides::new(&device, format, &shader, &pl);
+        let imported = imported::Imported::new(&device, format, &pl);
         Self {
+            imported,
             guides,
             guide_view: None,
             device,
@@ -169,6 +173,12 @@ impl Renderer {
             depth: None,
             size: (0, 0),
         }
+    }
+    pub fn set_imported_meshes<'a>(
+        &mut self,
+        meshes: impl IntoIterator<Item = imported::MeshView<'a>>,
+    ) -> Result<(), String> {
+        self.imported.sync(&self.device, meshes)
     }
     pub fn set_guides(&mut self, view: Option<guides::GuideView>) {
         self.guide_view = view;
@@ -395,26 +405,45 @@ impl Renderer {
             pass.set_scissor_rect(x, y, w, h);
             pass.set_pipeline(&self.pipeline);
             pass.set_bind_group(0, &self.bind, &[]);
-            for (spec, range) in self.batches.geometry_draws() {
-                let kind = spec.kind;
-                pass.set_vertex_buffer(
-                    1,
-                    if self.banked {
-                        self.banks[kind as usize].slice(..)
-                    } else {
-                        self.instances.slice(..)
-                    },
-                );
-                let geometry = if spec.flags() & !15 == 0 {
-                    &self.geometries[kind as usize]
-                } else {
-                    self.custom
+            if !self.imported.is_empty() {
+                // Imported objects share the retained scene instance buffer; no JS geometry path.
+                pass.set_vertex_buffer(1, self.instances.slice(..));
+                for (index, instance) in scene.instances().iter().enumerate() {
+                    if self.imported.contains(index as u32) {
+                        continue;
+                    }
+                    let spec = instance.geometry_spec();
+                    let geometry = self
+                        .custom
                         .get(&spec)
-                        .unwrap_or(&self.geometries[kind as usize])
-                };
-                pass.set_vertex_buffer(0, geometry.vertices.slice(..));
-                pass.set_index_buffer(geometry.indices.slice(..), geometry.format);
-                pass.draw_indexed(0..geometry.count, 0, range);
+                        .unwrap_or(&self.geometries[spec.kind as usize]);
+                    pass.set_vertex_buffer(0, geometry.vertices.slice(..));
+                    pass.set_index_buffer(geometry.indices.slice(..), geometry.format);
+                    pass.draw_indexed(0..geometry.count, 0, index as u32..index as u32 + 1);
+                }
+                self.imported.draw(&mut pass, &self.instances);
+            } else {
+                for (spec, range) in self.batches.geometry_draws() {
+                    let kind = spec.kind;
+                    pass.set_vertex_buffer(
+                        1,
+                        if self.banked {
+                            self.banks[kind as usize].slice(..)
+                        } else {
+                            self.instances.slice(..)
+                        },
+                    );
+                    let geometry = if spec.flags() & !15 == 0 {
+                        &self.geometries[kind as usize]
+                    } else {
+                        self.custom
+                            .get(&spec)
+                            .unwrap_or(&self.geometries[kind as usize])
+                    };
+                    pass.set_vertex_buffer(0, geometry.vertices.slice(..));
+                    pass.set_index_buffer(geometry.indices.slice(..), geometry.format);
+                    pass.draw_indexed(0..geometry.count, 0, range);
+                }
             }
         }
         if let Some(view) = &self.guide_view {
@@ -442,13 +471,15 @@ impl Renderer {
 mod tests {
     #[test]
     fn shader_is_valid() {
-        let module = naga::front::wgsl::parse_str(include_str!("cube.wgsl")).unwrap();
-        naga::valid::Validator::new(
-            naga::valid::ValidationFlags::all(),
-            naga::valid::Capabilities::empty(),
-        )
-        .validate(&module)
-        .unwrap();
+        for source in [include_str!("cube.wgsl"), include_str!("imported.wgsl")] {
+            let module = naga::front::wgsl::parse_str(source).unwrap();
+            naga::valid::Validator::new(
+                naga::valid::ValidationFlags::all(),
+                naga::valid::Capabilities::empty(),
+            )
+            .validate(&module)
+            .unwrap();
+        }
     }
     #[test]
     #[ignore = "Requires an accessible Metal/WebGPU adapter"]

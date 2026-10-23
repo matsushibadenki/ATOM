@@ -274,6 +274,7 @@ fn native_gpu_selection_occlusion_grid_axes_and_mask_resize() {
             scale: 1.,
             grid: false,
             axes: false,
+            gizmo: None,
         };
         renderer.render_region(&scene, &view, [64, 64], region, &vp);
         let reference = read(&renderer, &full, 64);
@@ -300,7 +301,7 @@ fn native_gpu_selection_occlusion_grid_axes_and_mask_resize() {
         {
             let x = i % 64;
             let y = i / 64;
-            if x >= 8 && x < 56 && y >= 8 && y < 56 && original != &reference[..4] {
+            if (8..56).contains(&x) && (8..56).contains(&y) && original != &reference[..4] {
                 assert_eq!(
                     actual.as_slice(),
                     original.as_slice(),
@@ -345,6 +346,32 @@ fn native_gpu_selection_occlusion_grid_axes_and_mask_resize() {
         guide.axes = false;
         guide.selected = Some(bytemuck::cast(scene.instances()[0].model));
         renderer.set_guides(Some(guide.clone()));
+        renderer.render_region(&scene, &view, [64, 64], region, &vp);
+        let without_handles = read(&renderer, &full, 64);
+        for mode in 1..=3 {
+            guide.gizmo = Some(guides::Gizmo {
+                origin: [0., 0., 0.],
+                axes: [[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]],
+                size: 1.5,
+                selected_axis: Some(0),
+                mode,
+            });
+            renderer.set_guides(Some(guide.clone()));
+            renderer.render_region(&scene, &view, [64, 64], region, &vp);
+            let handles = read(&renderer, &full, 64);
+            assert!(handles != without_handles, "missing gizmo mode {mode}");
+            for y in 0..64usize {
+                for x in 0..64usize {
+                    if !(8..56).contains(&x) || !(8..56).contains(&y) {
+                        let offset = y * 256 + x * 4;
+                        assert_eq!(&handles[offset..offset + 4], &reference[offset..offset + 4]);
+                    }
+                }
+            }
+        }
+        guide.gizmo = None;
+        guide.selected = Some(bytemuck::cast(scene.instances()[0].model));
+        renderer.set_guides(Some(guide.clone()));
         renderer.render(&scene, &small.create_view(&Default::default()), 32, 32, &vp);
         assert!(amber(&read(&renderer, &small, 32)) > 0);
         assert_eq!(renderer.stamp, stamp);
@@ -362,6 +389,99 @@ fn native_gpu_selection_occlusion_grid_axes_and_mask_resize() {
         renderer.set_guides(Some(guide));
         renderer.render_region(&scene, &view, [64, 64], region, &vp);
         assert_eq!(read(&renderer, &full, 64), occluder);
+        assert!(renderer.device.pop_error_scope().await.is_none());
+    });
+}
+
+#[test]
+#[ignore = "Requires native GPU; verifies actual imported geometry/color and cache removal"]
+fn native_gpu_imported_mesh_replaces_proxy_and_preserves_regular_objects() {
+    pollster::block_on(async {
+        let instance = wgpu::Instance::default();
+        let adapter = instance.request_adapter(&Default::default()).await.unwrap();
+        let (device, queue) = adapter.request_device(&Default::default()).await.unwrap();
+        device.push_error_scope(wgpu::ErrorFilter::Validation);
+        let mut renderer = Renderer::new(device, queue, wgpu::TextureFormat::Rgba8Unorm);
+        let texture = renderer.device.create_texture(&wgpu::TextureDescriptor {
+            label: None,
+            size: wgpu::Extent3d {
+                width: 64,
+                height: 64,
+                depth_or_array_layers: 1,
+            },
+            mip_level_count: 1,
+            sample_count: 1,
+            dimension: wgpu::TextureDimension::D2,
+            format: wgpu::TextureFormat::Rgba8Unorm,
+            usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::COPY_SRC,
+            view_formats: &[],
+        });
+        let mut scene = Scene::default();
+        let mut bytes = Vec::new();
+        for (id, position, scale) in [
+            (1u32, [0., 0., 0.], [1., 1., 1.]),
+            (2, [-0.8, 0.8, 0.3], [0.2; 3]),
+        ] {
+            let mut records = [0u8; 128];
+            for (offset, value) in [(0, 1u32), (4, id), (64, 2), (68, id), (120, 3)] {
+                records[offset..offset + 4].copy_from_slice(&value.to_le_bytes());
+            }
+            let values = position
+                .into_iter()
+                .chain([0f32; 3])
+                .chain(scale)
+                .chain([1.; 3]);
+            for (i, value) in values.enumerate() {
+                records[72 + i * 4..76 + i * 4].copy_from_slice(&value.to_le_bytes());
+            }
+            bytes.extend(records);
+        }
+        scene.apply(&bytes).unwrap();
+        let positions = [[-0.5, -0.5, 0.3], [0.5, -0.5, 0.3], [-0.5, 0.5, 0.3]];
+        let colors = [[0.9, 0.1, 0.05]; 3];
+        let indices = [0, 1, 2];
+        renderer
+            .set_imported_meshes([crate::imported::MeshView {
+                instance: 0,
+                key: "triangle",
+                positions: &positions,
+                colors: &colors,
+                indices: &indices,
+            }])
+            .unwrap();
+        let vp = bytemuck::cast(threex_core::identity());
+        renderer.render(
+            &scene,
+            &texture.create_view(&Default::default()),
+            64,
+            64,
+            &vp,
+        );
+        let pixels = read(&renderer, &texture, 64);
+        let pixel = |x: usize, y: usize| &pixels[y * 256 + x * 4..y * 256 + x * 4 + 3];
+        assert_eq!(pixel(44, 20), pixel(0, 63), "no proxy cube behind triangle");
+        assert!(
+            pixel(22, 42)[0] > pixel(22, 42)[2] * 2,
+            "authored per-vertex color"
+        );
+        assert_ne!(pixel(6, 6), pixel(0, 63), "ordinary object remains visible");
+        renderer.set_imported_meshes([]).unwrap();
+        renderer.render(
+            &scene,
+            &texture.create_view(&Default::default()),
+            64,
+            64,
+            &vp,
+        );
+        let cleared = read(&renderer, &texture, 64);
+        assert_ne!(
+            &cleared[20 * 256 + 44 * 4..20 * 256 + 44 * 4 + 3],
+            pixel(0, 63)
+        );
+        renderer
+            .device
+            .poll(wgpu::PollType::wait_indefinitely())
+            .unwrap();
         assert!(renderer.device.pop_error_scope().await.is_none());
     });
 }

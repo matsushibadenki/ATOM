@@ -1,0 +1,15 @@
+#usda 1.0
+(
+    defaultPrim = "Assembly"
+    metersPerUnit = 0.01
+    upAxis = "Z"
+)
+def Xform "Assembly" {
+    double3 xformOp:translate = (200, 300, 400)
+    uniform token[] xformOpOrder = ["xformOp:translate"]
+    def Xform "A" (prepend references = @component.usda@) {}
+    def Xform "B" (prepend references = @component.usda@) {
+        double3 xformOp:translate = (200,0,0)
+        uniform token[] xformOpOrder = ["xformOp:translate"]
+    }
+}

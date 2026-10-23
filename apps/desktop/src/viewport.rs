@@ -118,7 +118,7 @@ pub fn draw(app: &tauri::AppHandle) {
                     .find(|g| g.active == Panel::Viewport)
                     .map(|g| g.content(scale))
             } else {
-                let top = (workspace.inset(label) + (64. * scale).round() as u32).min(size[1]);
+                let top = (workspace.inset(label) + (96. * scale).round() as u32).min(size[1]);
                 layout
                     .floating_groups
                     .iter()
@@ -139,6 +139,23 @@ pub fn draw(app: &tauri::AppHandle) {
             }
             let shared = app.state::<Shared>();
             let session = shared.0.lock().map_err(|e| e.to_string())?;
+            target.backend.set_imported_meshes(
+                session.core.project().objects.iter().filter_map(|o| {
+                    let asset = session
+                        .core
+                        .project()
+                        .assets
+                        .iter()
+                        .find(|a| Some(a.id) == o.mesh_ref)?;
+                    Some(threex_renderer::imported::MeshView {
+                        instance: session.core.scene().instance_index(o.id)? as u32,
+                        key: &asset.mesh_hash,
+                        positions: &asset.mesh.positions,
+                        colors: &asset.mesh.colors,
+                        indices: &asset.mesh.indices,
+                    })
+                }),
+            )?;
             let selected_index = view
                 .selected
                 .and_then(|id| session.core.scene().instance_index(id));
@@ -149,13 +166,43 @@ pub fn draw(app: &tauri::AppHandle) {
             target
                 .backend
                 .set_guides(Some(threex_renderer::guides::GuideView {
-                    selected,
+                    selected: if view
+                        .selected
+                        .and_then(|id| session.core.object(id))
+                        .is_some_and(|o| o.mesh_ref.is_some())
+                    {
+                        None
+                    } else {
+                        selected
+                    },
                     selected_index: selected_index.unwrap_or(0) as u32,
                     eye: view.eye(),
                     distance: view.distance,
                     scale: scale as f32,
                     grid: view.show_grid,
                     axes: view.show_axes,
+                    gizmo: if view.tool != super::transform::Tool::Camera {
+                        view.selected
+                            .and_then(|id| session.core.object(id))
+                            .map(|object| threex_renderer::guides::Gizmo {
+                                origin: object.position,
+                                axes: super::transform::axes(object, view.tool),
+                                size: super::transform::handle_size(
+                                    &view,
+                                    object,
+                                    region.map_or(1., |r| r[3] as f32 / scale as f32),
+                                ),
+                                selected_axis: view.axis.index().map(|i| i as u32),
+                                mode: match view.tool {
+                                    super::transform::Tool::Move => 1,
+                                    super::transform::Tool::Rotate => 2,
+                                    super::transform::Tool::Scale => 3,
+                                    _ => 0,
+                                },
+                            })
+                    } else {
+                        None
+                    },
                 }));
             for attempt in 0..2 {
                 let frame = if let Some(camera) = camera {
@@ -218,7 +265,7 @@ pub fn region(app: &tauri::AppHandle, label: &str, active: bool) -> Option<[u32;
         if active && group.active != Panel::Viewport {
             return None;
         }
-        let top = (workspace.inset(label) + (64. * scale).round() as u32).min(size.height);
+        let top = (workspace.inset(label) + (96. * scale).round() as u32).min(size.height);
         Some([0, top, size.width, size.height - top])
     }
     .filter(|r| r[2] > 0 && r[3] > 0)

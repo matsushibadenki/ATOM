@@ -1,0 +1,6496 @@
+{
+  "schema_version": 3,
+  "id": "c19c87f9-88a3-4abc-8401-45e317672e47",
+  "name": "humanoid",
+  "objects": [
+    {
+      "id": 1,
+      "position": [
+        0.0,
+        0.98,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.28,
+        0.16,
+        0.18
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "pelvis",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 2,
+      "position": [
+        0.0,
+        1.0775,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.22,
+        0.02975,
+        0.16
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "lumbar_5",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 3,
+      "position": [
+        0.0,
+        1.1125,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.22,
+        0.02975,
+        0.16
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "lumbar_4",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 4,
+      "position": [
+        0.0,
+        1.1474999,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.22,
+        0.02975,
+        0.16
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "lumbar_3",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 5,
+      "position": [
+        0.0,
+        1.1824999,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.22,
+        0.02975,
+        0.16
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "lumbar_2",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 6,
+      "position": [
+        0.0,
+        1.2174999,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.22,
+        0.02975,
+        0.16
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "lumbar_1",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 7,
+      "position": [
+        0.0,
+        1.2474998,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.3,
+        0.02125,
+        0.18
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "thoracic_12",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 8,
+      "position": [
+        0.0,
+        1.2724998,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.3,
+        0.02125,
+        0.18
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "thoracic_11",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 9,
+      "position": [
+        0.0,
+        1.2974998,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.3,
+        0.02125,
+        0.18
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "thoracic_10",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 10,
+      "position": [
+        0.0,
+        1.3224998,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.3,
+        0.02125,
+        0.18
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "thoracic_9",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 11,
+      "position": [
+        0.0,
+        1.3474997,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.3,
+        0.02125,
+        0.18
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "thoracic_8",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 12,
+      "position": [
+        0.0,
+        1.3724997,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.3,
+        0.02125,
+        0.18
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "thoracic_7",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 13,
+      "position": [
+        0.0,
+        1.3974997,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.3,
+        0.02125,
+        0.18
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "thoracic_6",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 14,
+      "position": [
+        0.0,
+        1.4224997,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.3,
+        0.02125,
+        0.18
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "thoracic_5",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 15,
+      "position": [
+        0.0,
+        1.4474996,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.3,
+        0.02125,
+        0.18
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "thoracic_4",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 16,
+      "position": [
+        0.0,
+        1.4724996,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.3,
+        0.02125,
+        0.18
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "thoracic_3",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 17,
+      "position": [
+        0.0,
+        1.4974996,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.3,
+        0.02125,
+        0.18
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "thoracic_2",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 18,
+      "position": [
+        0.0,
+        1.5224996,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.3,
+        0.02125,
+        0.18
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "thoracic_1",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 19,
+      "position": [
+        0.0,
+        1.5424995,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.065,
+        0.01275,
+        0.065
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "cervical_7",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 20,
+      "position": [
+        0.0,
+        1.5574995,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.065,
+        0.01275,
+        0.065
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "cervical_6",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 21,
+      "position": [
+        0.0,
+        1.5724995,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.065,
+        0.01275,
+        0.065
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "cervical_5",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 22,
+      "position": [
+        0.0,
+        1.5874995,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.065,
+        0.01275,
+        0.065
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "cervical_4",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 23,
+      "position": [
+        0.0,
+        1.6024995,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.065,
+        0.01275,
+        0.065
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "cervical_3",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 24,
+      "position": [
+        0.0,
+        1.6174995,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.065,
+        0.01275,
+        0.065
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "cervical_2",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 25,
+      "position": [
+        0.0,
+        1.6324995,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.065,
+        0.01275,
+        0.065
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "cervical_1",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 26,
+      "position": [
+        0.0,
+        1.7399994,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.16,
+        0.19,
+        0.15
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "head",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 27,
+      "position": [
+        0.0,
+        1.6499994,
+        0.075
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.1,
+        0.025,
+        0.035
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "jaw",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 28,
+      "position": [
+        -0.155,
+        1.49,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.13,
+        0.045,
+        0.06
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "left_clavicle",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 29,
+      "position": [
+        -0.24,
+        1.345,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.08,
+        0.27,
+        0.08
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "left_upper_arm",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 30,
+      "position": [
+        -0.24,
+        1.075,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.065,
+        0.23,
+        0.065
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "left_forearm",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 31,
+      "position": [
+        -0.24,
+        0.905,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.085,
+        0.08,
+        0.035
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "left_palm",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 32,
+      "position": [
+        -0.278,
+        0.84900004,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.021,
+        0.018
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "left_finger_1_1",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 33,
+      "position": [
+        -0.278,
+        0.82400006,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.021,
+        0.018
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "left_finger_1_2",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 34,
+      "position": [
+        -0.259,
+        0.84900004,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.021,
+        0.018
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "left_finger_2_1",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 35,
+      "position": [
+        -0.259,
+        0.82400006,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.021,
+        0.018
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "left_finger_2_2",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 36,
+      "position": [
+        -0.259,
+        0.799,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.021,
+        0.018
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "left_finger_2_3",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 37,
+      "position": [
+        -0.24,
+        0.84900004,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.021,
+        0.018
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "left_finger_3_1",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 38,
+      "position": [
+        -0.24,
+        0.82400006,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.021,
+        0.018
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "left_finger_3_2",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 39,
+      "position": [
+        -0.24,
+        0.799,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.021,
+        0.018
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "left_finger_3_3",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 40,
+      "position": [
+        -0.221,
+        0.84900004,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.021,
+        0.018
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "left_finger_4_1",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 41,
+      "position": [
+        -0.221,
+        0.82400006,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.021,
+        0.018
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "left_finger_4_2",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 42,
+      "position": [
+        -0.221,
+        0.799,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.021,
+        0.018
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "left_finger_4_3",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 43,
+      "position": [
+        -0.20199999,
+        0.84900004,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.021,
+        0.018
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "left_finger_5_1",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 44,
+      "position": [
+        -0.20199999,
+        0.82400006,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.021,
+        0.018
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "left_finger_5_2",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 45,
+      "position": [
+        -0.20199999,
+        0.799,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.021,
+        0.018
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "left_finger_5_3",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 46,
+      "position": [
+        -0.09,
+        0.705,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.11,
+        0.37,
+        0.12
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "left_thigh",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 47,
+      "position": [
+        -0.09,
+        0.32,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.08,
+        0.36,
+        0.09
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "left_shin",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 48,
+      "position": [
+        -0.09,
+        0.12,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.065,
+        0.025,
+        0.065
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "left_ankle",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 49,
+      "position": [
+        -0.09,
+        0.07,
+        0.045
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.1,
+        0.055,
+        0.16
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "left_foot",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 50,
+      "position": [
+        -0.128,
+        0.065,
+        0.136
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.025,
+        0.015
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "left_toe_1_1",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 51,
+      "position": [
+        -0.128,
+        0.065,
+        0.155
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.025,
+        0.015
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "left_toe_1_2",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 52,
+      "position": [
+        -0.109000005,
+        0.065,
+        0.136
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.025,
+        0.015
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "left_toe_2_1",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 53,
+      "position": [
+        -0.109000005,
+        0.065,
+        0.155
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.025,
+        0.015
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "left_toe_2_2",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 54,
+      "position": [
+        -0.109000005,
+        0.065,
+        0.17400001
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.025,
+        0.015
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "left_toe_2_3",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 55,
+      "position": [
+        -0.09,
+        0.065,
+        0.136
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.025,
+        0.015
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "left_toe_3_1",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 56,
+      "position": [
+        -0.09,
+        0.065,
+        0.155
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.025,
+        0.015
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "left_toe_3_2",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 57,
+      "position": [
+        -0.09,
+        0.065,
+        0.17400001
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.025,
+        0.015
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "left_toe_3_3",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 58,
+      "position": [
+        -0.071,
+        0.065,
+        0.136
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.025,
+        0.015
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "left_toe_4_1",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 59,
+      "position": [
+        -0.071,
+        0.065,
+        0.155
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.025,
+        0.015
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "left_toe_4_2",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 60,
+      "position": [
+        -0.071,
+        0.065,
+        0.17400001
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.025,
+        0.015
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "left_toe_4_3",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 61,
+      "position": [
+        -0.052000005,
+        0.065,
+        0.136
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.025,
+        0.015
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "left_toe_5_1",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 62,
+      "position": [
+        -0.052000005,
+        0.065,
+        0.155
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.025,
+        0.015
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "left_toe_5_2",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 63,
+      "position": [
+        -0.052000005,
+        0.065,
+        0.17400001
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.025,
+        0.015
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "left_toe_5_3",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 64,
+      "position": [
+        0.155,
+        1.49,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.13,
+        0.045,
+        0.06
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "right_clavicle",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 65,
+      "position": [
+        0.24,
+        1.345,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.08,
+        0.27,
+        0.08
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "right_upper_arm",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 66,
+      "position": [
+        0.24,
+        1.075,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.065,
+        0.23,
+        0.065
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "right_forearm",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 67,
+      "position": [
+        0.24,
+        0.905,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.085,
+        0.08,
+        0.035
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "right_palm",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 68,
+      "position": [
+        0.278,
+        0.84900004,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.021,
+        0.018
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "right_finger_1_1",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 69,
+      "position": [
+        0.278,
+        0.82400006,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.021,
+        0.018
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "right_finger_1_2",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 70,
+      "position": [
+        0.259,
+        0.84900004,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.021,
+        0.018
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "right_finger_2_1",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 71,
+      "position": [
+        0.259,
+        0.82400006,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.021,
+        0.018
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "right_finger_2_2",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 72,
+      "position": [
+        0.259,
+        0.799,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.021,
+        0.018
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "right_finger_2_3",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 73,
+      "position": [
+        0.24,
+        0.84900004,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.021,
+        0.018
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "right_finger_3_1",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 74,
+      "position": [
+        0.24,
+        0.82400006,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.021,
+        0.018
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "right_finger_3_2",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 75,
+      "position": [
+        0.24,
+        0.799,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.021,
+        0.018
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "right_finger_3_3",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 76,
+      "position": [
+        0.221,
+        0.84900004,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.021,
+        0.018
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "right_finger_4_1",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 77,
+      "position": [
+        0.221,
+        0.82400006,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.021,
+        0.018
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "right_finger_4_2",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 78,
+      "position": [
+        0.221,
+        0.799,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.021,
+        0.018
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "right_finger_4_3",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 79,
+      "position": [
+        0.20199999,
+        0.84900004,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.021,
+        0.018
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "right_finger_5_1",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 80,
+      "position": [
+        0.20199999,
+        0.82400006,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.021,
+        0.018
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "right_finger_5_2",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 81,
+      "position": [
+        0.20199999,
+        0.799,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.021,
+        0.018
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "right_finger_5_3",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 82,
+      "position": [
+        0.09,
+        0.705,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.11,
+        0.37,
+        0.12
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "right_thigh",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 83,
+      "position": [
+        0.09,
+        0.32,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.08,
+        0.36,
+        0.09
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "right_shin",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 84,
+      "position": [
+        0.09,
+        0.12,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.065,
+        0.025,
+        0.065
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "right_ankle",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 85,
+      "position": [
+        0.09,
+        0.07,
+        0.045
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.1,
+        0.055,
+        0.16
+      ],
+      "color": [
+        0.75,
+        0.69,
+        0.57
+      ],
+      "label": "right_foot",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 86,
+      "position": [
+        0.128,
+        0.065,
+        0.136
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.025,
+        0.015
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "right_toe_1_1",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 87,
+      "position": [
+        0.128,
+        0.065,
+        0.155
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.025,
+        0.015
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "right_toe_1_2",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 88,
+      "position": [
+        0.109000005,
+        0.065,
+        0.136
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.025,
+        0.015
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "right_toe_2_1",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 89,
+      "position": [
+        0.109000005,
+        0.065,
+        0.155
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.025,
+        0.015
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "right_toe_2_2",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 90,
+      "position": [
+        0.109000005,
+        0.065,
+        0.17400001
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.025,
+        0.015
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "right_toe_2_3",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 91,
+      "position": [
+        0.09,
+        0.065,
+        0.136
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.025,
+        0.015
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "right_toe_3_1",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 92,
+      "position": [
+        0.09,
+        0.065,
+        0.155
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.025,
+        0.015
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "right_toe_3_2",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 93,
+      "position": [
+        0.09,
+        0.065,
+        0.17400001
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.025,
+        0.015
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "right_toe_3_3",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 94,
+      "position": [
+        0.071,
+        0.065,
+        0.136
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.025,
+        0.015
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "right_toe_4_1",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 95,
+      "position": [
+        0.071,
+        0.065,
+        0.155
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.025,
+        0.015
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "right_toe_4_2",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 96,
+      "position": [
+        0.071,
+        0.065,
+        0.17400001
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.025,
+        0.015
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "right_toe_4_3",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 97,
+      "position": [
+        0.052000005,
+        0.065,
+        0.136
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.025,
+        0.015
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "right_toe_5_1",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 98,
+      "position": [
+        0.052000005,
+        0.065,
+        0.155
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.025,
+        0.015
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "right_toe_5_2",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    },
+    {
+      "id": 99,
+      "position": [
+        0.052000005,
+        0.065,
+        0.17400001
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.013,
+        0.025,
+        0.015
+      ],
+      "color": [
+        0.7,
+        0.57,
+        0.43
+      ],
+      "label": "right_toe_5_3",
+      "material": {
+        "preset": "custom",
+        "density": 1000.0,
+        "friction": [
+          1.2,
+          0.005,
+          0.0001
+        ]
+      },
+      "fixed": false,
+      "mesh_ref": null,
+      "mass_override": null
+    }
+  ],
+  "workflow": {
+    "schema_version": 1,
+    "engine_version": "0.1.0",
+    "plugin_versions": {},
+    "graph": {
+      "id": "6de01410-3d7b-47be-8a01-65f5c144bdfc",
+      "name": "Untitled",
+      "nodes": {
+        "77c3bef2-7345-4fbf-bce9-4e6e9568236b": {
+          "id": "77c3bef2-7345-4fbf-bce9-4e6e9568236b",
+          "type_id": "atom.task_set",
+          "inputs": [],
+          "outputs": [
+            {
+              "name": "tasks",
+              "data_type": {
+                "kind": "json"
+              },
+              "cardinality": "single",
+              "required": true
+            }
+          ],
+          "properties": {}
+        },
+        "da8941bd-a9c6-441f-8b15-095d95c824b5": {
+          "id": "da8941bd-a9c6-441f-8b15-095d95c824b5",
+          "type_id": "atom.validate_tasks",
+          "inputs": [
+            {
+              "name": "tasks",
+              "data_type": {
+                "kind": "json"
+              },
+              "cardinality": "single",
+              "required": true
+            }
+          ],
+          "outputs": [
+            {
+              "name": "count",
+              "data_type": {
+                "kind": "int"
+              },
+              "cardinality": "single",
+              "required": true
+            }
+          ],
+          "properties": {}
+        }
+      },
+      "edges": {
+        "adbb5949-3bf8-485d-8aef-b105040cfd01": {
+          "id": "adbb5949-3bf8-485d-8aef-b105040cfd01",
+          "from": {
+            "node": "77c3bef2-7345-4fbf-bce9-4e6e9568236b",
+            "port": "tasks"
+          },
+          "to": {
+            "node": "da8941bd-a9c6-441f-8b15-095d95c824b5",
+            "port": "tasks"
+          }
+        }
+      },
+      "groups": {}
+    },
+    "placement": {
+      "77c3bef2-7345-4fbf-bce9-4e6e9568236b": {
+        "x": 40.0,
+        "y": 80.0,
+        "width": 180.0,
+        "height": 90.0
+      },
+      "da8941bd-a9c6-441f-8b15-095d95c824b5": {
+        "x": 360.0,
+        "y": 80.0,
+        "width": 180.0,
+        "height": 90.0
+      }
+    }
+  },
+  "physics": {
+    "gravity": {
+      "preset": "earth",
+      "vector": [
+        0.0,
+        0.0,
+        -9.80665
+      ]
+    },
+    "floor": {
+      "preset": "concrete",
+      "density": 2300.0,
+      "friction": [
+        0.8,
+        0.005,
+        0.0001
+      ]
+    },
+    "floor_enabled": true
+  },
+  "robots": [
+    {
+      "template": "humanoid",
+      "root": 1,
+      "links": [
+        {
+          "object_id": 1,
+          "parent": null,
+          "anchor": [
+            0.0,
+            0.98,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.1,
+            0.1
+          ]
+        },
+        {
+          "object_id": 2,
+          "parent": 1,
+          "anchor": [
+            0.0,
+            1.06,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.12,
+            0.12
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.12,
+                0.12
+              ]
+            },
+            {
+              "axis": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "range": [
+                -0.1,
+                0.1
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 3,
+          "parent": 2,
+          "anchor": [
+            0.0,
+            1.0949999,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.12,
+            0.12
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.12,
+                0.12
+              ]
+            },
+            {
+              "axis": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "range": [
+                -0.1,
+                0.1
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 4,
+          "parent": 3,
+          "anchor": [
+            0.0,
+            1.1299999,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.12,
+            0.12
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.12,
+                0.12
+              ]
+            },
+            {
+              "axis": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "range": [
+                -0.1,
+                0.1
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 5,
+          "parent": 4,
+          "anchor": [
+            0.0,
+            1.1649998,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.12,
+            0.12
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.12,
+                0.12
+              ]
+            },
+            {
+              "axis": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "range": [
+                -0.1,
+                0.1
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 6,
+          "parent": 5,
+          "anchor": [
+            0.0,
+            1.1999998,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.12,
+            0.12
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.12,
+                0.12
+              ]
+            },
+            {
+              "axis": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "range": [
+                -0.1,
+                0.1
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 7,
+          "parent": 6,
+          "anchor": [
+            0.0,
+            1.2349998,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.12,
+            0.12
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.12,
+                0.12
+              ]
+            },
+            {
+              "axis": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "range": [
+                -0.1,
+                0.1
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 8,
+          "parent": 7,
+          "anchor": [
+            0.0,
+            1.2599998,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.12,
+            0.12
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.12,
+                0.12
+              ]
+            },
+            {
+              "axis": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "range": [
+                -0.1,
+                0.1
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 9,
+          "parent": 8,
+          "anchor": [
+            0.0,
+            1.2849997,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.12,
+            0.12
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.12,
+                0.12
+              ]
+            },
+            {
+              "axis": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "range": [
+                -0.1,
+                0.1
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 10,
+          "parent": 9,
+          "anchor": [
+            0.0,
+            1.3099997,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.12,
+            0.12
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.12,
+                0.12
+              ]
+            },
+            {
+              "axis": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "range": [
+                -0.1,
+                0.1
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 11,
+          "parent": 10,
+          "anchor": [
+            0.0,
+            1.3349997,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.12,
+            0.12
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.12,
+                0.12
+              ]
+            },
+            {
+              "axis": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "range": [
+                -0.1,
+                0.1
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 12,
+          "parent": 11,
+          "anchor": [
+            0.0,
+            1.3599997,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.12,
+            0.12
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.12,
+                0.12
+              ]
+            },
+            {
+              "axis": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "range": [
+                -0.1,
+                0.1
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 13,
+          "parent": 12,
+          "anchor": [
+            0.0,
+            1.3849996,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.12,
+            0.12
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.12,
+                0.12
+              ]
+            },
+            {
+              "axis": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "range": [
+                -0.1,
+                0.1
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 14,
+          "parent": 13,
+          "anchor": [
+            0.0,
+            1.4099996,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.12,
+            0.12
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.12,
+                0.12
+              ]
+            },
+            {
+              "axis": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "range": [
+                -0.1,
+                0.1
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 15,
+          "parent": 14,
+          "anchor": [
+            0.0,
+            1.4349996,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.12,
+            0.12
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.12,
+                0.12
+              ]
+            },
+            {
+              "axis": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "range": [
+                -0.1,
+                0.1
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 16,
+          "parent": 15,
+          "anchor": [
+            0.0,
+            1.4599996,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.12,
+            0.12
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.12,
+                0.12
+              ]
+            },
+            {
+              "axis": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "range": [
+                -0.1,
+                0.1
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 17,
+          "parent": 16,
+          "anchor": [
+            0.0,
+            1.4849995,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.12,
+            0.12
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.12,
+                0.12
+              ]
+            },
+            {
+              "axis": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "range": [
+                -0.1,
+                0.1
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 18,
+          "parent": 17,
+          "anchor": [
+            0.0,
+            1.5099995,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.12,
+            0.12
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.12,
+                0.12
+              ]
+            },
+            {
+              "axis": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "range": [
+                -0.1,
+                0.1
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 19,
+          "parent": 18,
+          "anchor": [
+            0.0,
+            1.5349995,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.12,
+            0.12
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.12,
+                0.12
+              ]
+            },
+            {
+              "axis": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "range": [
+                -0.1,
+                0.1
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 20,
+          "parent": 19,
+          "anchor": [
+            0.0,
+            1.5499995,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.12,
+            0.12
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.12,
+                0.12
+              ]
+            },
+            {
+              "axis": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "range": [
+                -0.1,
+                0.1
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 21,
+          "parent": 20,
+          "anchor": [
+            0.0,
+            1.5649995,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.12,
+            0.12
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.12,
+                0.12
+              ]
+            },
+            {
+              "axis": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "range": [
+                -0.1,
+                0.1
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 22,
+          "parent": 21,
+          "anchor": [
+            0.0,
+            1.5799994,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.12,
+            0.12
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.12,
+                0.12
+              ]
+            },
+            {
+              "axis": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "range": [
+                -0.1,
+                0.1
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 23,
+          "parent": 22,
+          "anchor": [
+            0.0,
+            1.5949994,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.12,
+            0.12
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.12,
+                0.12
+              ]
+            },
+            {
+              "axis": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "range": [
+                -0.1,
+                0.1
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 24,
+          "parent": 23,
+          "anchor": [
+            0.0,
+            1.6099994,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.12,
+            0.12
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.12,
+                0.12
+              ]
+            },
+            {
+              "axis": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "range": [
+                -0.1,
+                0.1
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 25,
+          "parent": 24,
+          "anchor": [
+            0.0,
+            1.6249994,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.12,
+            0.12
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.12,
+                0.12
+              ]
+            },
+            {
+              "axis": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "range": [
+                -0.1,
+                0.1
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 26,
+          "parent": 25,
+          "anchor": [
+            0.0,
+            1.6399994,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.35,
+            0.35
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.35,
+                0.35
+              ]
+            },
+            {
+              "axis": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "range": [
+                -0.2,
+                0.2
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 27,
+          "parent": 26,
+          "anchor": [
+            0.0,
+            1.6699994,
+            0.04
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.45,
+            0.01
+          ]
+        },
+        {
+          "object_id": 28,
+          "parent": 18,
+          "anchor": [
+            -0.08,
+            1.49,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.3,
+            0.3
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.4,
+                0.4
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 29,
+          "parent": 28,
+          "anchor": [
+            -0.24,
+            1.49,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -2.0,
+            2.0
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -1.5,
+                1.5
+              ]
+            },
+            {
+              "axis": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "range": [
+                -2.5,
+                2.5
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 30,
+          "parent": 29,
+          "anchor": [
+            -0.24,
+            1.2,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -2.5,
+            0.02
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -1.4,
+                1.4
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 31,
+          "parent": 30,
+          "anchor": [
+            -0.24,
+            0.95,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -1.2,
+            1.2
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.4,
+                0.4
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 32,
+          "parent": 31,
+          "anchor": [
+            -0.278,
+            0.86,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.1,
+            1.5
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.3,
+                0.3
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 33,
+          "parent": 32,
+          "anchor": [
+            -0.278,
+            0.83500004,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.05,
+            1.8
+          ]
+        },
+        {
+          "object_id": 34,
+          "parent": 31,
+          "anchor": [
+            -0.259,
+            0.86,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.1,
+            1.5
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.3,
+                0.3
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 35,
+          "parent": 34,
+          "anchor": [
+            -0.259,
+            0.83500004,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.05,
+            1.8
+          ]
+        },
+        {
+          "object_id": 36,
+          "parent": 35,
+          "anchor": [
+            -0.259,
+            0.81,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.05,
+            1.8
+          ]
+        },
+        {
+          "object_id": 37,
+          "parent": 31,
+          "anchor": [
+            -0.24,
+            0.86,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.1,
+            1.5
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.3,
+                0.3
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 38,
+          "parent": 37,
+          "anchor": [
+            -0.24,
+            0.83500004,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.05,
+            1.8
+          ]
+        },
+        {
+          "object_id": 39,
+          "parent": 38,
+          "anchor": [
+            -0.24,
+            0.81,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.05,
+            1.8
+          ]
+        },
+        {
+          "object_id": 40,
+          "parent": 31,
+          "anchor": [
+            -0.221,
+            0.86,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.1,
+            1.5
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.3,
+                0.3
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 41,
+          "parent": 40,
+          "anchor": [
+            -0.221,
+            0.83500004,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.05,
+            1.8
+          ]
+        },
+        {
+          "object_id": 42,
+          "parent": 41,
+          "anchor": [
+            -0.221,
+            0.81,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.05,
+            1.8
+          ]
+        },
+        {
+          "object_id": 43,
+          "parent": 31,
+          "anchor": [
+            -0.20199999,
+            0.86,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.1,
+            1.5
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.3,
+                0.3
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 44,
+          "parent": 43,
+          "anchor": [
+            -0.20199999,
+            0.83500004,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.05,
+            1.8
+          ]
+        },
+        {
+          "object_id": 45,
+          "parent": 44,
+          "anchor": [
+            -0.20199999,
+            0.81,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.05,
+            1.8
+          ]
+        },
+        {
+          "object_id": 46,
+          "parent": 1,
+          "anchor": [
+            -0.09,
+            0.9,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.5,
+            2.0
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.7,
+                0.7
+              ]
+            },
+            {
+              "axis": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "range": [
+                -0.6,
+                0.6
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 47,
+          "parent": 46,
+          "anchor": [
+            -0.09,
+            0.51,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -2.4,
+            0.02
+          ]
+        },
+        {
+          "object_id": 48,
+          "parent": 47,
+          "anchor": [
+            -0.09,
+            0.13,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.7,
+            0.5
+          ]
+        },
+        {
+          "object_id": 49,
+          "parent": 48,
+          "anchor": [
+            -0.09,
+            0.1,
+            0.0
+          ],
+          "axis": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "range": [
+            -0.35,
+            0.35
+          ]
+        },
+        {
+          "object_id": 50,
+          "parent": 49,
+          "anchor": [
+            -0.128,
+            0.065,
+            0.128
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.7,
+            0.7
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.2,
+                0.2
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 51,
+          "parent": 50,
+          "anchor": [
+            -0.128,
+            0.065,
+            0.147
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.1,
+            1.0
+          ]
+        },
+        {
+          "object_id": 52,
+          "parent": 49,
+          "anchor": [
+            -0.109000005,
+            0.065,
+            0.128
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.7,
+            0.7
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.2,
+                0.2
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 53,
+          "parent": 52,
+          "anchor": [
+            -0.109000005,
+            0.065,
+            0.147
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.1,
+            1.0
+          ]
+        },
+        {
+          "object_id": 54,
+          "parent": 53,
+          "anchor": [
+            -0.109000005,
+            0.065,
+            0.16600001
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.1,
+            1.0
+          ]
+        },
+        {
+          "object_id": 55,
+          "parent": 49,
+          "anchor": [
+            -0.09,
+            0.065,
+            0.128
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.7,
+            0.7
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.2,
+                0.2
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 56,
+          "parent": 55,
+          "anchor": [
+            -0.09,
+            0.065,
+            0.147
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.1,
+            1.0
+          ]
+        },
+        {
+          "object_id": 57,
+          "parent": 56,
+          "anchor": [
+            -0.09,
+            0.065,
+            0.16600001
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.1,
+            1.0
+          ]
+        },
+        {
+          "object_id": 58,
+          "parent": 49,
+          "anchor": [
+            -0.071,
+            0.065,
+            0.128
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.7,
+            0.7
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.2,
+                0.2
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 59,
+          "parent": 58,
+          "anchor": [
+            -0.071,
+            0.065,
+            0.147
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.1,
+            1.0
+          ]
+        },
+        {
+          "object_id": 60,
+          "parent": 59,
+          "anchor": [
+            -0.071,
+            0.065,
+            0.16600001
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.1,
+            1.0
+          ]
+        },
+        {
+          "object_id": 61,
+          "parent": 49,
+          "anchor": [
+            -0.052000005,
+            0.065,
+            0.128
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.7,
+            0.7
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.2,
+                0.2
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 62,
+          "parent": 61,
+          "anchor": [
+            -0.052000005,
+            0.065,
+            0.147
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.1,
+            1.0
+          ]
+        },
+        {
+          "object_id": 63,
+          "parent": 62,
+          "anchor": [
+            -0.052000005,
+            0.065,
+            0.16600001
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.1,
+            1.0
+          ]
+        },
+        {
+          "object_id": 64,
+          "parent": 18,
+          "anchor": [
+            0.08,
+            1.49,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.3,
+            0.3
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.4,
+                0.4
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 65,
+          "parent": 64,
+          "anchor": [
+            0.24,
+            1.49,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -2.0,
+            2.0
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -1.5,
+                1.5
+              ]
+            },
+            {
+              "axis": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "range": [
+                -2.5,
+                2.5
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 66,
+          "parent": 65,
+          "anchor": [
+            0.24,
+            1.2,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -2.5,
+            0.02
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -1.4,
+                1.4
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 67,
+          "parent": 66,
+          "anchor": [
+            0.24,
+            0.95,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -1.2,
+            1.2
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.4,
+                0.4
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 68,
+          "parent": 67,
+          "anchor": [
+            0.278,
+            0.86,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.1,
+            1.5
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.3,
+                0.3
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 69,
+          "parent": 68,
+          "anchor": [
+            0.278,
+            0.83500004,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.05,
+            1.8
+          ]
+        },
+        {
+          "object_id": 70,
+          "parent": 67,
+          "anchor": [
+            0.259,
+            0.86,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.1,
+            1.5
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.3,
+                0.3
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 71,
+          "parent": 70,
+          "anchor": [
+            0.259,
+            0.83500004,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.05,
+            1.8
+          ]
+        },
+        {
+          "object_id": 72,
+          "parent": 71,
+          "anchor": [
+            0.259,
+            0.81,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.05,
+            1.8
+          ]
+        },
+        {
+          "object_id": 73,
+          "parent": 67,
+          "anchor": [
+            0.24,
+            0.86,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.1,
+            1.5
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.3,
+                0.3
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 74,
+          "parent": 73,
+          "anchor": [
+            0.24,
+            0.83500004,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.05,
+            1.8
+          ]
+        },
+        {
+          "object_id": 75,
+          "parent": 74,
+          "anchor": [
+            0.24,
+            0.81,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.05,
+            1.8
+          ]
+        },
+        {
+          "object_id": 76,
+          "parent": 67,
+          "anchor": [
+            0.221,
+            0.86,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.1,
+            1.5
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.3,
+                0.3
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 77,
+          "parent": 76,
+          "anchor": [
+            0.221,
+            0.83500004,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.05,
+            1.8
+          ]
+        },
+        {
+          "object_id": 78,
+          "parent": 77,
+          "anchor": [
+            0.221,
+            0.81,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.05,
+            1.8
+          ]
+        },
+        {
+          "object_id": 79,
+          "parent": 67,
+          "anchor": [
+            0.20199999,
+            0.86,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.1,
+            1.5
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.3,
+                0.3
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 80,
+          "parent": 79,
+          "anchor": [
+            0.20199999,
+            0.83500004,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.05,
+            1.8
+          ]
+        },
+        {
+          "object_id": 81,
+          "parent": 80,
+          "anchor": [
+            0.20199999,
+            0.81,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.05,
+            1.8
+          ]
+        },
+        {
+          "object_id": 82,
+          "parent": 1,
+          "anchor": [
+            0.09,
+            0.9,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.5,
+            2.0
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.7,
+                0.7
+              ]
+            },
+            {
+              "axis": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "range": [
+                -0.6,
+                0.6
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 83,
+          "parent": 82,
+          "anchor": [
+            0.09,
+            0.51,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -2.4,
+            0.02
+          ]
+        },
+        {
+          "object_id": 84,
+          "parent": 83,
+          "anchor": [
+            0.09,
+            0.13,
+            0.0
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.7,
+            0.5
+          ]
+        },
+        {
+          "object_id": 85,
+          "parent": 84,
+          "anchor": [
+            0.09,
+            0.1,
+            0.0
+          ],
+          "axis": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "range": [
+            -0.35,
+            0.35
+          ]
+        },
+        {
+          "object_id": 86,
+          "parent": 85,
+          "anchor": [
+            0.128,
+            0.065,
+            0.128
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.7,
+            0.7
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.2,
+                0.2
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 87,
+          "parent": 86,
+          "anchor": [
+            0.128,
+            0.065,
+            0.147
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.1,
+            1.0
+          ]
+        },
+        {
+          "object_id": 88,
+          "parent": 85,
+          "anchor": [
+            0.109000005,
+            0.065,
+            0.128
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.7,
+            0.7
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.2,
+                0.2
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 89,
+          "parent": 88,
+          "anchor": [
+            0.109000005,
+            0.065,
+            0.147
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.1,
+            1.0
+          ]
+        },
+        {
+          "object_id": 90,
+          "parent": 89,
+          "anchor": [
+            0.109000005,
+            0.065,
+            0.16600001
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.1,
+            1.0
+          ]
+        },
+        {
+          "object_id": 91,
+          "parent": 85,
+          "anchor": [
+            0.09,
+            0.065,
+            0.128
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.7,
+            0.7
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.2,
+                0.2
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 92,
+          "parent": 91,
+          "anchor": [
+            0.09,
+            0.065,
+            0.147
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.1,
+            1.0
+          ]
+        },
+        {
+          "object_id": 93,
+          "parent": 92,
+          "anchor": [
+            0.09,
+            0.065,
+            0.16600001
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.1,
+            1.0
+          ]
+        },
+        {
+          "object_id": 94,
+          "parent": 85,
+          "anchor": [
+            0.071,
+            0.065,
+            0.128
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.7,
+            0.7
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.2,
+                0.2
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 95,
+          "parent": 94,
+          "anchor": [
+            0.071,
+            0.065,
+            0.147
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.1,
+            1.0
+          ]
+        },
+        {
+          "object_id": 96,
+          "parent": 95,
+          "anchor": [
+            0.071,
+            0.065,
+            0.16600001
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.1,
+            1.0
+          ]
+        },
+        {
+          "object_id": 97,
+          "parent": 85,
+          "anchor": [
+            0.052000005,
+            0.065,
+            0.128
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.7,
+            0.7
+          ],
+          "extra_axes": [
+            {
+              "axis": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "range": [
+                -0.2,
+                0.2
+              ]
+            }
+          ]
+        },
+        {
+          "object_id": 98,
+          "parent": 97,
+          "anchor": [
+            0.052000005,
+            0.065,
+            0.147
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.1,
+            1.0
+          ]
+        },
+        {
+          "object_id": 99,
+          "parent": 98,
+          "anchor": [
+            0.052000005,
+            0.065,
+            0.16600001
+          ],
+          "axis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "range": [
+            -0.1,
+            1.0
+          ]
+        }
+      ]
+    }
+  ],
+  "assets": []
+}

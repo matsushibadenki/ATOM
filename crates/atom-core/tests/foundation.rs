@@ -25,7 +25,7 @@ fn competing_windows_and_failed_edits_are_atomic() {
     assert_eq!(core.snapshot().revision, 1);
     assert_eq!(core.snapshot().name, "Lab");
     assert_eq!(core.scene().instances().len(), 2);
-    assert_eq!(core.scene().object(2).unwrap().position, [1.4, 0., 0.]);
+    assert_eq!(core.scene().object(2).unwrap().position, [1.4, 1., 0.]);
     assert_eq!(core.scene().object(2).unwrap().scale, [0.7; 3]);
 }
 

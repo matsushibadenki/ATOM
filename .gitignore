@@ -5,3 +5,8 @@
 *.atom.json
 *.atom.json.lock
 /artifacts/
+
+!templates/humanoid.atom.json
+!templates/dual-arm.atom.json
+/.venv-usd/
+/.asset-cache/

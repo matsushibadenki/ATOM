@@ -1,0 +1,766 @@
+<mujoco model="ATOM"><compiler angle="radian" eulerseq="xyz"/><option timestep="0.002" gravity="0 -9.80665 -0" integrator="implicitfast"/><worldbody>
+<geom name="floor" type="plane" size="0 0 0.1" quat="0.7071067811865476 -0.7071067811865476 0 0" friction="0.8 0.005 0.0001" condim="6" rgba="0.55 0.52 0.46 1"/>
+<body name="b1" pos="0 0.98 0">
+<freejoint/>
+<geom name="o1" type="box" pos="0 0 0" euler="0 0 0" size="0.14 0.08 0.09" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b2" pos="0 0.07999992 0">
+<joint name="j2_0" type="hinge" axis="1 0 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j2_1" type="hinge" axis="0 1 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j2_2" type="hinge" axis="0 0 1" limited="true" range="-0.1 0.1" damping="0.1" armature="0.001"/>
+<geom name="o2" type="box" pos="0 0.017500043 0" euler="0 0 0" size="0.11 0.014875 0.08" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b3" pos="0 0.034999967 0">
+<joint name="j3_0" type="hinge" axis="1 0 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j3_1" type="hinge" axis="0 1 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j3_2" type="hinge" axis="0 0 1" limited="true" range="-0.1 0.1" damping="0.1" armature="0.001"/>
+<geom name="o3" type="box" pos="0 0.017500043 0" euler="0 0 0" size="0.11 0.014875 0.08" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b4" pos="0 0.034999967 0">
+<joint name="j4_0" type="hinge" axis="1 0 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j4_1" type="hinge" axis="0 1 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j4_2" type="hinge" axis="0 0 1" limited="true" range="-0.1 0.1" damping="0.1" armature="0.001"/>
+<geom name="o4" type="box" pos="0 0.017500043 0" euler="0 0 0" size="0.11 0.014875 0.08" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b5" pos="0 0.034999967 0">
+<joint name="j5_0" type="hinge" axis="1 0 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j5_1" type="hinge" axis="0 1 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j5_2" type="hinge" axis="0 0 1" limited="true" range="-0.1 0.1" damping="0.1" armature="0.001"/>
+<geom name="o5" type="box" pos="0 0.017500043 0" euler="0 0 0" size="0.11 0.014875 0.08" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b6" pos="0 0.034999967 0">
+<joint name="j6_0" type="hinge" axis="1 0 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j6_1" type="hinge" axis="0 1 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j6_2" type="hinge" axis="0 0 1" limited="true" range="-0.1 0.1" damping="0.1" armature="0.001"/>
+<geom name="o6" type="box" pos="0 0.017500043 0" euler="0 0 0" size="0.11 0.014875 0.08" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b7" pos="0 0.034999967 0">
+<joint name="j7_0" type="hinge" axis="1 0 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j7_1" type="hinge" axis="0 1 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j7_2" type="hinge" axis="0 0 1" limited="true" range="-0.1 0.1" damping="0.1" armature="0.001"/>
+<geom name="o7" type="box" pos="0 0.012500048 0" euler="0 0 0" size="0.15 0.010625 0.09" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b8" pos="0 0.024999976 0">
+<joint name="j8_0" type="hinge" axis="1 0 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j8_1" type="hinge" axis="0 1 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j8_2" type="hinge" axis="0 0 1" limited="true" range="-0.1 0.1" damping="0.1" armature="0.001"/>
+<geom name="o8" type="box" pos="0 0.012500048 0" euler="0 0 0" size="0.15 0.010625 0.09" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b9" pos="0 0.024999976 0">
+<joint name="j9_0" type="hinge" axis="1 0 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j9_1" type="hinge" axis="0 1 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j9_2" type="hinge" axis="0 0 1" limited="true" range="-0.1 0.1" damping="0.1" armature="0.001"/>
+<geom name="o9" type="box" pos="0 0.012500048 0" euler="0 0 0" size="0.15 0.010625 0.09" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b10" pos="0 0.024999976 0">
+<joint name="j10_0" type="hinge" axis="1 0 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j10_1" type="hinge" axis="0 1 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j10_2" type="hinge" axis="0 0 1" limited="true" range="-0.1 0.1" damping="0.1" armature="0.001"/>
+<geom name="o10" type="box" pos="0 0.012500048 0" euler="0 0 0" size="0.15 0.010625 0.09" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b11" pos="0 0.024999976 0">
+<joint name="j11_0" type="hinge" axis="1 0 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j11_1" type="hinge" axis="0 1 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j11_2" type="hinge" axis="0 0 1" limited="true" range="-0.1 0.1" damping="0.1" armature="0.001"/>
+<geom name="o11" type="box" pos="0 0.012500048 0" euler="0 0 0" size="0.15 0.010625 0.09" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b12" pos="0 0.024999976 0">
+<joint name="j12_0" type="hinge" axis="1 0 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j12_1" type="hinge" axis="0 1 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j12_2" type="hinge" axis="0 0 1" limited="true" range="-0.1 0.1" damping="0.1" armature="0.001"/>
+<geom name="o12" type="box" pos="0 0.012500048 0" euler="0 0 0" size="0.15 0.010625 0.09" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b13" pos="0 0.024999976 0">
+<joint name="j13_0" type="hinge" axis="1 0 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j13_1" type="hinge" axis="0 1 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j13_2" type="hinge" axis="0 0 1" limited="true" range="-0.1 0.1" damping="0.1" armature="0.001"/>
+<geom name="o13" type="box" pos="0 0.012500048 0" euler="0 0 0" size="0.15 0.010625 0.09" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b14" pos="0 0.024999976 0">
+<joint name="j14_0" type="hinge" axis="1 0 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j14_1" type="hinge" axis="0 1 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j14_2" type="hinge" axis="0 0 1" limited="true" range="-0.1 0.1" damping="0.1" armature="0.001"/>
+<geom name="o14" type="box" pos="0 0.012500048 0" euler="0 0 0" size="0.15 0.010625 0.09" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b15" pos="0 0.024999976 0">
+<joint name="j15_0" type="hinge" axis="1 0 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j15_1" type="hinge" axis="0 1 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j15_2" type="hinge" axis="0 0 1" limited="true" range="-0.1 0.1" damping="0.1" armature="0.001"/>
+<geom name="o15" type="box" pos="0 0.012500048 0" euler="0 0 0" size="0.15 0.010625 0.09" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b16" pos="0 0.024999976 0">
+<joint name="j16_0" type="hinge" axis="1 0 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j16_1" type="hinge" axis="0 1 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j16_2" type="hinge" axis="0 0 1" limited="true" range="-0.1 0.1" damping="0.1" armature="0.001"/>
+<geom name="o16" type="box" pos="0 0.012500048 0" euler="0 0 0" size="0.15 0.010625 0.09" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b17" pos="0 0.024999976 0">
+<joint name="j17_0" type="hinge" axis="1 0 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j17_1" type="hinge" axis="0 1 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j17_2" type="hinge" axis="0 0 1" limited="true" range="-0.1 0.1" damping="0.1" armature="0.001"/>
+<geom name="o17" type="box" pos="0 0.012500048 0" euler="0 0 0" size="0.15 0.010625 0.09" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b18" pos="0 0.024999976 0">
+<joint name="j18_0" type="hinge" axis="1 0 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j18_1" type="hinge" axis="0 1 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j18_2" type="hinge" axis="0 0 1" limited="true" range="-0.1 0.1" damping="0.1" armature="0.001"/>
+<geom name="o18" type="box" pos="0 0.012500048 0" euler="0 0 0" size="0.15 0.010625 0.09" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b19" pos="0 0.024999976 0">
+<joint name="j19_0" type="hinge" axis="1 0 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j19_1" type="hinge" axis="0 1 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j19_2" type="hinge" axis="0 0 1" limited="true" range="-0.1 0.1" damping="0.1" armature="0.001"/>
+<geom name="o19" type="box" pos="0 0.0075000525 0" euler="0 0 0" size="0.0325 0.006375 0.0325" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b20" pos="0 0.014999986 0">
+<joint name="j20_0" type="hinge" axis="1 0 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j20_1" type="hinge" axis="0 1 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j20_2" type="hinge" axis="0 0 1" limited="true" range="-0.1 0.1" damping="0.1" armature="0.001"/>
+<geom name="o20" type="box" pos="0 0.0075000525 0" euler="0 0 0" size="0.0325 0.006375 0.0325" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b21" pos="0 0.014999986 0">
+<joint name="j21_0" type="hinge" axis="1 0 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j21_1" type="hinge" axis="0 1 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j21_2" type="hinge" axis="0 0 1" limited="true" range="-0.1 0.1" damping="0.1" armature="0.001"/>
+<geom name="o21" type="box" pos="0 0.0075000525 0" euler="0 0 0" size="0.0325 0.006375 0.0325" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b22" pos="0 0.014999986 0">
+<joint name="j22_0" type="hinge" axis="1 0 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j22_1" type="hinge" axis="0 1 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j22_2" type="hinge" axis="0 0 1" limited="true" range="-0.1 0.1" damping="0.1" armature="0.001"/>
+<geom name="o22" type="box" pos="0 0.0075000525 0" euler="0 0 0" size="0.0325 0.006375 0.0325" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b23" pos="0 0.014999986 0">
+<joint name="j23_0" type="hinge" axis="1 0 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j23_1" type="hinge" axis="0 1 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j23_2" type="hinge" axis="0 0 1" limited="true" range="-0.1 0.1" damping="0.1" armature="0.001"/>
+<geom name="o23" type="box" pos="0 0.0075000525 0" euler="0 0 0" size="0.0325 0.006375 0.0325" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b24" pos="0 0.014999986 0">
+<joint name="j24_0" type="hinge" axis="1 0 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j24_1" type="hinge" axis="0 1 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j24_2" type="hinge" axis="0 0 1" limited="true" range="-0.1 0.1" damping="0.1" armature="0.001"/>
+<geom name="o24" type="box" pos="0 0.0075000525 0" euler="0 0 0" size="0.0325 0.006375 0.0325" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b25" pos="0 0.014999986 0">
+<joint name="j25_0" type="hinge" axis="1 0 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j25_1" type="hinge" axis="0 1 0" limited="true" range="-0.12 0.12" damping="0.1" armature="0.001"/>
+<joint name="j25_2" type="hinge" axis="0 0 1" limited="true" range="-0.1 0.1" damping="0.1" armature="0.001"/>
+<geom name="o25" type="box" pos="0 0.0075000525 0" euler="0 0 0" size="0.0325 0.006375 0.0325" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b26" pos="0 0.014999986 0">
+<joint name="j26_0" type="hinge" axis="1 0 0" limited="true" range="-0.35 0.35" damping="0.1" armature="0.001"/>
+<joint name="j26_1" type="hinge" axis="0 1 0" limited="true" range="-0.35 0.35" damping="0.1" armature="0.001"/>
+<joint name="j26_2" type="hinge" axis="0 0 1" limited="true" range="-0.2 0.2" damping="0.1" armature="0.001"/>
+<geom name="o26" type="box" pos="0 0.100000024 0" euler="0 0 0" size="0.08 0.095 0.075" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b27" pos="0 0.029999971 0.04">
+<joint name="j27_0" type="hinge" axis="1 0 0" limited="true" range="-0.45 0.01" damping="0.1" armature="0.001"/>
+<geom name="o27" type="box" pos="0 -0.01999998 0.035000004" euler="0 0 0" size="0.05 0.0125 0.0175" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+</body>
+</body>
+</body>
+</body>
+</body>
+</body>
+</body>
+</body>
+</body>
+<body name="b28" pos="-0.08 -0.019999504 0">
+<joint name="j28_0" type="hinge" axis="1 0 0" limited="true" range="-0.3 0.3" damping="0.1" armature="0.001"/>
+<joint name="j28_1" type="hinge" axis="0 1 0" limited="true" range="-0.4 0.4" damping="0.1" armature="0.001"/>
+<geom name="o28" type="box" pos="-0.075 0 0" euler="0 0 0" size="0.065 0.0225 0.03" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b29" pos="-0.16 0 0">
+<joint name="j29_0" type="hinge" axis="1 0 0" limited="true" range="-2 2" damping="0.1" armature="0.001"/>
+<joint name="j29_1" type="hinge" axis="0 1 0" limited="true" range="-1.5 1.5" damping="0.1" armature="0.001"/>
+<joint name="j29_2" type="hinge" axis="0 0 1" limited="true" range="-2.5 2.5" damping="0.1" armature="0.001"/>
+<geom name="o29" type="box" pos="0 -0.14499998 0" euler="0 0 0" size="0.04 0.135 0.04" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b30" pos="0 -0.28999996 0">
+<joint name="j30_0" type="hinge" axis="1 0 0" limited="true" range="-2.5 0.02" damping="0.1" armature="0.001"/>
+<joint name="j30_1" type="hinge" axis="0 1 0" limited="true" range="-1.4 1.4" damping="0.1" armature="0.001"/>
+<geom name="o30" type="box" pos="0 -0.125 0" euler="0 0 0" size="0.0325 0.115 0.0325" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b31" pos="0 -0.25000006 0">
+<joint name="j31_0" type="hinge" axis="1 0 0" limited="true" range="-1.2 1.2" damping="0.1" armature="0.001"/>
+<joint name="j31_1" type="hinge" axis="0 1 0" limited="true" range="-0.4 0.4" damping="0.1" armature="0.001"/>
+<geom name="o31" type="box" pos="0 -0.045000017 0" euler="0 0 0" size="0.0425 0.04 0.0175" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b32" pos="-0.038000003 -0.089999974 0">
+<joint name="j32_0" type="hinge" axis="1 0 0" limited="true" range="-0.1 1.5" damping="0.1" armature="0.001"/>
+<joint name="j32_1" type="hinge" axis="0 1 0" limited="true" range="-0.3 0.3" damping="0.1" armature="0.001"/>
+<geom name="o32" type="box" pos="0 -0.010999978 0" euler="0 0 0" size="0.0065 0.0105 0.009" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b33" pos="0 -0.024999976 0">
+<joint name="j33_0" type="hinge" axis="1 0 0" limited="true" range="-0.05 1.8" damping="0.1" armature="0.001"/>
+<geom name="o33" type="box" pos="0 -0.010999978 0" euler="0 0 0" size="0.0065 0.0105 0.009" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+</body>
+</body>
+<body name="b34" pos="-0.019000009 -0.089999974 0">
+<joint name="j34_0" type="hinge" axis="1 0 0" limited="true" range="-0.1 1.5" damping="0.1" armature="0.001"/>
+<joint name="j34_1" type="hinge" axis="0 1 0" limited="true" range="-0.3 0.3" damping="0.1" armature="0.001"/>
+<geom name="o34" type="box" pos="0 -0.010999978 0" euler="0 0 0" size="0.0065 0.0105 0.009" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b35" pos="0 -0.024999976 0">
+<joint name="j35_0" type="hinge" axis="1 0 0" limited="true" range="-0.05 1.8" damping="0.1" armature="0.001"/>
+<geom name="o35" type="box" pos="0 -0.010999978 0" euler="0 0 0" size="0.0065 0.0105 0.009" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b36" pos="0 -0.025000036 0">
+<joint name="j36_0" type="hinge" axis="1 0 0" limited="true" range="-0.05 1.8" damping="0.1" armature="0.001"/>
+<geom name="o36" type="box" pos="0 -0.010999978 0" euler="0 0 0" size="0.0065 0.0105 0.009" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+</body>
+</body>
+</body>
+<body name="b37" pos="0 -0.089999974 0">
+<joint name="j37_0" type="hinge" axis="1 0 0" limited="true" range="-0.1 1.5" damping="0.1" armature="0.001"/>
+<joint name="j37_1" type="hinge" axis="0 1 0" limited="true" range="-0.3 0.3" damping="0.1" armature="0.001"/>
+<geom name="o37" type="box" pos="0 -0.010999978 0" euler="0 0 0" size="0.0065 0.0105 0.009" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b38" pos="0 -0.024999976 0">
+<joint name="j38_0" type="hinge" axis="1 0 0" limited="true" range="-0.05 1.8" damping="0.1" armature="0.001"/>
+<geom name="o38" type="box" pos="0 -0.010999978 0" euler="0 0 0" size="0.0065 0.0105 0.009" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b39" pos="0 -0.025000036 0">
+<joint name="j39_0" type="hinge" axis="1 0 0" limited="true" range="-0.05 1.8" damping="0.1" armature="0.001"/>
+<geom name="o39" type="box" pos="0 -0.010999978 0" euler="0 0 0" size="0.0065 0.0105 0.009" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+</body>
+</body>
+</body>
+<body name="b40" pos="0.018999994 -0.089999974 0">
+<joint name="j40_0" type="hinge" axis="1 0 0" limited="true" range="-0.1 1.5" damping="0.1" armature="0.001"/>
+<joint name="j40_1" type="hinge" axis="0 1 0" limited="true" range="-0.3 0.3" damping="0.1" armature="0.001"/>
+<geom name="o40" type="box" pos="0 -0.010999978 0" euler="0 0 0" size="0.0065 0.0105 0.009" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b41" pos="0 -0.024999976 0">
+<joint name="j41_0" type="hinge" axis="1 0 0" limited="true" range="-0.05 1.8" damping="0.1" armature="0.001"/>
+<geom name="o41" type="box" pos="0 -0.010999978 0" euler="0 0 0" size="0.0065 0.0105 0.009" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b42" pos="0 -0.025000036 0">
+<joint name="j42_0" type="hinge" axis="1 0 0" limited="true" range="-0.05 1.8" damping="0.1" armature="0.001"/>
+<geom name="o42" type="box" pos="0 -0.010999978 0" euler="0 0 0" size="0.0065 0.0105 0.009" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+</body>
+</body>
+</body>
+<body name="b43" pos="0.038000003 -0.089999974 0">
+<joint name="j43_0" type="hinge" axis="1 0 0" limited="true" range="-0.1 1.5" damping="0.1" armature="0.001"/>
+<joint name="j43_1" type="hinge" axis="0 1 0" limited="true" range="-0.3 0.3" damping="0.1" armature="0.001"/>
+<geom name="o43" type="box" pos="0 -0.010999978 0" euler="0 0 0" size="0.0065 0.0105 0.009" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b44" pos="0 -0.024999976 0">
+<joint name="j44_0" type="hinge" axis="1 0 0" limited="true" range="-0.05 1.8" damping="0.1" armature="0.001"/>
+<geom name="o44" type="box" pos="0 -0.010999978 0" euler="0 0 0" size="0.0065 0.0105 0.009" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b45" pos="0 -0.025000036 0">
+<joint name="j45_0" type="hinge" axis="1 0 0" limited="true" range="-0.05 1.8" damping="0.1" armature="0.001"/>
+<geom name="o45" type="box" pos="0 -0.010999978 0" euler="0 0 0" size="0.0065 0.0105 0.009" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+</body>
+</body>
+</body>
+</body>
+</body>
+</body>
+</body>
+<body name="b64" pos="0.08 -0.019999504 0">
+<joint name="j64_0" type="hinge" axis="1 0 0" limited="true" range="-0.3 0.3" damping="0.1" armature="0.001"/>
+<joint name="j64_1" type="hinge" axis="0 1 0" limited="true" range="-0.4 0.4" damping="0.1" armature="0.001"/>
+<geom name="o64" type="box" pos="0.075 0 0" euler="0 0 0" size="0.065 0.0225 0.03" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b65" pos="0.16 0 0">
+<joint name="j65_0" type="hinge" axis="1 0 0" limited="true" range="-2 2" damping="0.1" armature="0.001"/>
+<joint name="j65_1" type="hinge" axis="0 1 0" limited="true" range="-1.5 1.5" damping="0.1" armature="0.001"/>
+<joint name="j65_2" type="hinge" axis="0 0 1" limited="true" range="-2.5 2.5" damping="0.1" armature="0.001"/>
+<geom name="o65" type="box" pos="0 -0.14499998 0" euler="0 0 0" size="0.04 0.135 0.04" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b66" pos="0 -0.28999996 0">
+<joint name="j66_0" type="hinge" axis="1 0 0" limited="true" range="-2.5 0.02" damping="0.1" armature="0.001"/>
+<joint name="j66_1" type="hinge" axis="0 1 0" limited="true" range="-1.4 1.4" damping="0.1" armature="0.001"/>
+<geom name="o66" type="box" pos="0 -0.125 0" euler="0 0 0" size="0.0325 0.115 0.0325" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b67" pos="0 -0.25000006 0">
+<joint name="j67_0" type="hinge" axis="1 0 0" limited="true" range="-1.2 1.2" damping="0.1" armature="0.001"/>
+<joint name="j67_1" type="hinge" axis="0 1 0" limited="true" range="-0.4 0.4" damping="0.1" armature="0.001"/>
+<geom name="o67" type="box" pos="0 -0.045000017 0" euler="0 0 0" size="0.0425 0.04 0.0175" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b68" pos="0.038000003 -0.089999974 0">
+<joint name="j68_0" type="hinge" axis="1 0 0" limited="true" range="-0.1 1.5" damping="0.1" armature="0.001"/>
+<joint name="j68_1" type="hinge" axis="0 1 0" limited="true" range="-0.3 0.3" damping="0.1" armature="0.001"/>
+<geom name="o68" type="box" pos="0 -0.010999978 0" euler="0 0 0" size="0.0065 0.0105 0.009" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b69" pos="0 -0.024999976 0">
+<joint name="j69_0" type="hinge" axis="1 0 0" limited="true" range="-0.05 1.8" damping="0.1" armature="0.001"/>
+<geom name="o69" type="box" pos="0 -0.010999978 0" euler="0 0 0" size="0.0065 0.0105 0.009" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+</body>
+</body>
+<body name="b70" pos="0.019000009 -0.089999974 0">
+<joint name="j70_0" type="hinge" axis="1 0 0" limited="true" range="-0.1 1.5" damping="0.1" armature="0.001"/>
+<joint name="j70_1" type="hinge" axis="0 1 0" limited="true" range="-0.3 0.3" damping="0.1" armature="0.001"/>
+<geom name="o70" type="box" pos="0 -0.010999978 0" euler="0 0 0" size="0.0065 0.0105 0.009" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b71" pos="0 -0.024999976 0">
+<joint name="j71_0" type="hinge" axis="1 0 0" limited="true" range="-0.05 1.8" damping="0.1" armature="0.001"/>
+<geom name="o71" type="box" pos="0 -0.010999978 0" euler="0 0 0" size="0.0065 0.0105 0.009" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b72" pos="0 -0.025000036 0">
+<joint name="j72_0" type="hinge" axis="1 0 0" limited="true" range="-0.05 1.8" damping="0.1" armature="0.001"/>
+<geom name="o72" type="box" pos="0 -0.010999978 0" euler="0 0 0" size="0.0065 0.0105 0.009" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+</body>
+</body>
+</body>
+<body name="b73" pos="0 -0.089999974 0">
+<joint name="j73_0" type="hinge" axis="1 0 0" limited="true" range="-0.1 1.5" damping="0.1" armature="0.001"/>
+<joint name="j73_1" type="hinge" axis="0 1 0" limited="true" range="-0.3 0.3" damping="0.1" armature="0.001"/>
+<geom name="o73" type="box" pos="0 -0.010999978 0" euler="0 0 0" size="0.0065 0.0105 0.009" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b74" pos="0 -0.024999976 0">
+<joint name="j74_0" type="hinge" axis="1 0 0" limited="true" range="-0.05 1.8" damping="0.1" armature="0.001"/>
+<geom name="o74" type="box" pos="0 -0.010999978 0" euler="0 0 0" size="0.0065 0.0105 0.009" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b75" pos="0 -0.025000036 0">
+<joint name="j75_0" type="hinge" axis="1 0 0" limited="true" range="-0.05 1.8" damping="0.1" armature="0.001"/>
+<geom name="o75" type="box" pos="0 -0.010999978 0" euler="0 0 0" size="0.0065 0.0105 0.009" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+</body>
+</body>
+</body>
+<body name="b76" pos="-0.018999994 -0.089999974 0">
+<joint name="j76_0" type="hinge" axis="1 0 0" limited="true" range="-0.1 1.5" damping="0.1" armature="0.001"/>
+<joint name="j76_1" type="hinge" axis="0 1 0" limited="true" range="-0.3 0.3" damping="0.1" armature="0.001"/>
+<geom name="o76" type="box" pos="0 -0.010999978 0" euler="0 0 0" size="0.0065 0.0105 0.009" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b77" pos="0 -0.024999976 0">
+<joint name="j77_0" type="hinge" axis="1 0 0" limited="true" range="-0.05 1.8" damping="0.1" armature="0.001"/>
+<geom name="o77" type="box" pos="0 -0.010999978 0" euler="0 0 0" size="0.0065 0.0105 0.009" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b78" pos="0 -0.025000036 0">
+<joint name="j78_0" type="hinge" axis="1 0 0" limited="true" range="-0.05 1.8" damping="0.1" armature="0.001"/>
+<geom name="o78" type="box" pos="0 -0.010999978 0" euler="0 0 0" size="0.0065 0.0105 0.009" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+</body>
+</body>
+</body>
+<body name="b79" pos="-0.038000003 -0.089999974 0">
+<joint name="j79_0" type="hinge" axis="1 0 0" limited="true" range="-0.1 1.5" damping="0.1" armature="0.001"/>
+<joint name="j79_1" type="hinge" axis="0 1 0" limited="true" range="-0.3 0.3" damping="0.1" armature="0.001"/>
+<geom name="o79" type="box" pos="0 -0.010999978 0" euler="0 0 0" size="0.0065 0.0105 0.009" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b80" pos="0 -0.024999976 0">
+<joint name="j80_0" type="hinge" axis="1 0 0" limited="true" range="-0.05 1.8" damping="0.1" armature="0.001"/>
+<geom name="o80" type="box" pos="0 -0.010999978 0" euler="0 0 0" size="0.0065 0.0105 0.009" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b81" pos="0 -0.025000036 0">
+<joint name="j81_0" type="hinge" axis="1 0 0" limited="true" range="-0.05 1.8" damping="0.1" armature="0.001"/>
+<geom name="o81" type="box" pos="0 -0.010999978 0" euler="0 0 0" size="0.0065 0.0105 0.009" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+</body>
+</body>
+</body>
+</body>
+</body>
+</body>
+</body>
+</body>
+</body>
+</body>
+</body>
+</body>
+</body>
+</body>
+</body>
+</body>
+</body>
+</body>
+</body>
+</body>
+</body>
+</body>
+</body>
+</body>
+<body name="b46" pos="-0.09 -0.08000004 0">
+<joint name="j46_0" type="hinge" axis="1 0 0" limited="true" range="-0.5 2" damping="0.1" armature="0.001"/>
+<joint name="j46_1" type="hinge" axis="0 1 0" limited="true" range="-0.7 0.7" damping="0.1" armature="0.001"/>
+<joint name="j46_2" type="hinge" axis="0 0 1" limited="true" range="-0.6 0.6" damping="0.1" armature="0.001"/>
+<geom name="o46" type="box" pos="0 -0.195 0" euler="0 0 0" size="0.055 0.185 0.06" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b47" pos="0 -0.39 0">
+<joint name="j47_0" type="hinge" axis="1 0 0" limited="true" range="-2.4 0.02" damping="0.1" armature="0.001"/>
+<geom name="o47" type="box" pos="0 -0.19 0" euler="0 0 0" size="0.04 0.18 0.045" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b48" pos="0 -0.38 0">
+<joint name="j48_0" type="hinge" axis="1 0 0" limited="true" range="-0.7 0.5" damping="0.1" armature="0.001"/>
+<geom name="o48" type="box" pos="0 -0.009999998 0" euler="0 0 0" size="0.0325 0.0125 0.0325" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b49" pos="0 -0.029999994 0">
+<joint name="j49_0" type="hinge" axis="0 0 1" limited="true" range="-0.35 0.35" damping="0.1" armature="0.001"/>
+<geom name="o49" type="box" pos="0 -0.030000001 0.045" euler="0 0 0" size="0.05 0.0275 0.08" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b50" pos="-0.038000003 -0.035000004 0.128">
+<joint name="j50_0" type="hinge" axis="1 0 0" limited="true" range="-0.7 0.7" damping="0.1" armature="0.001"/>
+<joint name="j50_1" type="hinge" axis="0 1 0" limited="true" range="-0.2 0.2" damping="0.1" armature="0.001"/>
+<geom name="o50" type="box" pos="0 0 0.008000001" euler="0 0 0" size="0.0065 0.0125 0.0075" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b51" pos="0 0 0.018999994">
+<joint name="j51_0" type="hinge" axis="1 0 0" limited="true" range="-0.1 1" damping="0.1" armature="0.001"/>
+<geom name="o51" type="box" pos="0 0 0.008000001" euler="0 0 0" size="0.0065 0.0125 0.0075" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+</body>
+</body>
+<body name="b52" pos="-0.019000001 -0.035000004 0.128">
+<joint name="j52_0" type="hinge" axis="1 0 0" limited="true" range="-0.7 0.7" damping="0.1" armature="0.001"/>
+<joint name="j52_1" type="hinge" axis="0 1 0" limited="true" range="-0.2 0.2" damping="0.1" armature="0.001"/>
+<geom name="o52" type="box" pos="0 0 0.008000001" euler="0 0 0" size="0.0065 0.0125 0.0075" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b53" pos="0 0 0.018999994">
+<joint name="j53_0" type="hinge" axis="1 0 0" limited="true" range="-0.1 1" damping="0.1" armature="0.001"/>
+<geom name="o53" type="box" pos="0 0 0.008000001" euler="0 0 0" size="0.0065 0.0125 0.0075" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b54" pos="0 0 0.019000009">
+<joint name="j54_0" type="hinge" axis="1 0 0" limited="true" range="-0.1 1" damping="0.1" armature="0.001"/>
+<geom name="o54" type="box" pos="0 0 0.008000001" euler="0 0 0" size="0.0065 0.0125 0.0075" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+</body>
+</body>
+</body>
+<body name="b55" pos="0 -0.035000004 0.128">
+<joint name="j55_0" type="hinge" axis="1 0 0" limited="true" range="-0.7 0.7" damping="0.1" armature="0.001"/>
+<joint name="j55_1" type="hinge" axis="0 1 0" limited="true" range="-0.2 0.2" damping="0.1" armature="0.001"/>
+<geom name="o55" type="box" pos="0 0 0.008000001" euler="0 0 0" size="0.0065 0.0125 0.0075" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b56" pos="0 0 0.018999994">
+<joint name="j56_0" type="hinge" axis="1 0 0" limited="true" range="-0.1 1" damping="0.1" armature="0.001"/>
+<geom name="o56" type="box" pos="0 0 0.008000001" euler="0 0 0" size="0.0065 0.0125 0.0075" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b57" pos="0 0 0.019000009">
+<joint name="j57_0" type="hinge" axis="1 0 0" limited="true" range="-0.1 1" damping="0.1" armature="0.001"/>
+<geom name="o57" type="box" pos="0 0 0.008000001" euler="0 0 0" size="0.0065 0.0125 0.0075" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+</body>
+</body>
+</body>
+<body name="b58" pos="0.019000001 -0.035000004 0.128">
+<joint name="j58_0" type="hinge" axis="1 0 0" limited="true" range="-0.7 0.7" damping="0.1" armature="0.001"/>
+<joint name="j58_1" type="hinge" axis="0 1 0" limited="true" range="-0.2 0.2" damping="0.1" armature="0.001"/>
+<geom name="o58" type="box" pos="0 0 0.008000001" euler="0 0 0" size="0.0065 0.0125 0.0075" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b59" pos="0 0 0.018999994">
+<joint name="j59_0" type="hinge" axis="1 0 0" limited="true" range="-0.1 1" damping="0.1" armature="0.001"/>
+<geom name="o59" type="box" pos="0 0 0.008000001" euler="0 0 0" size="0.0065 0.0125 0.0075" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b60" pos="0 0 0.019000009">
+<joint name="j60_0" type="hinge" axis="1 0 0" limited="true" range="-0.1 1" damping="0.1" armature="0.001"/>
+<geom name="o60" type="box" pos="0 0 0.008000001" euler="0 0 0" size="0.0065 0.0125 0.0075" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+</body>
+</body>
+</body>
+<body name="b61" pos="0.038 -0.035000004 0.128">
+<joint name="j61_0" type="hinge" axis="1 0 0" limited="true" range="-0.7 0.7" damping="0.1" armature="0.001"/>
+<joint name="j61_1" type="hinge" axis="0 1 0" limited="true" range="-0.2 0.2" damping="0.1" armature="0.001"/>
+<geom name="o61" type="box" pos="0 0 0.008000001" euler="0 0 0" size="0.0065 0.0125 0.0075" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b62" pos="0 0 0.018999994">
+<joint name="j62_0" type="hinge" axis="1 0 0" limited="true" range="-0.1 1" damping="0.1" armature="0.001"/>
+<geom name="o62" type="box" pos="0 0 0.008000001" euler="0 0 0" size="0.0065 0.0125 0.0075" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b63" pos="0 0 0.019000009">
+<joint name="j63_0" type="hinge" axis="1 0 0" limited="true" range="-0.1 1" damping="0.1" armature="0.001"/>
+<geom name="o63" type="box" pos="0 0 0.008000001" euler="0 0 0" size="0.0065 0.0125 0.0075" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+</body>
+</body>
+</body>
+</body>
+</body>
+</body>
+</body>
+<body name="b82" pos="0.09 -0.08000004 0">
+<joint name="j82_0" type="hinge" axis="1 0 0" limited="true" range="-0.5 2" damping="0.1" armature="0.001"/>
+<joint name="j82_1" type="hinge" axis="0 1 0" limited="true" range="-0.7 0.7" damping="0.1" armature="0.001"/>
+<joint name="j82_2" type="hinge" axis="0 0 1" limited="true" range="-0.6 0.6" damping="0.1" armature="0.001"/>
+<geom name="o82" type="box" pos="0 -0.195 0" euler="0 0 0" size="0.055 0.185 0.06" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b83" pos="0 -0.39 0">
+<joint name="j83_0" type="hinge" axis="1 0 0" limited="true" range="-2.4 0.02" damping="0.1" armature="0.001"/>
+<geom name="o83" type="box" pos="0 -0.19 0" euler="0 0 0" size="0.04 0.18 0.045" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b84" pos="0 -0.38 0">
+<joint name="j84_0" type="hinge" axis="1 0 0" limited="true" range="-0.7 0.5" damping="0.1" armature="0.001"/>
+<geom name="o84" type="box" pos="0 -0.009999998 0" euler="0 0 0" size="0.0325 0.0125 0.0325" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b85" pos="0 -0.029999994 0">
+<joint name="j85_0" type="hinge" axis="0 0 1" limited="true" range="-0.35 0.35" damping="0.1" armature="0.001"/>
+<geom name="o85" type="box" pos="0 -0.030000001 0.045" euler="0 0 0" size="0.05 0.0275 0.08" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<body name="b86" pos="0.038000003 -0.035000004 0.128">
+<joint name="j86_0" type="hinge" axis="1 0 0" limited="true" range="-0.7 0.7" damping="0.1" armature="0.001"/>
+<joint name="j86_1" type="hinge" axis="0 1 0" limited="true" range="-0.2 0.2" damping="0.1" armature="0.001"/>
+<geom name="o86" type="box" pos="0 0 0.008000001" euler="0 0 0" size="0.0065 0.0125 0.0075" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b87" pos="0 0 0.018999994">
+<joint name="j87_0" type="hinge" axis="1 0 0" limited="true" range="-0.1 1" damping="0.1" armature="0.001"/>
+<geom name="o87" type="box" pos="0 0 0.008000001" euler="0 0 0" size="0.0065 0.0125 0.0075" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+</body>
+</body>
+<body name="b88" pos="0.019000001 -0.035000004 0.128">
+<joint name="j88_0" type="hinge" axis="1 0 0" limited="true" range="-0.7 0.7" damping="0.1" armature="0.001"/>
+<joint name="j88_1" type="hinge" axis="0 1 0" limited="true" range="-0.2 0.2" damping="0.1" armature="0.001"/>
+<geom name="o88" type="box" pos="0 0 0.008000001" euler="0 0 0" size="0.0065 0.0125 0.0075" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b89" pos="0 0 0.018999994">
+<joint name="j89_0" type="hinge" axis="1 0 0" limited="true" range="-0.1 1" damping="0.1" armature="0.001"/>
+<geom name="o89" type="box" pos="0 0 0.008000001" euler="0 0 0" size="0.0065 0.0125 0.0075" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b90" pos="0 0 0.019000009">
+<joint name="j90_0" type="hinge" axis="1 0 0" limited="true" range="-0.1 1" damping="0.1" armature="0.001"/>
+<geom name="o90" type="box" pos="0 0 0.008000001" euler="0 0 0" size="0.0065 0.0125 0.0075" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+</body>
+</body>
+</body>
+<body name="b91" pos="0 -0.035000004 0.128">
+<joint name="j91_0" type="hinge" axis="1 0 0" limited="true" range="-0.7 0.7" damping="0.1" armature="0.001"/>
+<joint name="j91_1" type="hinge" axis="0 1 0" limited="true" range="-0.2 0.2" damping="0.1" armature="0.001"/>
+<geom name="o91" type="box" pos="0 0 0.008000001" euler="0 0 0" size="0.0065 0.0125 0.0075" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b92" pos="0 0 0.018999994">
+<joint name="j92_0" type="hinge" axis="1 0 0" limited="true" range="-0.1 1" damping="0.1" armature="0.001"/>
+<geom name="o92" type="box" pos="0 0 0.008000001" euler="0 0 0" size="0.0065 0.0125 0.0075" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b93" pos="0 0 0.019000009">
+<joint name="j93_0" type="hinge" axis="1 0 0" limited="true" range="-0.1 1" damping="0.1" armature="0.001"/>
+<geom name="o93" type="box" pos="0 0 0.008000001" euler="0 0 0" size="0.0065 0.0125 0.0075" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+</body>
+</body>
+</body>
+<body name="b94" pos="-0.019000001 -0.035000004 0.128">
+<joint name="j94_0" type="hinge" axis="1 0 0" limited="true" range="-0.7 0.7" damping="0.1" armature="0.001"/>
+<joint name="j94_1" type="hinge" axis="0 1 0" limited="true" range="-0.2 0.2" damping="0.1" armature="0.001"/>
+<geom name="o94" type="box" pos="0 0 0.008000001" euler="0 0 0" size="0.0065 0.0125 0.0075" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b95" pos="0 0 0.018999994">
+<joint name="j95_0" type="hinge" axis="1 0 0" limited="true" range="-0.1 1" damping="0.1" armature="0.001"/>
+<geom name="o95" type="box" pos="0 0 0.008000001" euler="0 0 0" size="0.0065 0.0125 0.0075" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b96" pos="0 0 0.019000009">
+<joint name="j96_0" type="hinge" axis="1 0 0" limited="true" range="-0.1 1" damping="0.1" armature="0.001"/>
+<geom name="o96" type="box" pos="0 0 0.008000001" euler="0 0 0" size="0.0065 0.0125 0.0075" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+</body>
+</body>
+</body>
+<body name="b97" pos="-0.038 -0.035000004 0.128">
+<joint name="j97_0" type="hinge" axis="1 0 0" limited="true" range="-0.7 0.7" damping="0.1" armature="0.001"/>
+<joint name="j97_1" type="hinge" axis="0 1 0" limited="true" range="-0.2 0.2" damping="0.1" armature="0.001"/>
+<geom name="o97" type="box" pos="0 0 0.008000001" euler="0 0 0" size="0.0065 0.0125 0.0075" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b98" pos="0 0 0.018999994">
+<joint name="j98_0" type="hinge" axis="1 0 0" limited="true" range="-0.1 1" damping="0.1" armature="0.001"/>
+<geom name="o98" type="box" pos="0 0 0.008000001" euler="0 0 0" size="0.0065 0.0125 0.0075" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+<body name="b99" pos="0 0 0.019000009">
+<joint name="j99_0" type="hinge" axis="1 0 0" limited="true" range="-0.1 1" damping="0.1" armature="0.001"/>
+<geom name="o99" type="box" pos="0 0 0.008000001" euler="0 0 0" size="0.0065 0.0125 0.0075" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.7 0.57 0.43 1"/>
+</body>
+</body>
+</body>
+</body>
+</body>
+</body>
+</body>
+</body>
+</worldbody><contact>
+<pair geom1="floor" geom2="o1" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o2" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o3" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o4" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o5" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o6" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o7" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o8" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o9" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o10" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o11" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o12" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o13" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o14" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o15" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o16" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o17" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o18" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o19" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o20" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o21" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o22" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o23" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o24" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o25" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o26" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o27" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o28" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o29" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o30" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o31" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o32" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o33" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o34" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o35" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o36" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o37" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o38" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o39" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o40" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o41" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o42" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o43" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o44" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o45" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o46" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o47" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o48" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o49" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o50" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o51" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o52" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o53" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o54" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o55" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o56" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o57" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o58" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o59" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o60" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o61" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o62" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o63" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o64" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o65" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o66" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o67" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o68" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o69" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o70" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o71" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o72" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o73" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o74" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o75" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o76" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o77" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o78" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o79" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o80" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o81" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o82" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o83" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o84" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o85" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o86" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o87" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o88" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o89" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o90" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o91" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o92" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o93" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o94" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o95" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o96" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o97" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o98" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+<pair geom1="floor" geom2="o99" condim="6" friction="0.9797958971132712 0.9797958971132712 0.005 0.0001 0.0001"/>
+</contact><actuator>
+<position name="hold2_0" joint="j2_0" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold2_1" joint="j2_1" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold2_2" joint="j2_2" kp="100" ctrllimited="true" ctrlrange="-0.1 0.1" forcelimited="true" forcerange="-100 100"/>
+<position name="hold3_0" joint="j3_0" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold3_1" joint="j3_1" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold3_2" joint="j3_2" kp="100" ctrllimited="true" ctrlrange="-0.1 0.1" forcelimited="true" forcerange="-100 100"/>
+<position name="hold4_0" joint="j4_0" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold4_1" joint="j4_1" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold4_2" joint="j4_2" kp="100" ctrllimited="true" ctrlrange="-0.1 0.1" forcelimited="true" forcerange="-100 100"/>
+<position name="hold5_0" joint="j5_0" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold5_1" joint="j5_1" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold5_2" joint="j5_2" kp="100" ctrllimited="true" ctrlrange="-0.1 0.1" forcelimited="true" forcerange="-100 100"/>
+<position name="hold6_0" joint="j6_0" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold6_1" joint="j6_1" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold6_2" joint="j6_2" kp="100" ctrllimited="true" ctrlrange="-0.1 0.1" forcelimited="true" forcerange="-100 100"/>
+<position name="hold7_0" joint="j7_0" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold7_1" joint="j7_1" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold7_2" joint="j7_2" kp="100" ctrllimited="true" ctrlrange="-0.1 0.1" forcelimited="true" forcerange="-100 100"/>
+<position name="hold8_0" joint="j8_0" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold8_1" joint="j8_1" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold8_2" joint="j8_2" kp="100" ctrllimited="true" ctrlrange="-0.1 0.1" forcelimited="true" forcerange="-100 100"/>
+<position name="hold9_0" joint="j9_0" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold9_1" joint="j9_1" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold9_2" joint="j9_2" kp="100" ctrllimited="true" ctrlrange="-0.1 0.1" forcelimited="true" forcerange="-100 100"/>
+<position name="hold10_0" joint="j10_0" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold10_1" joint="j10_1" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold10_2" joint="j10_2" kp="100" ctrllimited="true" ctrlrange="-0.1 0.1" forcelimited="true" forcerange="-100 100"/>
+<position name="hold11_0" joint="j11_0" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold11_1" joint="j11_1" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold11_2" joint="j11_2" kp="100" ctrllimited="true" ctrlrange="-0.1 0.1" forcelimited="true" forcerange="-100 100"/>
+<position name="hold12_0" joint="j12_0" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold12_1" joint="j12_1" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold12_2" joint="j12_2" kp="100" ctrllimited="true" ctrlrange="-0.1 0.1" forcelimited="true" forcerange="-100 100"/>
+<position name="hold13_0" joint="j13_0" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold13_1" joint="j13_1" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold13_2" joint="j13_2" kp="100" ctrllimited="true" ctrlrange="-0.1 0.1" forcelimited="true" forcerange="-100 100"/>
+<position name="hold14_0" joint="j14_0" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold14_1" joint="j14_1" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold14_2" joint="j14_2" kp="100" ctrllimited="true" ctrlrange="-0.1 0.1" forcelimited="true" forcerange="-100 100"/>
+<position name="hold15_0" joint="j15_0" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold15_1" joint="j15_1" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold15_2" joint="j15_2" kp="100" ctrllimited="true" ctrlrange="-0.1 0.1" forcelimited="true" forcerange="-100 100"/>
+<position name="hold16_0" joint="j16_0" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold16_1" joint="j16_1" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold16_2" joint="j16_2" kp="100" ctrllimited="true" ctrlrange="-0.1 0.1" forcelimited="true" forcerange="-100 100"/>
+<position name="hold17_0" joint="j17_0" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold17_1" joint="j17_1" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold17_2" joint="j17_2" kp="100" ctrllimited="true" ctrlrange="-0.1 0.1" forcelimited="true" forcerange="-100 100"/>
+<position name="hold18_0" joint="j18_0" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold18_1" joint="j18_1" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold18_2" joint="j18_2" kp="100" ctrllimited="true" ctrlrange="-0.1 0.1" forcelimited="true" forcerange="-100 100"/>
+<position name="hold19_0" joint="j19_0" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold19_1" joint="j19_1" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold19_2" joint="j19_2" kp="100" ctrllimited="true" ctrlrange="-0.1 0.1" forcelimited="true" forcerange="-100 100"/>
+<position name="hold20_0" joint="j20_0" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold20_1" joint="j20_1" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold20_2" joint="j20_2" kp="100" ctrllimited="true" ctrlrange="-0.1 0.1" forcelimited="true" forcerange="-100 100"/>
+<position name="hold21_0" joint="j21_0" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold21_1" joint="j21_1" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold21_2" joint="j21_2" kp="100" ctrllimited="true" ctrlrange="-0.1 0.1" forcelimited="true" forcerange="-100 100"/>
+<position name="hold22_0" joint="j22_0" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold22_1" joint="j22_1" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold22_2" joint="j22_2" kp="100" ctrllimited="true" ctrlrange="-0.1 0.1" forcelimited="true" forcerange="-100 100"/>
+<position name="hold23_0" joint="j23_0" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold23_1" joint="j23_1" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold23_2" joint="j23_2" kp="100" ctrllimited="true" ctrlrange="-0.1 0.1" forcelimited="true" forcerange="-100 100"/>
+<position name="hold24_0" joint="j24_0" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold24_1" joint="j24_1" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold24_2" joint="j24_2" kp="100" ctrllimited="true" ctrlrange="-0.1 0.1" forcelimited="true" forcerange="-100 100"/>
+<position name="hold25_0" joint="j25_0" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold25_1" joint="j25_1" kp="100" ctrllimited="true" ctrlrange="-0.12 0.12" forcelimited="true" forcerange="-100 100"/>
+<position name="hold25_2" joint="j25_2" kp="100" ctrllimited="true" ctrlrange="-0.1 0.1" forcelimited="true" forcerange="-100 100"/>
+<position name="hold26_0" joint="j26_0" kp="100" ctrllimited="true" ctrlrange="-0.35 0.35" forcelimited="true" forcerange="-100 100"/>
+<position name="hold26_1" joint="j26_1" kp="100" ctrllimited="true" ctrlrange="-0.35 0.35" forcelimited="true" forcerange="-100 100"/>
+<position name="hold26_2" joint="j26_2" kp="100" ctrllimited="true" ctrlrange="-0.2 0.2" forcelimited="true" forcerange="-100 100"/>
+<position name="hold27_0" joint="j27_0" kp="2" ctrllimited="true" ctrlrange="-0.45 0.01" forcelimited="true" forcerange="-2 2"/>
+<position name="hold28_0" joint="j28_0" kp="100" ctrllimited="true" ctrlrange="-0.3 0.3" forcelimited="true" forcerange="-100 100"/>
+<position name="hold28_1" joint="j28_1" kp="100" ctrllimited="true" ctrlrange="-0.4 0.4" forcelimited="true" forcerange="-100 100"/>
+<position name="hold29_0" joint="j29_0" kp="100" ctrllimited="true" ctrlrange="-2 2" forcelimited="true" forcerange="-100 100"/>
+<position name="hold29_1" joint="j29_1" kp="100" ctrllimited="true" ctrlrange="-1.5 1.5" forcelimited="true" forcerange="-100 100"/>
+<position name="hold29_2" joint="j29_2" kp="100" ctrllimited="true" ctrlrange="-2.5 2.5" forcelimited="true" forcerange="-100 100"/>
+<position name="hold30_0" joint="j30_0" kp="100" ctrllimited="true" ctrlrange="-2.5 0.02" forcelimited="true" forcerange="-100 100"/>
+<position name="hold30_1" joint="j30_1" kp="100" ctrllimited="true" ctrlrange="-1.4 1.4" forcelimited="true" forcerange="-100 100"/>
+<position name="hold31_0" joint="j31_0" kp="100" ctrllimited="true" ctrlrange="-1.2 1.2" forcelimited="true" forcerange="-100 100"/>
+<position name="hold31_1" joint="j31_1" kp="100" ctrllimited="true" ctrlrange="-0.4 0.4" forcelimited="true" forcerange="-100 100"/>
+<position name="hold32_0" joint="j32_0" kp="2" ctrllimited="true" ctrlrange="-0.1 1.5" forcelimited="true" forcerange="-2 2"/>
+<position name="hold32_1" joint="j32_1" kp="2" ctrllimited="true" ctrlrange="-0.3 0.3" forcelimited="true" forcerange="-2 2"/>
+<position name="hold33_0" joint="j33_0" kp="2" ctrllimited="true" ctrlrange="-0.05 1.8" forcelimited="true" forcerange="-2 2"/>
+<position name="hold34_0" joint="j34_0" kp="2" ctrllimited="true" ctrlrange="-0.1 1.5" forcelimited="true" forcerange="-2 2"/>
+<position name="hold34_1" joint="j34_1" kp="2" ctrllimited="true" ctrlrange="-0.3 0.3" forcelimited="true" forcerange="-2 2"/>
+<position name="hold35_0" joint="j35_0" kp="2" ctrllimited="true" ctrlrange="-0.05 1.8" forcelimited="true" forcerange="-2 2"/>
+<position name="hold36_0" joint="j36_0" kp="2" ctrllimited="true" ctrlrange="-0.05 1.8" forcelimited="true" forcerange="-2 2"/>
+<position name="hold37_0" joint="j37_0" kp="2" ctrllimited="true" ctrlrange="-0.1 1.5" forcelimited="true" forcerange="-2 2"/>
+<position name="hold37_1" joint="j37_1" kp="2" ctrllimited="true" ctrlrange="-0.3 0.3" forcelimited="true" forcerange="-2 2"/>
+<position name="hold38_0" joint="j38_0" kp="2" ctrllimited="true" ctrlrange="-0.05 1.8" forcelimited="true" forcerange="-2 2"/>
+<position name="hold39_0" joint="j39_0" kp="2" ctrllimited="true" ctrlrange="-0.05 1.8" forcelimited="true" forcerange="-2 2"/>
+<position name="hold40_0" joint="j40_0" kp="2" ctrllimited="true" ctrlrange="-0.1 1.5" forcelimited="true" forcerange="-2 2"/>
+<position name="hold40_1" joint="j40_1" kp="2" ctrllimited="true" ctrlrange="-0.3 0.3" forcelimited="true" forcerange="-2 2"/>
+<position name="hold41_0" joint="j41_0" kp="2" ctrllimited="true" ctrlrange="-0.05 1.8" forcelimited="true" forcerange="-2 2"/>
+<position name="hold42_0" joint="j42_0" kp="2" ctrllimited="true" ctrlrange="-0.05 1.8" forcelimited="true" forcerange="-2 2"/>
+<position name="hold43_0" joint="j43_0" kp="2" ctrllimited="true" ctrlrange="-0.1 1.5" forcelimited="true" forcerange="-2 2"/>
+<position name="hold43_1" joint="j43_1" kp="2" ctrllimited="true" ctrlrange="-0.3 0.3" forcelimited="true" forcerange="-2 2"/>
+<position name="hold44_0" joint="j44_0" kp="2" ctrllimited="true" ctrlrange="-0.05 1.8" forcelimited="true" forcerange="-2 2"/>
+<position name="hold45_0" joint="j45_0" kp="2" ctrllimited="true" ctrlrange="-0.05 1.8" forcelimited="true" forcerange="-2 2"/>
+<position name="hold46_0" joint="j46_0" kp="100" ctrllimited="true" ctrlrange="-0.5 2" forcelimited="true" forcerange="-100 100"/>
+<position name="hold46_1" joint="j46_1" kp="100" ctrllimited="true" ctrlrange="-0.7 0.7" forcelimited="true" forcerange="-100 100"/>
+<position name="hold46_2" joint="j46_2" kp="100" ctrllimited="true" ctrlrange="-0.6 0.6" forcelimited="true" forcerange="-100 100"/>
+<position name="hold47_0" joint="j47_0" kp="100" ctrllimited="true" ctrlrange="-2.4 0.02" forcelimited="true" forcerange="-100 100"/>
+<position name="hold48_0" joint="j48_0" kp="100" ctrllimited="true" ctrlrange="-0.7 0.5" forcelimited="true" forcerange="-100 100"/>
+<position name="hold49_0" joint="j49_0" kp="100" ctrllimited="true" ctrlrange="-0.35 0.35" forcelimited="true" forcerange="-100 100"/>
+<position name="hold50_0" joint="j50_0" kp="2" ctrllimited="true" ctrlrange="-0.7 0.7" forcelimited="true" forcerange="-2 2"/>
+<position name="hold50_1" joint="j50_1" kp="2" ctrllimited="true" ctrlrange="-0.2 0.2" forcelimited="true" forcerange="-2 2"/>
+<position name="hold51_0" joint="j51_0" kp="2" ctrllimited="true" ctrlrange="-0.1 1" forcelimited="true" forcerange="-2 2"/>
+<position name="hold52_0" joint="j52_0" kp="2" ctrllimited="true" ctrlrange="-0.7 0.7" forcelimited="true" forcerange="-2 2"/>
+<position name="hold52_1" joint="j52_1" kp="2" ctrllimited="true" ctrlrange="-0.2 0.2" forcelimited="true" forcerange="-2 2"/>
+<position name="hold53_0" joint="j53_0" kp="2" ctrllimited="true" ctrlrange="-0.1 1" forcelimited="true" forcerange="-2 2"/>
+<position name="hold54_0" joint="j54_0" kp="2" ctrllimited="true" ctrlrange="-0.1 1" forcelimited="true" forcerange="-2 2"/>
+<position name="hold55_0" joint="j55_0" kp="2" ctrllimited="true" ctrlrange="-0.7 0.7" forcelimited="true" forcerange="-2 2"/>
+<position name="hold55_1" joint="j55_1" kp="2" ctrllimited="true" ctrlrange="-0.2 0.2" forcelimited="true" forcerange="-2 2"/>
+<position name="hold56_0" joint="j56_0" kp="2" ctrllimited="true" ctrlrange="-0.1 1" forcelimited="true" forcerange="-2 2"/>
+<position name="hold57_0" joint="j57_0" kp="2" ctrllimited="true" ctrlrange="-0.1 1" forcelimited="true" forcerange="-2 2"/>
+<position name="hold58_0" joint="j58_0" kp="2" ctrllimited="true" ctrlrange="-0.7 0.7" forcelimited="true" forcerange="-2 2"/>
+<position name="hold58_1" joint="j58_1" kp="2" ctrllimited="true" ctrlrange="-0.2 0.2" forcelimited="true" forcerange="-2 2"/>
+<position name="hold59_0" joint="j59_0" kp="2" ctrllimited="true" ctrlrange="-0.1 1" forcelimited="true" forcerange="-2 2"/>
+<position name="hold60_0" joint="j60_0" kp="2" ctrllimited="true" ctrlrange="-0.1 1" forcelimited="true" forcerange="-2 2"/>
+<position name="hold61_0" joint="j61_0" kp="2" ctrllimited="true" ctrlrange="-0.7 0.7" forcelimited="true" forcerange="-2 2"/>
+<position name="hold61_1" joint="j61_1" kp="2" ctrllimited="true" ctrlrange="-0.2 0.2" forcelimited="true" forcerange="-2 2"/>
+<position name="hold62_0" joint="j62_0" kp="2" ctrllimited="true" ctrlrange="-0.1 1" forcelimited="true" forcerange="-2 2"/>
+<position name="hold63_0" joint="j63_0" kp="2" ctrllimited="true" ctrlrange="-0.1 1" forcelimited="true" forcerange="-2 2"/>
+<position name="hold64_0" joint="j64_0" kp="100" ctrllimited="true" ctrlrange="-0.3 0.3" forcelimited="true" forcerange="-100 100"/>
+<position name="hold64_1" joint="j64_1" kp="100" ctrllimited="true" ctrlrange="-0.4 0.4" forcelimited="true" forcerange="-100 100"/>
+<position name="hold65_0" joint="j65_0" kp="100" ctrllimited="true" ctrlrange="-2 2" forcelimited="true" forcerange="-100 100"/>
+<position name="hold65_1" joint="j65_1" kp="100" ctrllimited="true" ctrlrange="-1.5 1.5" forcelimited="true" forcerange="-100 100"/>
+<position name="hold65_2" joint="j65_2" kp="100" ctrllimited="true" ctrlrange="-2.5 2.5" forcelimited="true" forcerange="-100 100"/>
+<position name="hold66_0" joint="j66_0" kp="100" ctrllimited="true" ctrlrange="-2.5 0.02" forcelimited="true" forcerange="-100 100"/>
+<position name="hold66_1" joint="j66_1" kp="100" ctrllimited="true" ctrlrange="-1.4 1.4" forcelimited="true" forcerange="-100 100"/>
+<position name="hold67_0" joint="j67_0" kp="100" ctrllimited="true" ctrlrange="-1.2 1.2" forcelimited="true" forcerange="-100 100"/>
+<position name="hold67_1" joint="j67_1" kp="100" ctrllimited="true" ctrlrange="-0.4 0.4" forcelimited="true" forcerange="-100 100"/>
+<position name="hold68_0" joint="j68_0" kp="2" ctrllimited="true" ctrlrange="-0.1 1.5" forcelimited="true" forcerange="-2 2"/>
+<position name="hold68_1" joint="j68_1" kp="2" ctrllimited="true" ctrlrange="-0.3 0.3" forcelimited="true" forcerange="-2 2"/>
+<position name="hold69_0" joint="j69_0" kp="2" ctrllimited="true" ctrlrange="-0.05 1.8" forcelimited="true" forcerange="-2 2"/>
+<position name="hold70_0" joint="j70_0" kp="2" ctrllimited="true" ctrlrange="-0.1 1.5" forcelimited="true" forcerange="-2 2"/>
+<position name="hold70_1" joint="j70_1" kp="2" ctrllimited="true" ctrlrange="-0.3 0.3" forcelimited="true" forcerange="-2 2"/>
+<position name="hold71_0" joint="j71_0" kp="2" ctrllimited="true" ctrlrange="-0.05 1.8" forcelimited="true" forcerange="-2 2"/>
+<position name="hold72_0" joint="j72_0" kp="2" ctrllimited="true" ctrlrange="-0.05 1.8" forcelimited="true" forcerange="-2 2"/>
+<position name="hold73_0" joint="j73_0" kp="2" ctrllimited="true" ctrlrange="-0.1 1.5" forcelimited="true" forcerange="-2 2"/>
+<position name="hold73_1" joint="j73_1" kp="2" ctrllimited="true" ctrlrange="-0.3 0.3" forcelimited="true" forcerange="-2 2"/>
+<position name="hold74_0" joint="j74_0" kp="2" ctrllimited="true" ctrlrange="-0.05 1.8" forcelimited="true" forcerange="-2 2"/>
+<position name="hold75_0" joint="j75_0" kp="2" ctrllimited="true" ctrlrange="-0.05 1.8" forcelimited="true" forcerange="-2 2"/>
+<position name="hold76_0" joint="j76_0" kp="2" ctrllimited="true" ctrlrange="-0.1 1.5" forcelimited="true" forcerange="-2 2"/>
+<position name="hold76_1" joint="j76_1" kp="2" ctrllimited="true" ctrlrange="-0.3 0.3" forcelimited="true" forcerange="-2 2"/>
+<position name="hold77_0" joint="j77_0" kp="2" ctrllimited="true" ctrlrange="-0.05 1.8" forcelimited="true" forcerange="-2 2"/>
+<position name="hold78_0" joint="j78_0" kp="2" ctrllimited="true" ctrlrange="-0.05 1.8" forcelimited="true" forcerange="-2 2"/>
+<position name="hold79_0" joint="j79_0" kp="2" ctrllimited="true" ctrlrange="-0.1 1.5" forcelimited="true" forcerange="-2 2"/>
+<position name="hold79_1" joint="j79_1" kp="2" ctrllimited="true" ctrlrange="-0.3 0.3" forcelimited="true" forcerange="-2 2"/>
+<position name="hold80_0" joint="j80_0" kp="2" ctrllimited="true" ctrlrange="-0.05 1.8" forcelimited="true" forcerange="-2 2"/>
+<position name="hold81_0" joint="j81_0" kp="2" ctrllimited="true" ctrlrange="-0.05 1.8" forcelimited="true" forcerange="-2 2"/>
+<position name="hold82_0" joint="j82_0" kp="100" ctrllimited="true" ctrlrange="-0.5 2" forcelimited="true" forcerange="-100 100"/>
+<position name="hold82_1" joint="j82_1" kp="100" ctrllimited="true" ctrlrange="-0.7 0.7" forcelimited="true" forcerange="-100 100"/>
+<position name="hold82_2" joint="j82_2" kp="100" ctrllimited="true" ctrlrange="-0.6 0.6" forcelimited="true" forcerange="-100 100"/>
+<position name="hold83_0" joint="j83_0" kp="100" ctrllimited="true" ctrlrange="-2.4 0.02" forcelimited="true" forcerange="-100 100"/>
+<position name="hold84_0" joint="j84_0" kp="100" ctrllimited="true" ctrlrange="-0.7 0.5" forcelimited="true" forcerange="-100 100"/>
+<position name="hold85_0" joint="j85_0" kp="100" ctrllimited="true" ctrlrange="-0.35 0.35" forcelimited="true" forcerange="-100 100"/>
+<position name="hold86_0" joint="j86_0" kp="2" ctrllimited="true" ctrlrange="-0.7 0.7" forcelimited="true" forcerange="-2 2"/>
+<position name="hold86_1" joint="j86_1" kp="2" ctrllimited="true" ctrlrange="-0.2 0.2" forcelimited="true" forcerange="-2 2"/>
+<position name="hold87_0" joint="j87_0" kp="2" ctrllimited="true" ctrlrange="-0.1 1" forcelimited="true" forcerange="-2 2"/>
+<position name="hold88_0" joint="j88_0" kp="2" ctrllimited="true" ctrlrange="-0.7 0.7" forcelimited="true" forcerange="-2 2"/>
+<position name="hold88_1" joint="j88_1" kp="2" ctrllimited="true" ctrlrange="-0.2 0.2" forcelimited="true" forcerange="-2 2"/>
+<position name="hold89_0" joint="j89_0" kp="2" ctrllimited="true" ctrlrange="-0.1 1" forcelimited="true" forcerange="-2 2"/>
+<position name="hold90_0" joint="j90_0" kp="2" ctrllimited="true" ctrlrange="-0.1 1" forcelimited="true" forcerange="-2 2"/>
+<position name="hold91_0" joint="j91_0" kp="2" ctrllimited="true" ctrlrange="-0.7 0.7" forcelimited="true" forcerange="-2 2"/>
+<position name="hold91_1" joint="j91_1" kp="2" ctrllimited="true" ctrlrange="-0.2 0.2" forcelimited="true" forcerange="-2 2"/>
+<position name="hold92_0" joint="j92_0" kp="2" ctrllimited="true" ctrlrange="-0.1 1" forcelimited="true" forcerange="-2 2"/>
+<position name="hold93_0" joint="j93_0" kp="2" ctrllimited="true" ctrlrange="-0.1 1" forcelimited="true" forcerange="-2 2"/>
+<position name="hold94_0" joint="j94_0" kp="2" ctrllimited="true" ctrlrange="-0.7 0.7" forcelimited="true" forcerange="-2 2"/>
+<position name="hold94_1" joint="j94_1" kp="2" ctrllimited="true" ctrlrange="-0.2 0.2" forcelimited="true" forcerange="-2 2"/>
+<position name="hold95_0" joint="j95_0" kp="2" ctrllimited="true" ctrlrange="-0.1 1" forcelimited="true" forcerange="-2 2"/>
+<position name="hold96_0" joint="j96_0" kp="2" ctrllimited="true" ctrlrange="-0.1 1" forcelimited="true" forcerange="-2 2"/>
+<position name="hold97_0" joint="j97_0" kp="2" ctrllimited="true" ctrlrange="-0.7 0.7" forcelimited="true" forcerange="-2 2"/>
+<position name="hold97_1" joint="j97_1" kp="2" ctrllimited="true" ctrlrange="-0.2 0.2" forcelimited="true" forcerange="-2 2"/>
+<position name="hold98_0" joint="j98_0" kp="2" ctrllimited="true" ctrlrange="-0.1 1" forcelimited="true" forcerange="-2 2"/>
+<position name="hold99_0" joint="j99_0" kp="2" ctrllimited="true" ctrlrange="-0.1 1" forcelimited="true" forcerange="-2 2"/>
+</actuator></mujoco>

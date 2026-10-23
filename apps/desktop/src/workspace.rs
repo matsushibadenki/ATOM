@@ -224,7 +224,7 @@ fn apply_bounds(app: &tauri::AppHandle) -> Result<(), UiError> {
             let size = workspace.size(&window).map_err(native)?;
             let top = workspace.inset(window.label()).min(size.height);
             let height = if panel == Panel::Viewport {
-                (64. * window.scale_factor().map_err(native)?).round() as u32
+                (96. * window.scale_factor().map_err(native)?).round() as u32
             } else {
                 size.height - top
             };

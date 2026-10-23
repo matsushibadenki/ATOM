@@ -10,6 +10,8 @@ use threex_core::multiply;
 pub struct View {
     pub revision: u64,
     pub selected: Option<u32>,
+    pub tool: super::transform::Tool,
+    pub axis: super::transform::Axis,
     pub pan_mode: bool,
     pub show_grid: bool,
     pub show_axes: bool,
@@ -23,6 +25,8 @@ impl Default for View {
         Self {
             revision: 0,
             selected: None,
+            tool: Default::default(),
+            axis: Default::default(),
             pan_mode: false,
             show_grid: true,
             show_axes: true,
@@ -149,11 +153,42 @@ impl View {
 #[derive(Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
 pub enum Command {
-    Select { id: Option<u32> },
-    PanMode { enabled: bool },
-    Guides { grid: bool, axes: bool },
+    Select {
+        id: Option<u32>,
+    },
+    PanMode {
+        enabled: bool,
+    },
+    Tool {
+        tool: super::transform::Tool,
+        axis: super::transform::Axis,
+    },
+    Guides {
+        grid: bool,
+        axes: bool,
+    },
     Focus,
     Reset,
+}
+/// Root focus includes the complete robot, including a simulated final pose.
+pub fn focus_target(core: &atom_core::AppCore, id: u32) -> Option<SceneObject> {
+    let mut target = core.object(id)?.clone();
+    if let Some(robot) = core.project().robots.iter().find(|r| r.root == id) {
+        let mut min = [f32::INFINITY; 3];
+        let mut max = [f32::NEG_INFINITY; 3];
+        for link in &robot.links {
+            let o = core.object(link.object_id)?;
+            let radius = o.scale.iter().map(|v| v * v).sum::<f32>().sqrt() / 2.;
+            for axis in 0..3 {
+                min[axis] = min[axis].min(o.position[axis] - radius);
+                max[axis] = max[axis].max(o.position[axis] + radius);
+            }
+        }
+        target.position = std::array::from_fn(|i| (min[i] + max[i]) / 2.);
+        target.scale = std::array::from_fn(|i| max[i] - min[i]);
+        target.rotation = [0.; 3];
+    }
+    Some(target)
 }
 pub fn notify(app: &tauri::AppHandle) {
     let view = app.state::<State>().0.lock().expect("camera").clone();
@@ -196,6 +231,9 @@ pub fn camera_command(
     }
     let shared = webview.state::<Shared>();
     let session = shared.0.lock().map_err(|_| error("internal_error"))?;
+    if session.core.has_transform_preview() {
+        return Err(error("edit_busy"));
+    }
     if session.core.snapshot().revision != expected_revision {
         return Err(error("revision_conflict"));
     }
@@ -209,19 +247,21 @@ pub fn camera_command(
             view.selected = id;
         }
         Command::PanMode { enabled } => view.pan_mode = enabled,
+        Command::Tool { tool, axis } => {
+            view.tool = tool;
+            view.axis = axis;
+            view.pan_mode = false;
+        }
         Command::Guides { grid, axes } => {
             view.show_grid = grid;
             view.show_axes = axes;
         }
         Command::Focus => {
-            let object = session
-                .core
-                .project()
-                .objects
-                .iter()
-                .find(|o| Some(o.id) == view.selected)
+            let object = view
+                .selected
+                .and_then(|id| focus_target(&session.core, id))
                 .ok_or_else(|| error("no_selection"))?;
-            view.focus(object, super::viewport::aspect(webview.app_handle()));
+            view.focus(&object, super::viewport::aspect(webview.app_handle()));
         }
         Command::Reset => {
             let selected = view.selected;
@@ -229,6 +269,8 @@ pub fn camera_command(
             *view = View {
                 selected,
                 revision,
+                tool: view.tool,
+                axis: view.axis,
                 show_grid: view.show_grid,
                 show_axes: view.show_axes,
                 ..Default::default()
@@ -246,7 +288,7 @@ pub fn camera_command(
     Ok(result)
 }
 
-fn box_model(o: &SceneObject) -> [[f32; 4]; 4] {
+pub(crate) fn box_model(o: &SceneObject) -> [[f32; 4]; 4] {
     let (sx, cx) = o.rotation[0].sin_cos();
     let (sy, cy) = o.rotation[1].sin_cos();
     let (sz, cz) = o.rotation[2].sin_cos();
@@ -288,6 +330,11 @@ mod tests {
             rotation: [0.4, 0.7, 0.2],
             scale: [2., 0.5, 3.],
             color: [1.; 3],
+            label: String::new(),
+            material: Default::default(),
+            fixed: false,
+            mesh_ref: None,
+            mass_override: None,
         }
     }
     #[test]

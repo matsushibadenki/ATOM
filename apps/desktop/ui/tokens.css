@@ -1,0 +1,13 @@
+/* ATOM warm-neutral adaptation of UNGE control-panel tokens, without external assets. */
+:root {
+  --color-background:#1c1b19;
+  --color-surface:#262522;
+  --color-border:#45423c;
+  --color-accent:#d5a35f;
+  --color-text:#eeeae2;
+  --color-muted:#aaa59a;
+  --color-hover:#33312c;
+  --color-error:#e6a99c;
+  --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --radius-control:4px;
+}

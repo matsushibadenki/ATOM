@@ -1,0 +1,18 @@
+[workspace]
+resolver = "2"
+members = [
+  "crates/atom-core", "crates/atom-cli", "apps/desktop",
+  "vendor/threex/crates/core", "vendor/threex/crates/renderer",
+  "vendor/unge/crates/unge-core", "vendor/unge/crates/unge-executor",
+]
+default-members = ["crates/atom-core", "crates/atom-cli"]
+
+[workspace.dependencies]
+wgpu = "=27.0.1"
+bytemuck = { version = "1.25", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1

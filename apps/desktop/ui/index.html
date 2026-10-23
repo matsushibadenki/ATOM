@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ja">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ATOM</title><link rel="stylesheet" href="style.css"></head>
+<body>
+  <header id="toolbarView" class="view">
+    <strong>ATOM<span class="version"> / 3D</span></strong>
+    <form id="renameForm"><input id="name" maxlength="80" autocomplete="off" required data-label="project"><button id="rename" type="submit" data-icon="check" data-label="rename"></button></form>
+    <div class="meta"><span id="dirty"></span><span id="revision"></span></div>
+    <span id="dockPreview" role="status"></span>
+    <div class="toolbar"><output id="gpu"></output><button id="resetLayout" data-icon="layout" data-label="reset_layout"></button><button id="reload" data-icon="reload" data-label="reload"></button><button id="save" data-icon="save" data-label="save"></button><select id="locale" aria-label="Language / 言語 / 语言"><option value="ja">日本語</option><option value="en">English</option><option value="zh-CN">简体中文</option></select></div>
+  </header>
+  <main id="panelView" class="view">
+    <div class="panel-title"><div id="tabs" role="tablist"></div><span id="cameraTools"><button id="cameraGrid" data-icon="grid" data-label="show_grid" aria-pressed="true"></button><button id="cameraAxes" data-icon="axes" data-label="show_axes" aria-pressed="true"></button><button id="cameraPan" data-icon="pan" data-label="pan_mode" aria-pressed="false"></button><output id="cameraSelection"></output><button id="cameraFocus" data-icon="focus" data-label="focus_selection"></button><button id="cameraReset" data-icon="reload" data-label="reset_camera"></button><span class="info" tabindex="0" data-label="camera_help">ⓘ</span></span><button id="floatGroup" data-icon="group" data-label="float_group"></button><button id="returnGroup" data-icon="return_group" data-label="return_group" hidden></button><button id="floatPanel" data-icon="float" data-label="float"></button></div>
+    <div class="dock-controls"><select id="dockTarget" data-label="target"></select><select id="dockZone" data-label="placement"><option value="center" data-text="center"></option><option value="left" data-text="left"></option><option value="right" data-text="right"></option><option value="top" data-text="top"></option><option value="bottom" data-text="bottom"></option></select><button id="dockApply" data-icon="check" data-label="dock_apply"></button><button id="returnPanel" data-icon="return" data-label="return_panel"></button><span class="info" tabindex="0" data-label="drag">ⓘ</span></div>
+    <section id="sceneContent" class="panel-content"><div class="action-row"><span id="objectCount"></span><span class="scene-actions"><button id="sceneFocus" data-icon="focus" data-label="focus_selection"></button><button id="add" data-icon="plus" data-label="add"></button></span></div><ul id="objects"></ul></section>
+    <section id="workflowContent" class="panel-content"><div class="action-row"><span data-text="tasks"></span><button id="validate" data-icon="play" data-label="validate"></button></div><div class="pipeline"><div><span class="node-icon">01</span><span data-text="tasks"></span></div><span class="connector" aria-hidden="true">↓</span><div><span class="node-icon">02</span><span data-text="validation"></span></div></div><div class="panel-footer"><output id="report" data-text="not_run"></output><span class="info" tabindex="0" data-label="scope">ⓘ</span></div></section>
+
+  </main>
+  <div id="statusRow" class="status" role="status" aria-live="polite"><span class="status-dot"></span><output id="status" data-text="connecting"></output></div>
+  <div id="splitter" role="separator" tabindex="0" aria-valuemin="10" aria-valuemax="90"></div>
+  <script src="app.js"></script>
+</body></html>

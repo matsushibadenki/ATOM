@@ -1,0 +1,16 @@
+{
+  "identifier": "main",
+  "description": "Local ATOM child panels; identities survive reparenting",
+  "permissions": [
+    "core:event:allow-listen",
+    "core:event:allow-unlisten"
+  ],
+  "webviews": [
+    "toolbar",
+    "scene",
+    "workflow",
+    "viewport",
+    "split-0",
+    "split-1"
+  ]
+}

@@ -1,0 +1,143 @@
+{
+  "copied_on": "2026-10-23",
+  "note": "Original import hashes are retained in libraries. ATOM-only lighting, editor guides/selection masks, region drawing, cache-preserving clear and shared-renderer surface switching are recorded in local overrides/additions; originals were not edited.",
+  "libraries": [
+    {
+      "name": "threex",
+      "source": "/Users/Shared/Program/Tauri/ThreeX",
+      "head": "d87193037fb9ce20d474973e4ad946ca95ede8ad",
+      "worktree_status": [
+        " M crates/renderer/src/batching.rs",
+        " M crates/renderer/src/gather.rs",
+        " M crates/renderer/src/lib.rs",
+        " M docs/collaboration.md",
+        " M docs/geometry.md",
+        " M docs/roadmap.md",
+        " M docs/subdivisions.md"
+      ],
+      "files_sha256": {
+        "crates/core/Cargo.toml": "4bc92de16a9bfa12a64c6e18df00044a972291a71b4c813e650e19c8a154eed0",
+        "crates/core/src/camera.rs": "497116bd2591d8749a23d525704dbe08d5e6a78e6e5e98ac7a2c993eb23f5372",
+        "crates/core/src/checkpoint.rs": "b23924928f04d425f7838aa070dd3ba7ef0806fed1024fe7c8a7dcc4fe30fb0c",
+        "crates/core/src/content_hash.rs": "ed25d8b536416326dcfe3015ac59b80b3e8364d53e9185163dd004215d1c4695",
+        "crates/core/src/document.rs": "f76d68a4283bcd9a961b560d735f22a53aa767163a0eafe9df69d1bfabff6100",
+        "crates/core/src/geometry.rs": "4307cce0e8b81c0d46a45019b9fe7e570d6f727f5114cbddcbbb0e2d18db3aec",
+        "crates/core/src/instance_updates.rs": "f19544a8696c04f4a258e170d14787632029861ce2a1b90acad706192b512fef",
+        "crates/core/src/lib.rs": "f3e63d392ad212b1bb6e295183fbba240100e2565970d0d3fa7818e042ba3a2a",
+        "crates/core/src/request.rs": "b9a419f9a07812e1b96ad091f00bec361d7eb3f50c148e13f975347018eef7f4",
+        "crates/core/src/scene.rs": "b61b7e62be5901452bf72951cc0b8f6c20690dccb393c407d65805eee0c34e60",
+        "crates/core/src/transform_store.rs": "ff2596d577b87e4610e8680bccb34aa7a0ab2ba340743ae68360149dbce9367a",
+        "crates/renderer/Cargo.toml": "6669505e8118799828c7eb15ca805e7c0a9881d249f53d449a763c49f791b57e",
+        "crates/renderer/src/batching.rs": "7df7c5d4a2bf06a702aeee4106c9bd5f6d711e3c8ce2bcb64e990abb115618b9",
+        "crates/renderer/src/cube.wgsl": "da5b24ba45ce75ee118d3711a97a235714a3be194f6b0ee6446284a47ccd0357",
+        "crates/renderer/src/gather.rs": "2110c9c0efaac171a72085dc95ddf7c1878ca4cd31274d4949942b0ef8d43dd9",
+        "crates/renderer/src/gather.wgsl": "71b8a272cf5d23b2de77193d26199cd6927e05c4c3b44d0108196e00f22f0e6b",
+        "crates/renderer/src/geometry.rs": "5b73ae134feb777778dd7c35c2ea663540581a503e08d592ba48e7556ae39587",
+        "crates/renderer/src/lib.rs": "8b414dd48170b1f2703d9fda5beaa9524f93e91669ffb7f6e034b4e7bdecbc15",
+        "crates/renderer/src/mesh_resources.rs": "a081d8feb65df95256bb90f2d97f23b9804c805409cb75f921b03f1b2fbc0bf4",
+        "crates/renderer/src/native.rs": "2a1ed26488d3e4b504d7e98da9918209440924e46f5c9bf447e2583d91b74c66",
+        "reference/README.md": "9362427038d70c44c6767a9257c671a3e54ea48919a94e2a0402bace43e8312c"
+      }
+    },
+    {
+      "name": "unge",
+      "source": "/Users/littlebuddha/Desktop/alias/UNGE",
+      "head": "5498d1bf371bb13e2d6e17174531f70a7fd97c9e",
+      "worktree_status": [
+        " M Cargo.lock",
+        " M crates/unge-render/Cargo.toml",
+        " M crates/unge-render/src/text.rs",
+        " M docs/AI_INTEGRATION.md",
+        " M docs/DEPENDENCY_UPDATES.md",
+        " M docs/GPU_TEXT.md",
+        " M docs/ROADMAP.md",
+        " M examples/tauri-host/Cargo.toml"
+      ],
+      "files_sha256": {
+        "LICENSE-APACHE": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+        "LICENSE-MIT": "78237ebb394cddbe4d3277446479d17498feac54f757cfc508b35df20d90b138",
+        "crates/unge-core/Cargo.toml": "d4be2e9f677d28d007241ab8b4fa025bc96a8001241e7e925d73a3a33889b8a7",
+        "crates/unge-core/src/command.rs": "bb7acc439df4df9df1ca21794158af2b1a7a8936bd2004d3963fd1c9483e284a",
+        "crates/unge-core/src/lib.rs": "8f296736996ea1aea5bd0e012a55dda5f2e07ec7adfe0ce9ade128bc1fcef0c4",
+        "crates/unge-core/src/model.rs": "779fc98a60664187219388536344321511e11f1e880e7b0ddf1d319dff90725e",
+        "crates/unge-core/src/spatial.rs": "4a388b94cbcaa22070a869c30431e0f83bdcbb619bd8acdd07b9fba5de2b2125",
+        "crates/unge-core/src/workspace.rs": "397168bc25656ae899161ba09cc1cbf7f9383b7e6ce67e6b20f34bdc3ffc6212",
+        "crates/unge-core/tests/document.rs": "2f533a5010a1721f14303caf358cf575d635a3f8e44354669b6d7b96d83c495c",
+        "crates/unge-core/tests/history.rs": "7e7a913a6c05f5b2339fefe45d5f7ea80b906135618ea069e1736e72e5d5ac7a",
+        "crates/unge-core/tests/placement_validation.rs": "5f961833409f79184bf5164a1db83eb6b5cd5c3d9dcc786f7c040f6613ba6d6e",
+        "crates/unge-core/tests/spatial.rs": "e637149f3debdc13992af5ac7f23aba05c416278fbcec3077ea7a8a12f172c2d",
+        "crates/unge-executor/Cargo.toml": "437cbdb4f7c4e88bd9957c0a0a1439282de582c64c8ee1afa38c3916d2f4b245",
+        "crates/unge-executor/src/cache.rs": "2c8cbc3d98d794519b8af76e6aa4c08db216ab4312a80e0ae52c9ff52d50ec3f",
+        "crates/unge-executor/src/lib.rs": "f63693b3da76086137efbc340a953b778353ed3d282c2b728e5a94030e9e0af1",
+        "crates/unge-executor/src/port_values.rs": "2455f3bccc2838c6016952372c277e7ef63630a7c8e256e46b4a69803a567ab9",
+        "crates/unge-executor/src/progress.rs": "8bdd2509412005061b304b297efa0038e16862719a5064d2c8f0d60794148845",
+        "crates/unge-executor/src/properties.rs": "efe6dc1cd1234cc6ca5d0c79ac21bd9de1711931d3f2f2085cb0c70228d1e8d8",
+        "crates/unge-executor/src/service.rs": "083c5d584728f22d71528711285fd5b3d925b54bce04a1f7db80e90518265636",
+        "crates/unge-executor/tests/cache.rs": "36f81aa3f921d7a2a85c414a8fd70e1a1ec11d3d30b56eb0ad9b5cf6dff1e85c",
+        "crates/unge-executor/tests/execution.rs": "cc984bd484c0cc0b508770e3ef2dbf645f6fc6247956c5063868976ea0e28842",
+        "crates/unge-executor/tests/port_values.rs": "58c668599cedf9980a5e165ab694fcc8e615abdf9118cf5e0af1d2f63627e9fe",
+        "crates/unge-executor/tests/progress.rs": "d433548df09d82b5ac261d75989f4a133cdd7559be5e1da11ce7f924c3035285",
+        "crates/unge-executor/tests/properties.rs": "d55116f247a091db52b9bbb1dd22f5420b370e9b19740177774420ea97f85e2e",
+        "crates/unge-executor/tests/registry_transitions.rs": "80fc391a8c672fe5ec9bbff3d48f12f315853dda94aeb3e80e650a60e69ddae8",
+        "crates/unge-executor/tests/service.rs": "b4334bc80caa15807708a10f983e080b56c46295741f8482916c5830004363ac",
+        "reference/AGENTS.md": "e54127d23e162034620f918f49dc6648f0efcdb358f52fce1d542ba03611926e",
+        "reference/README.md": "ac31967c6ca8ba38cd0c1bdd34bc5f06660117e3fb51f5bcfe39687d7d61bb1b",
+        "reference/docs/AI_INTEGRATION.md": "0e5b93fac801761f3968405afe00e09f0a945b546264bfeab9da01703a5136b3",
+        "reference/docs/ARCHITECTURE.md": "66ad43a76f1b2ab75a3e358c02ad18ffaea9497b605a1cd71d5211d996f54954",
+        "reference/docs/ROADMAP.md": "f2517d57402a7ff03542cf52cbc6c96e0d29c283bf919be752539866f91641ff"
+      }
+    }
+  ],
+  "additional_files": [
+    {
+      "source": "/Users/littlebuddha/Desktop/alias/UNGE/examples/tauri-host/icons/icon.png",
+      "destination": "apps/desktop/icons/icon.png",
+      "sha256": "21375d251bf1d3476f14236aef4f9fb64f0f2c7206221aea98b47f523e1dcdf5",
+      "purpose": "temporary development icon from UNGE, covered by copied license"
+    }
+  ],
+  "local_overrides_sha256": {
+    "vendor/threex/crates/renderer/src/lib.rs": "6a67077afa06db9f620ded08160466f93390af940d5522ac5e48126a58113f28",
+    "vendor/threex/crates/renderer/src/native.rs": "40a25da17c8b1f6943b33c4e2e878c7e703671c0153b08aa69ac7fae48461ccf",
+    "vendor/threex/crates/renderer/src/cube.wgsl": "80f75cd3c39f9568e70fd9d11273fdb0a8c5567f842bac6bd1bae5755f80da71"
+  },
+  "local_additions_sha256": {
+    "vendor/threex/crates/renderer/src/region_tests.rs": "a5d80f580bb08526589dd8fe660452c5c11781cda5e6cfc5ba590559bf0a261d",
+    "vendor/threex/crates/renderer/src/guides.rs": "5ee11b884b8053fecae81cf74bb0192d79d1208749cb3f796ac16127a8aa89c1",
+    "vendor/threex/crates/renderer/src/guides.wgsl": "3c855d6dda338b92cad322a268d0721a482adef445edab8386ce3360b4ce5778"
+  },
+  "panel_reference_imports": [
+    {
+      "source": "/Users/littlebuddha/Desktop/alias/UNGE/examples/tauri-host/src/workspace.rs",
+      "destination": "vendor/unge/reference/host/workspace.rs",
+      "sha256": "77f4323f8ceb690b711fe039a3fbf825d3638b2dbb559ddac343e423a5acf719"
+    },
+    {
+      "source": "/Users/littlebuddha/Desktop/alias/UNGE/examples/tauri-host/src/panel_preferences.rs",
+      "destination": "vendor/unge/reference/host/panel_preferences.rs",
+      "sha256": "47ce4aeb150dedbbefd9675a72cbf78ceea318ca0cb96f7994de120a8272cde3"
+    },
+    {
+      "source": "/Users/littlebuddha/Desktop/alias/UNGE/docs/WINDOW_COMPOSITION.md",
+      "destination": "vendor/unge/reference/WINDOW_COMPOSITION.md",
+      "sha256": "353afeed02effb9cb194043fa866a6957d8055601436ea0ef6217001e76d76a0"
+    },
+    {
+      "source": "/Users/littlebuddha/Desktop/alias/UNGE/docs/PANEL_DOCKING.md",
+      "destination": "vendor/unge/reference/PANEL_DOCKING.md",
+      "sha256": "9fd5dda93de423369a16775c5721ded707b8005e1b4ad063ca705b18ac078183"
+    }
+  ],
+  "camera_reference_imports": [
+    {
+      "source": "/Users/littlebuddha/Desktop/alias/UNGE/examples/tauri-host/src/input.rs",
+      "destination": "vendor/unge/reference/host/input.rs",
+      "sha256": "4ce649001b9774b9d3ac91c6d525b96528b964ee696cbad1b477e6d22f71ca2d"
+    },
+    {
+      "source": "/Users/Shared/Program/Tauri/ThreeX/packages/threex/camera.js",
+      "destination": "vendor/threex/reference/camera.js",
+      "sha256": "410c656c3ba176d43b6dba63ad4757f2f1fc58c6f6915002240c770d0589bf18"
+    }
+  ]
+}

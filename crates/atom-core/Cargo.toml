@@ -1,0 +1,15 @@
+[package]
+name = "atom-core"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+thiserror = "2"
+uuid = { version = "1", features = ["v4", "serde"] }
+tempfile = "3.27"
+futures = "0.3"
+threex-core = { path = "../../vendor/threex/crates/core" }
+unge-core = { path = "../../vendor/unge/crates/unge-core" }
+unge-executor = { path = "../../vendor/unge/crates/unge-executor" }

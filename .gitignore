@@ -1,0 +1,7 @@
+/target/
+/.DS_Store
+**/.DS_Store
+/apps/desktop/gen/
+*.atom.json
+*.atom.json.lock
+/artifacts/

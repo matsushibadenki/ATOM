@@ -26,6 +26,9 @@ pub struct Input {
     object_drag: Option<transform::Drag>,
     pending: Option<atom_core::Transform>,
     dirty: bool,
+    joint_drag: Option<super::joints::drag::NativeDrag>,
+    pending_joint: Option<[f64; 2]>,
+    cursor: tauri::CursorIcon,
 }
 struct Gesture {
     origin: [f64; 2],
@@ -49,10 +52,101 @@ impl PluginBuilder<EventLoopMessage> for Bridge {
             object_drag: None,
             pending: None,
             dirty: false,
+            joint_drag: None,
+            pending_joint: None,
+            cursor: tauri::CursorIcon::Default,
         }
     }
 }
 impl Input {
+    fn cursor(&mut self, icon: tauri::CursorIcon) {
+        if self.cursor != icon {
+            if let Some(window) = self.app.get_window(&self.label) {
+                let _ = window.set_cursor_icon(icon);
+            }
+            self.cursor = icon;
+        }
+    }
+    fn cancel_joint(&mut self) {
+        self.pending_joint = None;
+        if let Some(drag) = self.joint_drag.take() {
+            let result = {
+                let shared = self.app.state::<Shared>();
+                let mut session = shared.0.lock().expect("session");
+                drag.cancel(&mut session.core)
+            };
+            self.edited(result);
+        }
+        self.cursor(tauri::CursorIcon::Default);
+    }
+    fn flush_joint(&mut self) {
+        let Some(point) = self.pending_joint.take() else {
+            return;
+        };
+        let Some(drag) = self.joint_drag.as_mut() else {
+            return;
+        };
+        let result = {
+            let shared = self.app.state::<Shared>();
+            let mut session = shared.0.lock().expect("session");
+            drag.preview(&mut session.core, point)
+        };
+        match result {
+            Ok(Some(snapshot)) => self.edited(Ok(snapshot)),
+            Ok(None) => {}
+            Err(e) => {
+                self.cancel_joint();
+                self.edited(Err(e));
+            }
+        }
+    }
+    fn commit_joint(&mut self) {
+        self.flush_joint();
+        let Some(drag) = self.joint_drag.take() else {
+            return;
+        };
+        let (result, rollback) = {
+            let shared = self.app.state::<Shared>();
+            let mut session = shared.0.lock().expect("session");
+            let result = drag.commit(&mut session.core);
+            let rollback = result.is_err().then(|| drag.cancel(&mut session.core));
+            (result, rollback)
+        };
+        if let Some(result) = rollback {
+            self.edited(result);
+        }
+        self.edited(result);
+        self.cursor(tauri::CursorIcon::Default);
+    }
+    fn begin_joint(&mut self, view: &View, region: [u32; 4], scale: f64, point: [f64; 2]) -> bool {
+        let layout = self.app.state::<Workspace>().snapshot().revision;
+        let result = {
+            let shared = self.app.state::<Shared>();
+            let mut session = shared.0.lock().expect("session");
+            super::joints::drag::NativeDrag::begin(
+                &mut session.core,
+                view,
+                layout,
+                region,
+                scale,
+                point,
+            )
+        };
+        match result {
+            Ok(Some((drag, snapshot))) => {
+                self.joint_drag = Some(drag);
+                self.cursor(tauri::CursorIcon::Grabbing);
+                self.edited(Ok(snapshot));
+                true
+            }
+            Ok(None) => false,
+            Err(error) => {
+                self.edited(Err(error));
+                true
+            }
+        }
+    }
+
     fn update(&mut self, action: impl FnOnce(&mut View)) {
         let state = self.app.state::<State>();
         let mut view = state.0.lock().expect("camera");
@@ -102,6 +196,7 @@ impl Input {
                 .preview_transform(transform::NATIVE_OWNER, d.revision, d.project, pose)
         };
         if result.is_err() {
+            self.cancel_joint();
             self.cancel_object();
         }
         self.edited(result);
@@ -119,6 +214,7 @@ impl Input {
                 .commit_transform(transform::NATIVE_OWNER, d.revision, d.project)
         };
         if result.is_err() {
+            self.cancel_joint();
             self.cancel_object();
         }
         self.edited(result);
@@ -138,7 +234,12 @@ impl Input {
         }
     }
     fn history(&mut self, redo: bool) {
+        if self.joint_drag.is_some() {
+            self.cancel_joint();
+            return;
+        }
         if self.object_drag.is_some() {
+            self.cancel_joint();
             self.cancel_object();
             return;
         }
@@ -227,6 +328,15 @@ impl Plugin<EventLoopMessage> for Input {
         if matches!(event, Event::MainEventsCleared) {
             let layout = self.app.state::<Workspace>().snapshot().revision;
             let view = self.app.state::<State>().0.lock().expect("camera").clone();
+            let joint_invalid = self.joint_drag.as_ref().is_some_and(|drag| {
+                let shared = self.app.state::<Shared>();
+                let session = shared.0.lock().expect("session");
+                drag.layout != layout || !drag.view_matches(&view) || !drag.active(&session.core)
+            });
+            if joint_invalid {
+                self.cancel_joint();
+                self.position = None;
+            }
             let owns_preview = self.object_drag.is_some()
                 && self
                     .app
@@ -243,6 +353,7 @@ impl Plugin<EventLoopMessage> for Input {
                     || d.tool != view.tool
                     || d.axis != view.axis
             }) {
+                self.cancel_joint();
                 self.cancel_object();
                 self.position = None;
             }
@@ -250,6 +361,7 @@ impl Plugin<EventLoopMessage> for Input {
                 self.gesture = None;
                 self.position = None;
             }
+            self.flush_joint();
             self.flush_object();
             if std::mem::take(&mut self.dirty) {
                 super::camera::notify(&self.app);
@@ -281,6 +393,7 @@ impl Plugin<EventLoopMessage> for Input {
             return false;
         }
         if label != self.label {
+            self.cancel_joint();
             self.cancel_object();
             self.gesture = None;
             self.position = None;
@@ -302,14 +415,20 @@ impl Plugin<EventLoopMessage> for Input {
                         && point[1] < (r[1] + r[3]) as f64
                 });
                 if !inside {
+                    self.cancel_joint();
                     self.cancel_object();
                     self.position = None;
                     self.gesture = None;
                     return false;
                 }
                 self.position = Some(point);
+                if self.joint_drag.is_some() {
+                    self.pending_joint = Some(point);
+                    return false;
+                }
                 if let Some(d) = &mut self.object_drag {
                     if d.layout != self.app.state::<Workspace>().snapshot().revision {
+                        self.cancel_joint();
                         self.cancel_object();
                         return false;
                     }
@@ -346,12 +465,44 @@ impl Plugin<EventLoopMessage> for Input {
                         });
                     }
                 }
+                if self.gesture.is_none() {
+                    let hit = {
+                        let shared = self.app.state::<Shared>();
+                        let session = shared.0.lock().expect("session");
+                        let view = self.app.state::<State>().0.lock().expect("camera").clone();
+                        !session.core.has_preview()
+                            && !view.pan_mode
+                            && !self.modifiers.shift_key()
+                            && !self.modifiers.alt_key()
+                            && super::joints::drag::hit_test(
+                                &session.core,
+                                &view,
+                                region.unwrap(),
+                                scale,
+                                point,
+                            )
+                            .is_some()
+                    };
+                    self.cursor(if hit {
+                        tauri::CursorIcon::Grab
+                    } else {
+                        tauri::CursorIcon::Default
+                    });
+                } else {
+                    self.cursor(tauri::CursorIcon::Default);
+                }
             }
             WindowEvent::MouseInput { state, button, .. } => {
                 if !matches!(
                     button,
                     MouseButton::Left | MouseButton::Middle | MouseButton::Right
                 ) {
+                    return false;
+                }
+                if self.joint_drag.is_some() {
+                    if *button == MouseButton::Left && *state == ElementState::Released {
+                        self.commit_joint();
+                    }
                     return false;
                 }
                 if self.object_drag.is_some() {
@@ -381,7 +532,8 @@ impl Plugin<EventLoopMessage> for Input {
                         if *button == MouseButton::Left
                             && !pan
                             && !alt
-                            && self.begin_object(&before, r, scale, point)
+                            && (self.begin_joint(&before, r, scale, point)
+                                || self.begin_object(&before, r, scale, point))
                         {
                             return false;
                         }
@@ -429,7 +581,8 @@ impl Plugin<EventLoopMessage> for Input {
                 if self.position.is_some()
                     && region.is_some()
                     && self.gesture.is_none()
-                    && self.object_drag.is_none() =>
+                    && self.object_drag.is_none()
+                    && self.joint_drag.is_none() =>
             {
                 let dy = match delta {
                     MouseScrollDelta::LineDelta(_, y) => -*y * 40.,
@@ -440,6 +593,7 @@ impl Plugin<EventLoopMessage> for Input {
             }
             WindowEvent::KeyboardInput { event, .. } if event.state == ElementState::Pressed => {
                 if event.logical_key == Key::Escape {
+                    self.cancel_joint();
                     self.cancel_object();
                     if let Some(g) = self.gesture.take() {
                         self.update(|view| {
@@ -465,6 +619,7 @@ impl Plugin<EventLoopMessage> for Input {
                         return false;
                     }
                     if matches!(key.as_str(), "v" | "w" | "e" | "r" | "x" | "y" | "z") {
+                        self.cancel_joint();
                         self.cancel_object();
                         self.update(|view| match key.as_str() {
                             "v" => {
@@ -506,7 +661,7 @@ impl Plugin<EventLoopMessage> for Input {
                             }
                             _ => {}
                         });
-                    } else if self.object_drag.is_none() {
+                    } else if self.object_drag.is_none() && self.joint_drag.is_none() {
                         match key.as_str() {
                             "f" => self.focus(),
                             "0" => self.update(|view| {
@@ -531,6 +686,7 @@ impl Plugin<EventLoopMessage> for Input {
             | WindowEvent::CursorLeft { .. }
             | WindowEvent::Resized(_)
             | WindowEvent::ScaleFactorChanged { .. } => {
+                self.cancel_joint();
                 self.cancel_object();
                 self.gesture = None;
                 self.position = None;

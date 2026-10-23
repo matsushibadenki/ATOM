@@ -250,7 +250,59 @@ pub fn export(project: &Project) -> Result<String> {
             );
         }
     }
-    out.push_str("</actuator></mujoco>\n");
+    out.push_str("</actuator>");
+    if project
+        .robots
+        .iter()
+        .flat_map(|r| &r.links)
+        .any(|l| l.angles.iter().any(|a| *a != 0.))
+    {
+        // qpos follows depth-first body/joint order; ctrl follows actuator declaration order.
+        let mut qpos = Vec::<f32>::new();
+        for object in &project.objects {
+            if !object.fixed
+                && !project
+                    .robots
+                    .iter()
+                    .any(|r| r.links.iter().any(|l| l.object_id == object.id))
+            {
+                qpos.extend(object.position);
+                qpos.extend([1., 0., 0., 0.]);
+            }
+        }
+        fn append_pose(robot: &robots::Robot, link: &robots::RobotLink, qpos: &mut Vec<f32>) {
+            if link.parent.is_some() {
+                qpos.extend(link.axes().enumerate().map(|(i, _)| link.angle(i)));
+            } else if robot.template == robots::RobotTemplate::Humanoid {
+                qpos.extend(link.anchor);
+                qpos.extend([1., 0., 0., 0.]);
+            }
+            for child in robot
+                .links
+                .iter()
+                .filter(|l| l.parent == Some(link.object_id))
+            {
+                append_pose(robot, child, qpos);
+            }
+        }
+        for robot in &project.robots {
+            append_pose(robot, &robot.links[0], &mut qpos);
+        }
+        let ctrl: Vec<f32> = project
+            .robots
+            .iter()
+            .flat_map(|r| &r.links)
+            .filter(|l| l.parent.is_some())
+            .flat_map(|l| l.axes().enumerate().map(|(i, _)| l.angle(i)))
+            .collect();
+        let _ = writeln!(
+            out,
+            "<keyframe><key name=\"authored\" qpos=\"{}\" ctrl=\"{}\"/></keyframe>",
+            vec3(qpos),
+            vec3(ctrl)
+        );
+    }
+    out.push_str("</mujoco>\n");
     Ok(out)
 }
 pub fn run(project: &Project, steps: u32) -> Result<SimulationResult> {

@@ -485,3 +485,88 @@ fn native_gpu_imported_mesh_replaces_proxy_and_preserves_regular_objects() {
         assert!(renderer.device.pop_error_scope().await.is_none());
     });
 }
+
+#[test]
+#[ignore = "Requires native GPU; checks angular-guide pixels and clipping"]
+fn native_gpu_joint_ranges_draw_and_update_inside_viewport_only() {
+    pollster::block_on(async {
+        let instance = wgpu::Instance::default();
+        let adapter = instance.request_adapter(&Default::default()).await.unwrap();
+        let (device, queue) = adapter.request_device(&Default::default()).await.unwrap();
+        device.push_error_scope(wgpu::ErrorFilter::Validation);
+        let mut renderer = Renderer::new(device, queue, wgpu::TextureFormat::Rgba8Unorm);
+        let texture = renderer.device.create_texture(&wgpu::TextureDescriptor {
+            label: Some("joint range pixels"),
+            size: wgpu::Extent3d {
+                width: 64,
+                height: 64,
+                depth_or_array_layers: 1,
+            },
+            mip_level_count: 1,
+            sample_count: 1,
+            dimension: wgpu::TextureDimension::D2,
+            format: wgpu::TextureFormat::Rgba8Unorm,
+            usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::COPY_SRC,
+            view_formats: &[],
+        });
+        let target = texture.create_view(&Default::default());
+        let scene = Scene::default();
+        let vp = bytemuck::cast(threex_core::identity());
+        let region = [8, 8, 48, 48];
+        renderer.render_region(&scene, &target, [64, 64], region, &vp);
+        let baseline = read(&renderer, &texture, 64);
+        let mut view = joint_ranges::JointRanges {
+            origin: [0., 0., 0.6],
+            arcs: vec![joint_ranges::Arc {
+                channel: 2,
+                axis: [0., 0., 1.],
+                zero: [1., 0., 0.],
+                range: [-std::f32::consts::FRAC_PI_2, std::f32::consts::FRAC_PI_2],
+                angle: 0.,
+            }],
+            radius: 0.65,
+            active_axis: Some(0),
+            active_bound: None,
+        };
+        renderer.set_joint_ranges(Some(view.clone()));
+        renderer.render_region(&scene, &target, [64, 64], region, &vp);
+        let first = read(&renderer, &texture, 64);
+        assert!(
+            first
+                .as_chunks::<4>()
+                .0
+                .iter()
+                .zip(baseline.as_chunks::<4>().0)
+                .filter(|(a, b)| a != b)
+                .count()
+                > 50
+        );
+        for y in 0..64 {
+            for x in 0..64 {
+                if !(8..56).contains(&x) || !(8..56).contains(&y) {
+                    let offset = y * 256 + x * 4;
+                    assert_eq!(&first[offset..offset + 4], &baseline[offset..offset + 4]);
+                }
+            }
+        }
+        if let Some(path) = std::env::var_os("ATOM_JOINT_GUIDE_PPM") {
+            let mut ppm = b"P6\n64 64\n255\n".to_vec();
+            for p in first.as_chunks::<4>().0 {
+                ppm.extend(&p[..3]);
+            }
+            std::fs::write(path, ppm).unwrap();
+        }
+        view.arcs[0].angle = std::f32::consts::FRAC_PI_2;
+        renderer.set_joint_ranges(Some(view.clone()));
+        renderer.render_region(&scene, &target, [64, 64], region, &vp);
+        assert_ne!(first, read(&renderer, &texture, 64));
+        view.origin[2] = -0.1;
+        renderer.set_joint_ranges(Some(view));
+        renderer.render_region(&scene, &target, [64, 64], region, &vp);
+        assert_eq!(baseline, read(&renderer, &texture, 64));
+        renderer.set_joint_ranges(None);
+        renderer.render_region(&scene, &target, [64, 64], region, &vp);
+        assert_eq!(baseline, read(&renderer, &texture, 64));
+        assert!(renderer.device.pop_error_scope().await.is_none());
+    });
+}

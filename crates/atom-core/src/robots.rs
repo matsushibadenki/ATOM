@@ -1,6 +1,8 @@
 //! Original primitive templates, independent of vendor assets and real robot claims.
 mod human;
+mod pose;
 use crate::{Error, MaterialPreset, PhysicalMaterial, Result, SceneObject};
+pub use pose::{JointRange, JointRangeAxis};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -27,8 +29,14 @@ pub struct RobotLink {
     /// Additional rotational axes at the same anatomical connection. Empty in legacy files.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub extra_axes: Vec<JointAxis>,
+    /// Intrinsic joint rotations in radians, in axes() order; empty means all zero.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub angles: Vec<f32>,
 }
 impl RobotLink {
+    pub fn angle(&self, axis: usize) -> f32 {
+        self.angles.get(axis).copied().unwrap_or(0.)
+    }
     pub fn axes(&self) -> impl Iterator<Item = JointAxis> + '_ {
         std::iter::once(JointAxis {
             axis: self.axis,
@@ -69,6 +77,13 @@ impl Robot {
                     .iter()
                     .any(|v| !v.is_finite() || v.abs() > std::f32::consts::PI)
                 || link.range[0] >= link.range[1]
+                || (!link.angles.is_empty()
+                    && (link.parent.is_none() || link.angles.len() != link.axes().count()))
+                || link.axes().enumerate().any(|(i, a)| {
+                    !link.angle(i).is_finite()
+                        || link.angle(i) < a.range[0]
+                        || link.angle(i) > a.range[1]
+                })
                 || link.extra_axes.len() > 2
                 || (link.parent.is_none() && !link.extra_axes.is_empty())
                 || link.axes().any(|a| {
@@ -146,6 +161,7 @@ pub fn build(template: RobotTemplate, start: u32) -> Result<(Robot, Vec<SceneObj
             axis,
             range,
             extra_axes: Vec::new(),
+            angles: Vec::new(),
         });
         Ok(id)
     };
@@ -238,4 +254,82 @@ pub fn build(template: RobotTemplate, start: u32) -> Result<(Robot, Vec<SceneObj
         objects,
         next,
     ))
+}
+
+impl crate::Project {
+    pub(crate) fn set_joint_angle(&mut self, id: u32, axis: usize, angle: f32) -> Result<bool> {
+        let link = self
+            .robots
+            .iter_mut()
+            .flat_map(|r| &mut r.links)
+            .find(|l| l.object_id == id && l.parent.is_some())
+            .ok_or_else(|| Error::Invalid("missing articulated joint".into()))?;
+        let spec = link
+            .axes()
+            .nth(axis)
+            .ok_or_else(|| Error::Invalid("joint axis".into()))?;
+        if !angle.is_finite() || angle < spec.range[0] || angle > spec.range[1] {
+            return Err(Error::Invalid("joint angle limit".into()));
+        }
+        if link.angle(axis) == angle {
+            return Ok(false);
+        }
+        if link.angles.is_empty() {
+            link.angles = vec![0.; link.axes().count()];
+        }
+        link.angles[axis] = angle;
+        if link.angles.iter().all(|a| *a == 0.) {
+            link.angles.clear();
+        }
+        Ok(true)
+    }
+}
+
+impl crate::Project {
+    /// Bounds and any necessary current-angle correction are one authored edit.
+    pub(crate) fn set_joint_range(
+        &mut self,
+        id: u32,
+        axis: usize,
+        range: [f32; 2],
+    ) -> Result<bool> {
+        if range
+            .iter()
+            .any(|v| !v.is_finite() || v.abs() > std::f32::consts::PI)
+            || range[0] >= range[1]
+        {
+            return Err(Error::Invalid("joint range".into()));
+        }
+        let link = self
+            .robots
+            .iter_mut()
+            .flat_map(|r| &mut r.links)
+            .find(|l| l.object_id == id && l.parent.is_some())
+            .ok_or_else(|| Error::Invalid("missing articulated joint".into()))?;
+        let previous = link
+            .axes()
+            .nth(axis)
+            .ok_or_else(|| Error::Invalid("joint axis".into()))?
+            .range;
+        if previous == range {
+            return Ok(false);
+        }
+        let angle = link.angle(axis);
+        let corrected = angle.clamp(range[0], range[1]);
+        if axis == 0 {
+            link.range = range;
+        } else {
+            link.extra_axes[axis - 1].range = range;
+        }
+        if corrected != angle {
+            if link.angles.is_empty() {
+                link.angles = vec![0.; link.axes().count()];
+            }
+            link.angles[axis] = corrected;
+        }
+        if link.angles.iter().all(|a| *a == 0.) {
+            link.angles.clear();
+        }
+        Ok(true)
+    }
 }

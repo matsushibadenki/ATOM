@@ -115,7 +115,7 @@ and graph editing remain future work. Tab groups can float together; native wind
 
 🟢 [Done] オリジナルの箱形状から人型（99リンク、98可動接続、182回転自由度、free baseは別途6自由度）と双腕（13リンク、各腕6 hinge、fixed base）を作成。関節軸・範囲・damping、出力上限付き位置サーボをMJCFに記述する。追加は1件の履歴とし、既存物体から離して配置。ルート削除で一体を削除し、Undoで復元する。部品単独削除はトポロジー破損を避けるため拒否。ルートへのFフォーカスは全体を含む。
 
-テンプレートは[人型JSON](../templates/humanoid.atom.json)／[MJCF](../templates/humanoid.xml)、[双腕JSON](../templates/dual-arm.atom.json)／[MJCF](../templates/dual-arm.xml)。歩行・バランス・把持方策や実機精度は含まない。部品の変形はcollision形状の編集であり、関節支点や他リンクを自動移動しない。関節角・支点の編集、一体の変形、可動グリッパーは後続の要件。
+テンプレートは[人型JSON](../templates/humanoid.atom.json)／[MJCF](../templates/humanoid.xml)、[双腕JSON](../templates/dual-arm.atom.json)／[MJCF](../templates/dual-arm.xml)。歩行・バランス・把持方策や実機精度は含まない。部品の変形はcollision形状の編集であり、関節支点や他リンクを自動移動しない。関節支点の編集、一体の変形、可動グリッパーは後続の要件。
 
 🟢 [Done] 短時間MuJoCoプレビューをGUI／CLIへ接続。Rustが生成したMJCFと同梱の固定Python workerを、Pythonの公式MuJoCo bindingで実行する。物理はMuJoCoネイティブエンジン、文書・検証・プロセス管理・最終姿勢・描画はRust所有。WebViewには命令と小さい状態だけを渡す。外部Pythonは`ATOM_MUJOCO_PYTHON`、未指定時は`python3`。動作確認版は3.1.6で、新しい全バージョンの互換性は保証しない。
 
@@ -131,7 +131,7 @@ and graph editing remain future work. Tab groups can float together; native wind
 - UI：`http://127.0.0.1:8768/?view=scene`／`?view=workflow`、280×850と220×650、英語・日本語・简体中文。Browser plugin not available（専用browser skillなし）のため既存Playwrightで検証。ページ識別・非空・overlayなし・consoleエラーなし・横overflowなし・スクリーンショットと入力操作を確認。ブラウザー側のIPC shim試験と実Tauri試験は区別する。
 - 実Tauri／wgpu画面：人型追加→月重力→ゴム素材→Undoでアルミへ復帰→Redo→保存→再読込→MuJoCo 1秒結果→reset、再起動復元、双腕追加・全体フォーカス・両モデル同時の計算と結果フォーカスを確認。検証専用プロジェクトを使用し、既存のユーザープロジェクトは変更していない。
 
-English: Gravity and physical-material authoring, persistence/history, generic humanoid/dual-arm templates, MJCF export and a bounded MuJoCo final-pose preview are implemented. Continuous playback, joint editing, locomotion/grasp policies, liquids and AI integrations remain future work.
+English: Gravity and physical-material authoring, persistence/history, generic humanoid/dual-arm templates, MJCF export and a bounded MuJoCo final-pose preview are implemented. Continuous playback, joint-pivot editing, locomotion/grasp policies, liquids and AI integrations remain future work.
 
 简体中文：已实现重力和物理材质编辑、保存与历史、人形／双臂通用模板、MJCF导出及MuJoCo短时最终姿态预览。连续播放、关节编辑、行走／抓取策略、液体与AI集成仍待实现。
 
@@ -173,8 +173,76 @@ English: Public SimReady v1 packages and local USD/USDA/USDC now import as retai
 
 現在の人型テンプレートは99リンク・98可動接続・182回転自由度＋浮動ベース6自由度。部位別の定義は`crates/atom-core/src/robots/human.rs`、共有する軸・制限の契約は`robots.rs`に置く。`RobotLink.extra_axes`は既定空配列で旧schema 3文書との互換性を維持する。既存のaxis/rangeを第1軸とし、追加の直交回転軸を最大2本保持。rootの追加軸、不正範囲、非有限値、同一方向の軸を拒否する。
 
-98接続の内訳は脊椎24、頭1、顎1、左右各肩帯／上腕／前腕／手掌4＋手指14、左右各大腿／下腿／足関節／足4＋足趾14。回転軸は胴頸部76、両上肢56、両下肢50で182。位置サーボは初期角0を保持する。前腕の回内外は肘リンクの第2軸、手根は手掌の2軸へ集約した近似であり、完全な解剖学モデルではない。
+98接続の内訳は脊椎24、頭1、顎1、左右各肩帯／上腕／前腕／手掌4＋手指14、左右各大腿／下腿／足関節／足4＋足趾14。回転軸は胴頸部76、両上肢56、両下肢50で182。位置サーボは保存した関節角（既定0）を目標とする。前腕の回内外は肘リンクの第2軸、手根は手掌の2軸へ集約した近似であり、完全な解剖学モデルではない。
 
 English: The detailed engineering humanoid has 99 links, 98 articulated connections and 182 rotational DoF, plus 6 floating-base DoF. It includes segmented spine, hands and toes; this is not a universal anatomical joint count or a medically calibrated model.
 
 简体中文：详细工程人体模型包含99个连杆、98个可动连接和182个旋转自由度，另有6个浮动基座自由度。支持分节脊柱、手指及脚趾；这不代表医学上的人体关节总数，也不是经过医学标定的模型。
+
+## 関節角度の編集と姿勢
+
+`RobotLink.angles`はaxes()順のラジアン配列。空配列は全軸0で、旧文書の互換性を保つ。非空の場合は回転軸数と一致し、各値が軸のrange内で有限であることを検証する。rootの角度編集は拒否する。`SetJointAngle`は共通revisionと履歴に従い、変更のない値で履歴を増やさない。
+
+`robots/pose.rs`がrestのworld支点と親のrigid transformから順運動学を計算する。Eulerの表示規則は既存ThreeXと同じRx·Ry·Rz。非一様スケールは形状の属性で、子リンクの骨格寸法を変更しない。文書のobjectsにはrest形状を保持し、AppCoreのposed cache・Scene・Snapshot・選択・focusが導出した姿勢を使用する。選択物体のworld形状編集はFKの逆変換で文書へ戻す。関節角の編集と、関節支点の編集は区別する。
+
+GUIでは関節を選び、度単位の数値／スライダーから軸を編集する。スライダー操作中もRustのプレビュー姿勢を3Dへ反映し、離す時点で1件のUndo履歴を確定する。数値のEnter／blurで確定し、Escは未確定値を戻す。制限外の数値は確定せず直前値に戻す。物理／変形／資産importの処理中は編集を無効化する。
+
+非ゼロ角を含むMJCFは、bodyの深さ優先順にqpos、actuator宣言順にctrlを並べた`authored` keyframeを持つ。Workerはstep前にkeyframeを適用する。サーボは同じ角度を目標とするが、重力・接触・出力制限によって最終姿勢は変わる。物理結果は既にworld座標なので、表示専用projectからrobotグラフを外してFKを二重適用しない。元文書のrobotグラフと角度は維持し、resetで戻す。
+
+検証：通常workspaceテスト、関節の182軸上下限、ディスク保存・再読込・Undo／Redo・競合・preview lock・姿勢付き形状変形。MuJoCo 3.1.6のFKとの全リンク照合、qpos／ctrl一致、物理結果とresetを確認。GUIは実Rust coreのHTTPテストホストで3言語・280／220pxを確認。ネイティブTauri IPCとwgpuの統合操作はPending。
+
+## ライブ関節操作とGPUガイド
+
+`AppCore::begin_joint / preview_joint / commit_joint / cancel_joint`がownerと一意tokenで操作を管理する。プレビュー中のProject、FK objects、Sceneは別に保持し、Snapshot／object選択／rendererはこれを読み、`project()`と保存文書は確定状態を返す。sequenceだけを進め、確定時に共通Commandを1回適用する。取消は元状態をそのまま使い、無変更確定も履歴を増やさない。トランザクション中の保存はアプリ境界で拒否し、一般編集・物理・importはcoreで拒否する。
+
+JSは最大1RPCのpumpで最新角度だけを送り、pointerupを受けたら最後の角度の反映後にcommitする。Esc／pointercancel／lostpointercapture／window blurはcancel。token取得前に取消された場合も、beginの応答を待ってからcancelする。数値入力は従来どおりEnter／blurで1編集。別パネルからの更新は共通Snapshotで表示し、native Undoでpreviewが取消された場合もGUIのpumpを終了する。
+
+`Project::joint_ranges`は親のrigid frameと先行するintrinsic回転から各軸のworld方向とゼロ方向を求める。自身の現在角度をゼロ方向へ二重適用しない。`joints::range_view`を実アプリとGPU統合テストで共有する。レンダラーは3軸×105線分までの固定容量bufferと太線用WGSLを持ち、範囲円弧・上下限・現在角・支点軸をoverlayする。selected boxのoutlineに依存せず、viewportのscissorとnear planeを守る。物理結果には関節角の時系列がないため、physics preview中はこのガイドを表示しない。
+
+検証：連続プレビュー／1履歴／取消／no-op／owner／stale token／revision／全体FK、実coreにつないだブラウザの押下中操作・中断・保存復元・Undo／Redo・3言語・狭幅。Metal GPUの実ピクセルと人体形状の変化も検証。native Tauri IPCとWebViewから他ネイティブviewへpointerが跨る操作は引き続きPending。
+
+## 3D関節ハンドルの直接ドラッグ
+
+`joints/drag.rs`が描画と共通の`arc_point / axis_line`を使い、native windowのphysical座標からガイドを選択する。7 CSS pxの許容幅と支点中心4 CSS pxの曖昧な領域を区別し、軸インデックスは保存文書と同じ順序を使う。DPIとviewportのオフセットを固定して操作を開始し、親関節と先行するintrinsic回転を反映したworld frameを使う。
+
+円弧と現在角度rayは、関節平面へのray交差から増分角を求める。初回クリックでは角度を変更せず、3 CSS pxを越えた移動からpreviewする。±πで増分をunwrapし、制限端での余分な移動を蓄積しない。回転平面がedge-onのときは画面接線で角度を求め、shaftは投影軸に直交する方向を使う。特異点では不正値を送らず、復帰時に基準角を取り直す。
+
+`camera_input`のTao bridgeはjoint handleを一般の形状操作・camera orbitより先に判定する。Shiftパン／Alt orbitは従来どおり優先。1イベント周回に最新ポインターだけをflushし、mouseup直前の値もpreviewしてからcommitする。native-joint専用ownerとtokenで操作を保護し、Esc／native Undo／ビュー外／フォーカス喪失／layout・size・DPI変更はcancelする。古いcontrollerからのcancelでは新しい操作を取消さない。UIの角度欄も共通Snapshotから追従する。
+
+検証はcontrollerの押下座標→角度→core preview／履歴、親姿勢付きの複数軸、Retina／offset／near clip、制限端と復帰、無変更・取消・stale操作を含む。GPU統合試験は同controllerとアプリ側のガイド変換を使い、確定前の人体ピクセル変化、commitとUndo／Redo、取消をMetalで確認。実OSのウインドウイベント配送を伴う手動確認はPending。
+
+## 関節の上下限と現在姿勢の原子的編集
+
+`SetJointRange { id, axis, range }`は既存のprimary range／extra_axes rangeを書き換える。下限＜上限、各値±π以下・有限値、非root、軸の存在を検証する。現在角度が新しい範囲から外れる場合はclampし、rest形状は保持する。範囲と角度の両方が同じProject versionに入るため、保存復元・Undo／Redoが一体になる。0を含まない範囲も対応し、非ゼロ初期姿勢はMJCF authored keyframeへ出力される。
+
+`JointPreviewInfo.edit`はAngle／Lower／Upperを区別する。`begin_joint`は互換性のためAngleを既定とし、端点は`begin_joint_edit`を使う。範囲previewは反対側の端点の変更を拒否し、元の確定Projectから新しい範囲と補正角度を計算する。これにより、狭めた後にドラッグを戻して範囲を広げた場合、元角度が再び範囲内なら元の姿勢へ戻せる。Angle tokenで範囲を変える要求と、その逆の要求は拒否する。commitは同じSetJointRangeを1回適用し、cancelは元文書・履歴を維持する。
+
+3Dのlimit_handleは下限をradius×0.88、上限をradius×1.12に置いたgrip barで、描画とpickが同じ形状を使う。±πで角度位置が一致しても2つのgripが区別できる。下限シアン／上限マゼンタ、操作中は白色。境界のヒットを円弧や角度rayより優先し、既存の回転平面／edge-on mappingを再利用する。nativeドラッグの交差制限はf32::next_down／next_upで表現可能なstrict順序を維持し、非常に狭い区間でもclampの逆転を起こさない。
+
+GUIは各軸に下限・上限の数値欄を持ち、Enter／blurで1編集、Escで未確定値を戻す。現在角度やスライダーのmin／maxも同じSnapshotに追従する。3D preview中は他の編集と保存をロックする。
+
+検証：coreのatomic補正・保存・Undo／Redo・不正範囲・typed token、nativeの両端点・交差・無変更・取消・full turn・極小区間、Metalの描画と履歴統合、MuJoCoのrange／ctrlrange・authored初期値・step／reset、実core GUIの3言語／280・220pxを確認。OSイベント配送そのものを伴う手動QAはPending。
+
+## 位置IKと共有編集
+
+`Command::SolveIk { id, base, target }`は`AppCore::apply`のrevision・previewロック・candidate検証と履歴を共用する。基点は同一ロボット内の厳密な祖先、targetはY-up・mで各成分±10000以内の有限値。末端は選択objectの中心で、基点の下だけをdistal順・intrinsic軸の逆順に探索する。基点の現在のworld姿勢を使うため、回転済み祖先・複数軸にも対応する。geometry・支点・範囲は変更せず、角度だけを保存する。
+
+CCDの相対回転を関節範囲に制限し、3×3の減衰付き最小二乗補正をbacktrackingで改善時だけ受理する。0／±0.16radの決定的seed、最大240 sweep／seed、CCD更新と補正FKを合わせた6000の評価予算を持つ。1mm以内で成功。到達済みなら履歴なし。探索はprivate candidateで行い、成功したrobotだけを反映し、失敗は`ik_unreachable`で文書・dirty・履歴を変えない。これは局所探索の失敗codeで、到達不能を証明しない。
+
+Tauriの`edit`は`spawn_blocking`で共有coreを更新し、既存snapshot通知とmain-thread描画を利用する。GUIは祖先ID・XYZ目標だけを送る。非同期呼び出しでもexpected revisionと同じ共有Mutexで競合を拒否する。IK中は別の専用文書を作らない。GUIの目標入力は作業用で、保存の対象は成功した関節姿勢。向き・自己衝突・環境接触・バランス・物理時間制御は未対応。
+
+`tests/ik.rs`は到達・制限・基点固定・複数軸・全身チェーン・退化姿勢・保存・1履歴・無変更・無効／非収束／競合時の原子性を検証する。MuJoCoのauthored keyframeから手先位置・qpos／ctrl・限界を照合。Metal試験はIK後の実フレーム変化とUndo／Redoの完全なピクセル復元を確認する。GUIは実core＋HTTPホストで適用・取消・保存と3言語／幅900・280・220pxを確認し、実Tauri IPC・OSイベントはPendingに残す。
+
+## Reach／Episode v1
+
+`reach::Runner`はRustが持つ永続Python Workerを使う。選択したDualArm templateをsourceから分離し、重力だけゼロへ固定する。source hashとGUIのrevision、task project、MJCF hash、seed、profile、reference action、joint channel→qpos/qvel indexをmanifestへ保存。最初の非root leafをendpointとし、SplitMix64-v1による可動範囲内の参照角からFKでtargetを得る。元のProjectは更新せず、物理poseは`reach::Preview`の独立した派生sceneへ反映する。これは固定無重力の参照制御課題で、任意scene・学習方策・衝突回避・重力補償は未実装。
+
+resetは`mj_resetData`とauthored keyframe、初期ctrlから開始する。stepは同じ`MjData`のqpos・qvel・warmstart等を継続し、指令を10 ticks（dt=0.002s）保持する。frame 0はaction=None、frame nのactionは(n−1)×0.02〜n×0.02秒で適用した指令。各frameには生qpos/qvel、同期済みgeom pose、endpoint、距離、outcome、engine／Python／platformを保持する。指令はJSON化する前に有限性・次元・関節範囲を検証。観測もID集合・次元・時刻・有限性を検証し、有効な返信だけを記録する。3.5cm以内を5連続で成功、horizon 1〜500でtimeoutとし、同時なら成功を先にする。
+
+Workerはprivate codeのみを`python -I`へ渡し、stdin/stdoutの1要求1返信で制御する。replyは512KiB、startup 15秒、step 3秒、run全体15秒＋最後のstep待ち以内。成功／timeout／エラー／dropでkill/waitする。異常な途中stepは追加せず、最後の有効な部分記録を保存可能にする。Runningの記録はpartialであり、完了したtrialとして数えない。
+
+Episodeは最大64MiB。構造・manifest再生成・MJCF hash・初期qpos／qvel／位置・時刻と指令区間・engineの一貫性・連続成功／終了を検証し、SHA-256付きenvelopeを同じdirectory内のsync済みtempからno-clobberで公開する。同一内容の再保存は冪等、別内容は上書きしない。途中書込・checksum不一致・未来frameや終端後frameを拒否する。`serde_json/float_roundtrip`でf64観測の保存読込を維持する。checksumは署名ではなく、記録済み軌道の正当性を再物理検証するものでもない。
+
+`AppCore::reach_command`はdocument identity／revision、reset/loadのsequence、run ID、step indexで共有状態を保護する。Reach中は通常編集・import・汎用simulationを拒否する。`render_project()`は記録側metadataを参照し、source側meshが同じIDの記録物体／markerへ誤って割り当たることを防ぐ。snapshotは選択frameの物体と小さなReach summaryだけを通知し、全EpisodeはJSへ送らない。cursorとplay generationはRust正本で、Tauriの20ms replay loopは古い世代で停止する。録画再生はPythonを起動せず、loaded Episodeは読み取り専用。記録中も過去をseekできるが、物理継続は末尾へ戻してからに限定する。保存データからsolverを再開する機能はない。
+
+CLIのreach-runは終了まで記録して保存し、episode-replayは指定frameとworld objectsを出力する。episode-compareは一意run IDを除いてmanifestと全frameの完全一致を検証する。同じソース・seed・モデル・runtimeでも環境差の影響はあるため、記録姿勢の再生と物理の再実行を区別する。MuJoCo 3.1.6・Python 3.10の開発環境でseed 0〜9を各2回実行し、10組すべてで全遷移が一致し、各seedで成功した。seed 7は24step／0.48秒、horizon=1はtimeout。unit試験はsemantic corruptionと保存原子性、実MuJoCo試験はdeterminism／終了／worker異常とstale request、Metal試験はseekでのpixel復元を確認。GUIの実core＋MuJoCo試験はHTTP shimで行い、native IPC／window schedulerの手動確認はPending。

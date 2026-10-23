@@ -320,3 +320,9 @@ ATOM/
 プロジェクトデータはユーザー指定の`.atom`ディレクトリにmanifest・DB・成果物を分けて保存する。
 巨大モデルや生成データはGitに入れない。vLLM-apple／StrataはAPIで利用する。
 ThreeX／UNGEは必要なRust crateを選び、開発時path依存と配布時の固定ソース参照を分ける。
+
+## 関節角の文書契約
+
+関節角はRustの`RobotLink.angles`にラジアンで保持し、GUIは度へ変換する。`SetJointAngle`は共通revisionで検証し、上限・下限を越えた入力を拒否する。WebViewは角度の編集中の入力だけを一時保持し、確定した角度・履歴・FK姿勢は所有しない。関節の固定rest支点と形状からRustが子孫リンクの姿勢を導出し、wgpuへ渡す。位置やフレームの大容量転送は導入しない。保存文書はrest形状と角度を別々に持ち、再読込時に同じFKで復元する。
+
+関節の限界は`SetJointRange`でprimary／追加軸に保存し、現在角度のclampを同じversionへ含める。3D端点操作は`JointEdit::Lower / Upper`というtyped previewを使い、owner／tokenと軸を固定する。途中の補正角を次の計算の基準にせず、元文書の角度を毎回新しい範囲へclampする。確定した範囲と姿勢はRustだけが所有し、WebViewは度単位の入力とbounded Snapshotを扱う。

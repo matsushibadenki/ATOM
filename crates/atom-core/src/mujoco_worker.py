@@ -9,6 +9,9 @@ except ImportError:
 
 model = mujoco.MjModel.from_xml_path(sys.argv[1])
 data = mujoco.MjData(model)
+key = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_KEY, "authored")
+if key >= 0:
+    mujoco.mj_resetDataKeyframe(model, data, key)
 steps = int(sys.argv[3])
 assert 1 <= steps <= 1000
 for _ in range(steps):

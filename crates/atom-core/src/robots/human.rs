@@ -26,6 +26,7 @@ impl Builder {
             anchor,
             axis: axes[0],
             range: ranges[0],
+            angles: Vec::new(),
             extra_axes: ranges
                 .iter()
                 .enumerate()

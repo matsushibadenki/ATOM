@@ -9,7 +9,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<_> = std::env::args().skip(1).collect();
     if args.is_empty() || args == ["--help"] {
         println!(
-            "ATOM foundation\n  atom-cli import-usd <project.atom.json> <local.usd>\n  atom-cli import-hf <project.atom.json> <namespace/repo> <package> [revision]\n  atom-cli catalog <namespace/repo> [revision]\n  atom-cli init <project.atom.json> [name]\n  atom-cli template <project.atom.json> <humanoid|dual_arm>\n  atom-cli export-mjcf <project.atom.json> <output.xml>\n  atom-cli simulate <project.atom.json> [steps:1..1000]\n  atom-cli inspect <project.atom.json>\n  atom-cli validate <project.atom.json>\n\nvalidate checks task specifications; it does not run physics or training."
+            "ATOM foundation\n  atom-cli reach-run <project.atom.json> <output.episode.json> [seed:u32] [horizon:1..500]\n  atom-cli episode-replay <file.episode.json> [frame]\n  atom-cli episode-compare <a.episode.json> <b.episode.json>\n  atom-cli import-usd <project.atom.json> <local.usd>\n  atom-cli import-hf <project.atom.json> <namespace/repo> <package> [revision]\n  atom-cli catalog <namespace/repo> [revision]\n  atom-cli init <project.atom.json> [name]\n  atom-cli template <project.atom.json> <humanoid|dual_arm>\n  atom-cli export-mjcf <project.atom.json> <output.xml>\n  atom-cli simulate <project.atom.json> [steps:1..1000]\n  atom-cli inspect <project.atom.json>\n  atom-cli validate <project.atom.json>\n\nvalidate checks task specifications; it does not run physics or training."
         );
         return Ok(());
     }
@@ -17,6 +17,61 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         return Err("invalid arguments; use --help".into());
     }
     match args[0].as_str() {
+        "reach-run" if args.len() >= 3 && args.len() <= 5 => {
+            let project = ProjectStore::open(&args[1])?
+                .load()?
+                .ok_or("project does not exist")?;
+            let root = project
+                .robots
+                .iter()
+                .find(|r| r.template == atom_core::RobotTemplate::DualArm)
+                .ok_or("Reach requires a dual-arm template")?
+                .root;
+            let seed = args.get(3).map(|s| s.parse()).transpose()?.unwrap_or(7);
+            let horizon = args.get(4).map(|s| s.parse()).transpose()?.unwrap_or(300);
+            let mut runner = atom_core::reach::Runner::reset(
+                &project,
+                atom_core::reach::Config {
+                    seed,
+                    robot: root,
+                    horizon,
+                },
+            )?;
+            runner.run()?;
+            runner.episode.save(std::path::Path::new(&args[2]))?;
+            let f = runner.episode.frames.last().unwrap();
+            println!(
+                "{}",
+                serde_json::json!({"episode":runner.episode.id,"frames":runner.episode.frames.len(),"outcome":f.outcome,"time":f.observation.time,"distance":f.distance,"seed":seed})
+            );
+        }
+        "episode-replay" if args.len() == 2 || args.len() == 3 => {
+            let e = atom_core::reach::Episode::load(std::path::Path::new(&args[1]))?;
+            let index = args
+                .get(2)
+                .map(|s| s.parse::<usize>())
+                .transpose()?
+                .unwrap_or(e.frames.len() - 1);
+            let frame = e.frames.get(index).ok_or("frame out of range")?;
+            println!(
+                "{}",
+                serde_json::json!({"episode":e.id,"seed":e.manifest.config.seed,"frames":e.frames.len(),"frame":frame,"objects":e.objects_at(index)?})
+            );
+        }
+        "episode-compare" if args.len() == 3 => {
+            let a = atom_core::reach::Episode::load(std::path::Path::new(&args[1]))?;
+            let b = atom_core::reach::Episode::load(std::path::Path::new(&args[2]))?;
+            let same_manifest =
+                serde_json::to_vec(&a.manifest)? == serde_json::to_vec(&b.manifest)?;
+            let same_frames = serde_json::to_vec(&a.frames)? == serde_json::to_vec(&b.frames)?;
+            println!(
+                "{}",
+                serde_json::json!({"same_manifest":same_manifest,"same_frames":same_frames,"equal":same_manifest&&same_frames})
+            );
+            if !same_manifest || !same_frames {
+                return Err("Episodes differ".into());
+            }
+        }
         "catalog" if args.len() == 2 || args.len() == 3 => {
             println!(
                 "{}",

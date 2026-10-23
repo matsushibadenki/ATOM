@@ -1,12 +1,47 @@
-/target/
-/.DS_Store
-**/.DS_Store
+# Rust and Tauri build output. Keep Cargo.lock under version control.
+target/
 /apps/desktop/gen/
+
+# Local project documents and process locks.
 *.atom.json
 *.atom.json.lock
-/artifacts/
+!/templates/**/*.atom.json
+!/tests/fixtures/**/*.atom.json
 
-!templates/humanoid.atom.json
-!templates/dual-arm.atom.json
-/.venv-usd/
-/.asset-cache/
+# Recorded runs, generated artifacts and downloaded asset caches.
+*.episode.json
+!/templates/**/*.episode.json
+!/tests/fixtures/**/*.episode.json
+episodes/
+/artifacts/
+.asset-cache/
+
+# Python environments and bytecode (MuJoCo / OpenUSD workers).
+.venv/
+.venv-*/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Frontend dependencies and local tooling caches.
+node_modules/
+/playwright-report/
+/test-results/
+
+# Local credentials; keep shareable configuration examples.
+.env
+.env.*
+!.env.example
+!.env.*.example
+!.env.sample
+
+# OS metadata, logs and temporary editor files.
+.DS_Store
+._*
+Thumbs.db
+Desktop.ini
+*.log
+*.swp
+*.swo
+*~

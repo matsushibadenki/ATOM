@@ -173,7 +173,7 @@ pub enum Command {
 /// Root focus includes the complete robot, including a simulated final pose.
 pub fn focus_target(core: &atom_core::AppCore, id: u32) -> Option<SceneObject> {
     let mut target = core.object(id)?.clone();
-    if let Some(robot) = core.project().robots.iter().find(|r| r.root == id) {
+    if let Some(robot) = core.render_project().robots.iter().find(|r| r.root == id) {
         let mut min = [f32::INFINITY; 3];
         let mut max = [f32::NEG_INFINITY; 3];
         for link in &robot.links {
@@ -201,7 +201,7 @@ pub fn reconcile(app: &tauri::AppHandle) {
     let mut view = state.0.lock().expect("camera");
     if view
         .selected
-        .is_some_and(|id| !session.core.project().objects.iter().any(|o| o.id == id))
+        .is_some_and(|id| session.core.object(id).is_none())
     {
         view.selected = None;
         view.revision += 1;
@@ -241,7 +241,7 @@ pub fn camera_command(
     let mut view = state.0.lock().map_err(|_| error("internal_error"))?;
     match command {
         Command::Select { id } => {
-            if id.is_some_and(|id| !session.core.project().objects.iter().any(|o| o.id == id)) {
+            if id.is_some_and(|id| session.core.object(id).is_none()) {
                 return Err(error("invalid_project"));
             }
             view.selected = id;

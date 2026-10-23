@@ -140,22 +140,32 @@ pub fn draw(app: &tauri::AppHandle) {
             let shared = app.state::<Shared>();
             let session = shared.0.lock().map_err(|e| e.to_string())?;
             target.backend.set_imported_meshes(
-                session.core.project().objects.iter().filter_map(|o| {
-                    let asset = session
-                        .core
-                        .project()
-                        .assets
-                        .iter()
-                        .find(|a| Some(a.id) == o.mesh_ref)?;
-                    Some(threex_renderer::imported::MeshView {
-                        instance: session.core.scene().instance_index(o.id)? as u32,
-                        key: &asset.mesh_hash,
-                        positions: &asset.mesh.positions,
-                        colors: &asset.mesh.colors,
-                        indices: &asset.mesh.indices,
-                    })
-                }),
+                session
+                    .core
+                    .render_project()
+                    .objects
+                    .iter()
+                    .filter_map(|o| {
+                        let asset = session
+                            .core
+                            .render_project()
+                            .assets
+                            .iter()
+                            .find(|a| Some(a.id) == o.mesh_ref)?;
+                        Some(threex_renderer::imported::MeshView {
+                            instance: session.core.scene().instance_index(o.id)? as u32,
+                            key: &asset.mesh_hash,
+                            positions: &asset.mesh.positions,
+                            colors: &asset.mesh.colors,
+                            indices: &asset.mesh.indices,
+                        })
+                    }),
             )?;
+            target.backend.set_joint_ranges(super::joints::range_view(
+                &session.core,
+                &view,
+                region.map_or(1., |r| r[3] as f32 / scale as f32),
+            ));
             let selected_index = view
                 .selected
                 .and_then(|id| session.core.scene().instance_index(id));

@@ -3,6 +3,7 @@ pub mod assets;
 mod editor;
 pub mod mujoco;
 pub mod physics;
+pub mod reach;
 pub mod robots;
 mod storage;
 pub use editor::AppCore;
@@ -27,6 +28,8 @@ pub enum Error {
     Version,
     #[error("invalid project: {0}")]
     Invalid(String),
+    #[error("position IK did not converge within the joint limits and solve budget")]
+    IkUnreachable,
     #[error("project is already open by another process")]
     Locked,
     #[error("project file changed outside this session")]
@@ -54,6 +57,7 @@ impl Error {
             Self::Conflict(_) => "revision_conflict",
             Self::Version => "unsupported_version",
             Self::Invalid(_) => "invalid_project",
+            Self::IkUnreachable => "ik_unreachable",
             Self::Locked => "project_locked",
             Self::ExternalChange => "external_change",
             Self::EditBusy => "edit_busy",
@@ -214,7 +218,7 @@ impl Project {
     pub fn render_scene(&self) -> Result<threex_core::Scene> {
         self.validate()?;
         let mut bytes = Vec::with_capacity(self.objects.len() * 128);
-        for o in &self.objects {
+        for o in &self.posed_objects() {
             // The old foundation's blue preset is displayed as warm neutral; keep
             // original file values and authored custom colors intact.
             let color = if o.color == [0.47, 0.64, 1.] {
@@ -299,6 +303,23 @@ pub enum Command {
     SetFloor {
         enabled: bool,
     },
+    SetJointRange {
+        id: u32,
+        axis: usize,
+        range: [f32; 2],
+    },
+    SetJointAngle {
+        id: u32,
+        axis: usize,
+        angle: f32,
+    },
+    SolveIk {
+        id: u32,
+        /// Ancestor held fixed; only its descendants on the path to id may rotate.
+        base: u32,
+        /// Selected object's center in editor world coordinates (Y up), meters.
+        target: [f32; 3],
+    },
     AddRobot {
         template: RobotTemplate,
     },
@@ -337,10 +358,30 @@ pub struct Snapshot {
     pub objects: Vec<SceneObject>,
     pub physics: PhysicsSpec,
     pub robots: Vec<robots::Robot>,
+    pub joint_preview: Option<JointPreviewInfo>,
+    pub reach: Option<reach::Summary>,
     pub simulation_running: bool,
     pub simulation: Option<mujoco::SimulationResult>,
     pub asset_importing: bool,
     pub assets: Vec<assets::AssetSummary>,
     pub workflow_nodes: usize,
     pub workflow_edges: usize,
+}
+
+/// Transient joint transaction identity; never part of the saved Project.
+#[derive(Clone, Debug, Serialize)]
+pub struct JointPreviewInfo {
+    pub token: u64,
+    pub object_id: u32,
+    pub axis: usize,
+    pub edit: JointEdit,
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum JointEdit {
+    #[default]
+    Angle,
+    Lower,
+    Upper,
 }

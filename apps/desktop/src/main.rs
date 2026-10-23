@@ -1,7 +1,9 @@
 mod assets;
 mod camera;
 mod camera_input;
+mod joints;
 mod layout;
+mod reach;
 mod transform;
 mod viewport;
 mod window_placement;
@@ -52,19 +54,23 @@ fn snapshot(webview: tauri::Webview, state: tauri::State<Shared>) -> Result<Snap
         .snapshot())
 }
 #[tauri::command]
-fn edit(
-    webview: tauri::Webview,
-    state: tauri::State<Shared>,
-    request: EditRequest,
-) -> Result<Snapshot, UiError> {
+async fn edit(webview: tauri::Webview, request: EditRequest) -> Result<Snapshot, UiError> {
     authorize(&webview)?;
-    let snapshot = state
-        .0
-        .lock()
-        .map_err(|_| error("internal_error"))?
-        .core
-        .apply(request)?;
     let app = webview.app_handle().clone();
+    // IK is bounded CPU work; keep it off the native UI/event thread.
+    let worker_app = app.clone();
+    let snapshot = tauri::async_runtime::spawn_blocking(move || {
+        worker_app
+            .state::<Shared>()
+            .0
+            .lock()
+            .map_err(|_| error("internal_error"))?
+            .core
+            .apply(request)
+            .map_err(UiError::from)
+    })
+    .await
+    .map_err(|_| error("internal_error"))??;
     camera::reconcile(&app);
     let _ = app.emit("atom://changed", &snapshot);
     let redraw = app.clone();
@@ -252,9 +258,12 @@ fn main() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            reach::reach_command,
+            reach::episode_files,
             camera::camera_state,
             camera::camera_command,
             transform::transform_command,
+            joints::joint_command,
             snapshot,
             assets::asset_catalog,
             assets::import_asset,

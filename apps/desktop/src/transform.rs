@@ -311,9 +311,14 @@ pub fn install_history_menu(app: &tauri::AppHandle) -> tauri::Result<()> {
             let mut session = shared.0.lock().expect("session");
             let snapshot = session.core.snapshot();
             if snapshot.previewing {
-                let owner = [NATIVE_OWNER, "scene", "viewport"]
-                    .into_iter()
-                    .find(|owner| session.core.preview_owned_by(owner));
+                let owner = [
+                    NATIVE_OWNER,
+                    super::joints::drag::OWNER,
+                    "scene",
+                    "viewport",
+                ]
+                .into_iter()
+                .find(|owner| session.core.preview_owned_by(owner));
                 owner.map(|owner| session.core.cancel_transform(owner))
             } else if if redo {
                 snapshot.can_redo

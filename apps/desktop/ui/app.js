@@ -9,7 +9,7 @@ const dockTranslations = {
  'zh-CN':{float_group:'浮动标签组',return_group:'将标签组返回停靠区',viewport:'3D视图',drag:'拖动标签：中央合并，边缘拆分，窗口外浮动。Esc取消。',float:'浮动当前面板',target:'目标面板',placement:'位置',center:'标签',left:'左侧',right:'右侧',top:'上方',bottom:'下方',dock_apply:'应用布局',return_panel:'返回原停靠位置',workspace:'工作区',reset_layout:'重置布局',resize:'调整分隔线。方向键微调，Esc取消。',layout_conflict:'布局已更新，请重试。',invalid_layout:'无效的布局。',panel_busy:'正在调整布局。',panel_error:'无法移动面板。',layout_save_failed:'布局已更改，但无法保存。',gpu_waiting:'等待GPU',objects:'个对象'}
 };
 for(const language of Object.keys(translations)) Object.assign(translations[language],dockTranslations[language]);
-const cameraTranslations={en:{show_grid:'XZ grid (Y = 0); spacing follows zoom',show_axes:'World axes: X red, Y green (up), Z blue',pan_mode:'Pan with left drag',selected_object:'Selected object',focus_selection:'Focus selected object (F)',reset_camera:'Reset camera (0)',select_object:'Select object',no_selection:'Select an object first.',camera_help:'Left drag: orbit. Right/middle drag or Shift + left drag: pan. Wheel: zoom. Click an object to select. F: focus selection. 0: reset. Esc: cancel drag.'},ja:{show_grid:'XZグリッド（Y＝0）。ズームに応じて間隔を調整',show_axes:'ワールド座標軸：Xは赤、Yは緑（上）、Zは青',pan_mode:'左ドラッグをパンに切り替える',selected_object:'選択中のオブジェクト',focus_selection:'選択オブジェクトにフォーカス（F）',reset_camera:'視点をリセット（0）',select_object:'オブジェクトを選択',no_selection:'オブジェクトを選択してください。',camera_help:'左ドラッグで回転。右・中ドラッグ、またはShift＋左ドラッグでパン。ホイールでズーム。クリックで選択。Fでフォーカス、0で視点リセット、Escでドラッグを中止。'},'zh-CN':{show_grid:'XZ网格（Y＝0），间距随缩放调整',show_axes:'世界坐标轴：X红色、Y绿色（向上）、Z蓝色',pan_mode:'左键拖动平移',selected_object:'选中对象',focus_selection:'聚焦选中对象（F）',reset_camera:'重置视角（0）',select_object:'选择对象',no_selection:'请先选择对象。',camera_help:'左键拖动旋转；右键、中键或Shift＋左键拖动平移；滚轮缩放。单击对象选择，F聚焦，0重置，Esc取消拖动。'}};
+const cameraTranslations={en:{show_grid:'XZ grid (Y = 0); spacing follows zoom',show_axes:'World axes: X red, Y green (up), Z blue',pan_mode:'Pan with left drag',selected_object:'Selected object',focus_selection:'Focus selected object (F)',reset_camera:'Reset camera (0)',select_object:'Select object',no_selection:'Select an object first.',camera_help:'Drag a joint arc/axis to pose. Left drag elsewhere: orbit. Right/middle drag or Shift + left drag: pan. Wheel: zoom. Click an object to select. F: focus selection. 0: reset. Esc: cancel drag.'},ja:{show_grid:'XZグリッド（Y＝0）。ズームに応じて間隔を調整',show_axes:'ワールド座標軸：Xは赤、Yは緑（上）、Zは青',pan_mode:'左ドラッグをパンに切り替える',selected_object:'選択中のオブジェクト',focus_selection:'選択オブジェクトにフォーカス（F）',reset_camera:'視点をリセット（0）',select_object:'オブジェクトを選択',no_selection:'オブジェクトを選択してください。',camera_help:'関節の円弧・軸は左ドラッグで角度変更。それ以外は左ドラッグで視点回転。右・中ドラッグ、またはShift＋左ドラッグでパン。ホイールでズーム。クリックで選択。Fでフォーカス、0で視点リセット、Escでドラッグを中止。'},'zh-CN':{show_grid:'XZ网格（Y＝0），间距随缩放调整',show_axes:'世界坐标轴：X红色、Y绿色（向上）、Z蓝色',pan_mode:'左键拖动平移',selected_object:'选中对象',focus_selection:'聚焦选中对象（F）',reset_camera:'重置视角（0）',select_object:'选择对象',no_selection:'请先选择对象。',camera_help:'拖动关节圆弧或轴可调整角度，其他位置左键旋转视角；右键、中键或Shift＋左键拖动平移；滚轮缩放。单击对象选择，F聚焦，0重置，Esc取消拖动。'}};
 for(const language of Object.keys(translations))Object.assign(translations[language],cameraTranslations[language]);
 const transformTranslations={
  en:{undo:'Undo (⌘Z / Ctrl+Z)',redo:'Redo (⌘⇧Z / Ctrl+Shift+Z)',tool_camera:'Camera / select (V)',tool_move:'Move (W)',tool_rotate:'Rotate (E)',tool_scale:'Scale (R)',transform_axis:'Transform axis (X / Y / Z)',axis_free:'Free',position:'Position',rotation:'Rotation (degrees)',scale_value:'Scale',transform_help:'Drag the selected object or an axis handle. W move, E rotate, R scale, V camera. X/Y/Z constrain an axis. Alt + left drag orbits; right/middle drag pans. Esc cancels. A completed drag is one undo step.',numeric_help:'Edit XYZ values; rotation is in degrees. Enter or leaving a field commits one history step. Esc cancels. Undo/Redo affects document edits; camera and layout stay independent.',edit_busy:'Reset the physics preview or finish/cancel the active transform.',history_empty:'No history available.'},
@@ -31,30 +31,35 @@ const usdTranslations={
 };
 for(const language of Object.keys(translations))Object.assign(translations[language],usdTranslations[language]);
 
-const paths={undo:'M7 5 3 9l4 4 M3 9h8a5 5 0 0 1 5 5',redo:'m13 5 4 4-4 4 M17 9H9a5 5 0 0 0-5 5',select:'M4 2l12 9-6 1-3 6z',move:'M10 2v16 M2 10h16 M7 5l3-3 3 3 M15 7l3 3-3 3 M7 15l3 3 3-3 M5 7l-3 3 3 3',rotate:'M16 6a7 7 0 1 0 1 7 M16 2v5h-5',scale:'M3 3h5v5H3z M11 11h6v6h-6z M8 8l4 4 M12 8v4H8',grid:'M3 3h14v14H3z M3 8h14 M3 12h14 M8 3v14 M12 3v14',axes:'M5 15h12 M5 15V3 M5 15l8-8 M14 12l3 3-3 3 M2 6l3-3 3 3 M9 7h4v4',pan:'M10 2v16 M2 10h16 M7 5l3-3 3 3 M7 15l3 3 3-3 M5 7l-3 3 3 3 M15 7l3 3-3 3',focus:'M3 7V3h4 M13 3h4v4 M17 13v4h-4 M7 17H3v-4 M6 10h8 M10 6v8',group:'M6 2h12v12H6z M2 6v12h12 M6 6h12 M10 2v4',return_group:'M2 3h16v14H2z M2 7h16 M7 3v4 M12 9l-3 3 3 3 M9 12h6',save:'M3 3h11l3 3v11H3z M6 3v5h8V3 M6 17v-6h8v6',reload:'M16 6a7 7 0 1 0 1 7 M16 2v5h-5',check:'m4 10 4 4 8-9',plus:'M10 3v14 M3 10h14',remove:'M4 5h12 M8 5V3h4v2 M6 5l1 12h6l1-12 M9 8v6 M11 8v6',play:'m6 3 10 7-10 7z',cube:'m10 2 7 4v8l-7 4-7-4V6z M3 6l7 4 7-4 M10 10v8',float:'M7 3h10v10H7z M3 7v10h10',return:'M3 4h14v13H3z M11 7l-3 3 3 3 M8 10h7',layout:'M3 3h14v14H3z M7 3v14 M13 3v14',scene:'m10 2 7 4v8l-7 4-7-4V6z M3 6l7 4 7-4 M10 10v8',workflow:'M3 3h5v5H3z M12 12h5v5h-5z M8 5h6v7',viewport:'M2 3h16v12H2z M7 18h6 M10 15v3'};
+const paths={step:'m4 3 9 7-9 7z M16 3v14',pause:'M6 3v14 M14 3v14',undo:'M7 5 3 9l4 4 M3 9h8a5 5 0 0 1 5 5',redo:'m13 5 4 4-4 4 M17 9H9a5 5 0 0 0-5 5',select:'M4 2l12 9-6 1-3 6z',move:'M10 2v16 M2 10h16 M7 5l3-3 3 3 M15 7l3 3-3 3 M7 15l3 3 3-3 M5 7l-3 3 3 3',rotate:'M16 6a7 7 0 1 0 1 7 M16 2v5h-5',scale:'M3 3h5v5H3z M11 11h6v6h-6z M8 8l4 4 M12 8v4H8',grid:'M3 3h14v14H3z M3 8h14 M3 12h14 M8 3v14 M12 3v14',axes:'M5 15h12 M5 15V3 M5 15l8-8 M14 12l3 3-3 3 M2 6l3-3 3 3 M9 7h4v4',pan:'M10 2v16 M2 10h16 M7 5l3-3 3 3 M7 15l3 3 3-3 M5 7l-3 3 3 3 M15 7l3 3-3 3',focus:'M3 7V3h4 M13 3h4v4 M17 13v4h-4 M7 17H3v-4 M6 10h8 M10 6v8',group:'M6 2h12v12H6z M2 6v12h12 M6 6h12 M10 2v4',return_group:'M2 3h16v14H2z M2 7h16 M7 3v4 M12 9l-3 3 3 3 M9 12h6',save:'M3 3h11l3 3v11H3z M6 3v5h8V3 M6 17v-6h8v6',reload:'M16 6a7 7 0 1 0 1 7 M16 2v5h-5',check:'m4 10 4 4 8-9',plus:'M10 3v14 M3 10h14',remove:'M4 5h12 M8 5V3h4v2 M6 5l1 12h6l1-12 M9 8v6 M11 8v6',play:'m6 3 10 7-10 7z',cube:'m10 2 7 4v8l-7 4-7-4V6z M3 6l7 4 7-4 M10 10v8',float:'M7 3h10v10H7z M3 7v10h10',return:'M3 4h14v13H3z M11 7l-3 3 3 3 M8 10h7',layout:'M3 3h14v14H3z M7 3v14 M13 3v14',scene:'m10 2 7 4v8l-7 4-7-4V6z M3 6l7 4 7-4 M10 10v8',workflow:'M3 3h5v5H3z M12 12h5v5h-5z M8 5h6v7',viewport:'M2 3h16v12H2z M7 18h6 M10 15v3'};
 function icon(name){const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 20 20');svg.setAttribute('aria-hidden','true');const p=document.createElementNS(svg.namespaceURI,'path');p.setAttribute('d',paths[name]);svg.append(p);return svg;}
 document.querySelectorAll('[data-icon]').forEach(el=>el.append(icon(el.dataset.icon)));
 const $=id=>document.getElementById(id),view=new URLSearchParams(location.search).get('view')||'toolbar',isSplit=view.startsWith('split-');
 document.body.dataset.view=view;if(isSplit)document.body.dataset.split='true';
 let camera=null;
 let numeric=null,numericOwners=0,numericQueue=Promise.resolve();
+let jointDrag=null;
 let locale='ja',current=null,layout=null,busy=false,statusKey='connecting',gpuKey='opening',reportKey='not_run',drag=null,splitDrag=null;
 const t=key=>translations[locale][key]||translations[locale].error,api=window.__TAURI__;
 function nodes(root,kind){if(!root)return [];if(root.kind===kind)return [root,...(root.kind==='split'?[...nodes(root.first,kind),...nodes(root.second,kind)]:[])];return root.kind==='split'?[...nodes(root.first,kind),...nodes(root.second,kind)]:[];}
 function groupFor(s,p){return nodes(s?.root,'tabs').find(g=>g.panels.includes(p))||s?.floating_groups.find(g=>g.panels.includes(p));}
 function controls(){
- document.querySelectorAll('button').forEach(b=>b.disabled=busy||!current||!api);
+ document.querySelectorAll('button').forEach(b=>b.disabled=busy||!current||!api||!!jointDrag);
  for(const id of ['cameraFocus','sceneFocus'])$(id).disabled=busy||!api||!camera?.selected;
  for(const id of ['undo','viewUndo'])$(id).disabled=busy||!api||!current?.can_undo;for(const id of ['redo','viewRedo'])$(id).disabled=busy||!api||!current?.can_redo;
  document.querySelectorAll('[data-tool]').forEach(b=>b.disabled=busy||!api||!!current?.previewing);$('transformAxis').disabled=busy||!api||!!current?.previewing;
  $('transformFields').disabled=busy||!api||!camera?.selected||(!!current?.previewing&&numericOwners===0);
  $('reload').disabled=busy||!current||current.dirty||current.previewing||!api;$('save').disabled=busy||!current||current.previewing||!api;$('locale').disabled=busy||!layout||!api;
  const locked=busy||!current||!api||!!current?.previewing;
+ $('ikFields').disabled=locked;
+ $('jointFields').disabled=locked&&!(jointDrag&&!jointDrag.ending);$('jointSelect').disabled=locked||!!jointDrag;
+ $('jointFields').querySelectorAll('input,button').forEach(el=>el.disabled=!!jointDrag&&(el!==jointDrag.input||!!jointDrag.ending));
  $('assetFields').disabled=locked;$('cancelAssetImport').disabled=!current?.asset_importing;$('cancelAssetImport').hidden=!current?.asset_importing;
  $('environmentFields').disabled=locked||!physicsCatalog;$('materialFields').disabled=locked||!selectedMaterial()||!physicsCatalog;
  $('objectFixed').disabled=locked||materialId()===null||!materialId()||!!current?.robots.some(r=>r.links.some(l=>l.object_id===materialId()));
  $('robotTemplate').disabled=locked;$('addRobot').disabled=locked;$('add').disabled=locked;
  document.querySelectorAll('[data-remove-id]').forEach(b=>{const id=Number(b.dataset.removeId);b.disabled=locked||!!current?.robots.some(r=>r.root!==id&&r.links.some(l=>l.object_id===id));});
+ reachControls();
  $('simulate').disabled=busy||!current||!api||!!current.simulation_running||(current.previewing&&!current.simulation);$('simulationSteps').disabled=busy||!!current?.simulation_running;
  $('resetSimulation').disabled=busy||!current?.simulation||!!current?.simulation_running||!api;
  $('materialTarget').disabled=busy||!!current?.previewing;
@@ -72,6 +77,7 @@ function localize(){
 }
 function render(s){
  if(current&&s.sequence<current.sequence)return;if(!current||current.revision!==s.revision)reportKey='not_run';current=s;
+ if(jointDrag?.token!=null&&!jointDrag.ending&&s.joint_preview?.token!==jointDrag.token){jointDrag.ending='aborted';wakeJoint(jointDrag);}
  if(document.activeElement!==$('name'))$('name').value=s.name;
  $('dirty').textContent=t(s.dirty?'unsaved':'saved');$('revision').textContent=`rev ${s.revision}`;$('report').textContent=t(reportKey);$('objectCount').textContent=`${s.objects.length} ${t('objects')}`;
  if(view==='scene')$('objects').replaceChildren(...s.objects.map(o=>{const row=document.createElement('li');row.dataset.selected=String(camera?.selected===o.id);row.append(icon('cube'));const name=document.createElement('button');name.className='object-name';name.textContent=objectName(o);name.setAttribute('aria-label',`${t('select_object')} ${o.id}`);name.setAttribute('aria-pressed',String(camera?.selected===o.id));name.onclick=()=>cameraCommand({kind:'select',id:o.id});row.append(name);const pos=document.createElement('span');pos.className='position';pos.textContent=o.position.map(n=>n.toFixed(1)).join(' / ');row.append(pos);const remove=document.createElement('button');remove.title=t('remove');remove.setAttribute('aria-label',`${t('remove')} ${o.id}`);remove.append(icon('remove'));remove.dataset.removeId=String(o.id);remove.onclick=()=>mutate({kind:'remove_box',id:o.id});row.append(remove);return row;}));renderInspector();controls();
@@ -94,7 +100,7 @@ function applyLayout(s){
  controls();
 }
 function status(key,isError=false){statusKey=key;$('status').textContent=t(key);$('status').parentElement.dataset.error=String(isError);}
-async function action(fn){if(busy||!api)return;busy=true;controls();try{await numericQueue;await fn();status('ready');}catch(e){status(e?.code||'error',true);try{if(e?.code==='revision_conflict')render(await api.core.invoke('snapshot'));if(['layout_conflict','panel_error','layout_save_failed'].includes(e?.code))applyLayout(await api.core.invoke('workspace_state'));}catch{/* Keep original failure visible. */}}finally{busy=false;controls();}}
+async function action(fn){if(busy||!api||jointDrag)return;busy=true;controls();try{await numericQueue;await fn();status('ready');}catch(e){status(e?.code||'error',true);try{if(e?.code==='revision_conflict')render(await api.core.invoke('snapshot'));if(['layout_conflict','panel_error','layout_save_failed'].includes(e?.code))applyLayout(await api.core.invoke('workspace_state'));}catch{/* Keep original failure visible. */}}finally{busy=false;controls();}}
 function mutate(command){return action(async()=>render(await api.core.invoke('edit',{request:{expected_revision:current.revision,project_id:current.project_id,command}})));}
 function command(command){return action(async()=>applyLayout(await api.core.invoke('workspace_command',{command,expectedRevision:layout.revision})));}
 function applyCamera(s){if(camera&&s.revision<camera.revision)return;const selectionChanged=camera?.selected!==s.selected;camera=s;document.querySelectorAll('[data-tool]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.tool===s.tool)));$('transformAxis').value=s.axis;$('cameraGrid').setAttribute('aria-pressed',String(s.show_grid));$('cameraAxes').setAttribute('aria-pressed',String(s.show_axes));$('cameraPan').setAttribute('aria-pressed',String(s.pan_mode));$('cameraSelection').textContent=s.selected?`#${s.selected}`:'';$('cameraSelection').title=s.selected?`${t('selected_object')} · ${t('box')} ${s.selected}`:'';if(current&&selectionChanged)render(current);else {renderInspector();controls();}}
@@ -156,6 +162,7 @@ function renderInspector(){
  const robot=current?.robots?.find(r=>r.links.some(l=>l.object_id===object?.id));
  const link=robot?.links.find(l=>l.object_id===object?.id);
  $('jointSummary').textContent=robot?`${t('joints')} ${robot.links.length-1} · ${t('dof')} ${robot.links.filter(l=>l.parent!==null).reduce((n,l)=>n+1+(l.extra_axes?.length||0),0)}`:'';
+ renderJointEditor(robot,link);
  $('jointAxes').textContent=link?.parent!=null?[{axis:link.axis,range:link.range},...(link.extra_axes||[])].map(a=>`${'XYZ'[a.axis.findIndex(v=>Math.abs(v)>0.5)]} ${a.range.map(v=>Math.round(v*180/Math.PI)).join('…')}°`).join(' · '):'';
 
  for(const input of transformInputs){if(document.activeElement===input)continue;const value=object?.[input.dataset.part][Number(input.dataset.axis)];input.value=value===undefined?'':String(Number((input.dataset.part==='rotation'?value*180/Math.PI:value).toFixed(input.dataset.part==='rotation'?2:4)));}
@@ -192,6 +199,159 @@ function objectName(o){
  if(!o.label)return `${t('box')} ${o.id}`;
  const side=/^(left|right)_(.*)$/.exec(o.label);
  return `${side?`${t(side[1])} · ${bodyLabel(side[2])}`:bodyLabel(o.label)} #${o.id}`;
+}
+function wakeJoint(session){if(session.wake){const wake=session.wake;session.wake=null;wake();}}
+function startJoint(input,id,axis,spec,restore,source){
+ if(jointDrag)return jointDrag.input===input&&!jointDrag.ending;
+ if(busy||!api||!current||current.previewing||numericOwners)return false;
+ const session={input,id,axis,spec,restore,source,revision:current.revision,project:current.project_id,token:null,latest:null,sent:null,ending:null,wake:null};
+ jointDrag=session;controls();session.task=runJoint(session);return true;
+}
+function finishJoint(cancel){const session=jointDrag;if(!session||session.ending)return;session.ending=cancel?'cancel':'commit';wakeJoint(session);controls();}
+async function jointRequest(session,phase,angle=null){
+ const result=await api.core.invoke('joint_command',{request:{phase,expected_revision:session.revision,project_id:session.project,id:session.id,axis:session.axis,token:session.token,angle}});
+ if(phase==='begin')session.token=result.joint_preview.token;
+ render(result);return result;
+}
+async function runJoint(session){
+ try{
+  await jointRequest(session,'begin');
+  if(current.joint_preview?.token!==session.token)session.ending='aborted';
+  for(;;){
+   if(session.ending==='aborted')break;
+   if(session.ending==='cancel'){await jointRequest(session,'cancel');break;}
+   if(session.latest!==null&&session.latest!==session.sent){const angle=session.latest;await jointRequest(session,'preview',angle);session.sent=angle;continue;}
+   if(session.ending==='commit'){await jointRequest(session,'commit');break;}
+   await new Promise(resolve=>session.wake=resolve);
+  }
+ }catch(error){
+  try{if(session.token!==null)await jointRequest(session,'cancel');}catch{}
+  try{render(await api.core.invoke('snapshot'));}catch{}
+  status(error?.code||'invalid_project',true);
+ }finally{
+  if(jointDrag===session){jointDrag=null;session.restore();renderInspector();controls();}
+ }
+}
+window.addEventListener('blur',()=>finishJoint(true));
+window.addEventListener('pagehide',()=>finishJoint(true));
+document.addEventListener('visibilitychange',()=>{if(document.hidden)finishJoint(true);});
+const jointTranslations={en:{joint_select:'Joint',joint_angle:'Joint angle',joint_reset:'Reset axis',joint_help:'Edit angles in degrees, within the joint limits. Sliders update 3D live; one drag is one undoable edit. Release to commit; Escape, lost pointer capture or window blur cancels. Press Enter or leave a numeric field to apply it. Drag colored arcs or short rotation axes directly in 3D. Limits are enforced; release commits one edit and Esc cancels. Shift + left drag pans; Alt + left drag orbits. Drag the cyan lower-limit grip or magenta upper-limit grip to edit bounds, or enter Lower/Upper values (−180°…180°, lower < upper). Narrowing clamps the current angle; one Undo restores both. Colored arcs show angular limits; gold rays show current angles. Child links follow the joint. Physics starts from this pose. Geometry XYZ fields edit shapes, not joint pivots.'},ja:{joint_select:'関節',joint_angle:'関節角度',joint_reset:'軸をゼロへ',joint_help:'角度は度単位。可動範囲内で編集できます。スライダー操作中も3Dに反映し、1回のドラッグを1件の履歴にします。離すと確定、Esc・ポインター操作の中断・ウインドウのフォーカス喪失で取消。数値欄はEnterまたは欄を離れると確定。3Dの色付き円弧や短い回転軸も直接ドラッグできます。可動範囲内で動き、離すと1件として確定、Escで取消。Shift＋左ドラッグはパン、Alt＋左ドラッグは視点回転。シアンの下限端点／マゼンタの上限端点をドラッグするか、下限／上限を数値入力して範囲を編集できます（−180°〜180°、下限＜上限）。現在角度が範囲外になれば端へ補正し、同じUndoで両方戻ります。円弧は可動範囲、金色の線は現在角度です。子孫リンクが追従し、物理計算もこの姿勢から開始します。XYZ欄は形状の編集で、関節支点の編集ではありません。'},'zh-CN':{joint_select:'关节',joint_angle:'关节角度',joint_reset:'轴归零',joint_help:'以度为单位，在关节限位内编辑。拖动滑块时实时更新3D，一次拖动记录为一次操作。松开提交，Esc、指针中断或窗口失焦取消。数值框按Enter或离开时提交。可直接拖动3D彩色圆弧或短旋转轴，角度受限，松开提交一次操作，Esc取消。Shift＋左键平移，Alt＋左键旋转视角。拖动青色下限端点／品红色上限端点，或输入下限／上限以编辑范围（−180°至180°，下限＜上限）。缩小范围时当前角度会被限制在边界，一次撤销可恢复两者。彩色圆弧表示限位，金色射线表示当前角度。子连杆随关节运动，物理计算从此姿态开始。XYZ编辑几何形状，不改变关节支点。'}};
+for(const [language,labels] of Object.entries(jointTranslations))Object.assign(translations[language],labels);
+for(const [language,labels] of Object.entries({en:{joint_lower:'Lower',joint_upper:'Upper'},ja:{joint_lower:'下限',joint_upper:'上限'},'zh-CN':{joint_lower:'下限',joint_upper:'上限'}}))Object.assign(translations[language],labels);
+let jointEditorKey='';
+function renderJointEditor(robot,link){
+ const editor=$('jointEditor'),fields=$('jointFields'),select=$('jointSelect');editor.hidden=!robot;renderIk(robot,link);
+ if(!robot){fields.replaceChildren();jointEditorKey='';return;}
+ const key=`${current.project_id}:${robot.root}:${link?.object_id}:${locale}:${JSON.stringify([link?.axis,link?.range,link?.extra_axes,robot.links.map(l=>[l.object_id,l.parent])])}`;
+ if(jointEditorKey!==key){
+  jointEditorKey=key;
+  const placeholder=new Option(t('joint_select'),'');placeholder.disabled=true;
+  select.replaceChildren(placeholder,...robot.links.filter(l=>l.parent!==null).map(l=>new Option(objectName(current.objects.find(o=>o.id===l.object_id)),String(l.object_id))));
+  select.value=link?.parent!=null?String(link.object_id):'';
+  select.onchange=()=>cameraCommand({kind:'select',id:Number(select.value)});
+  fields.replaceChildren();
+  if(link?.parent!=null){
+   const specs=[{axis:link.axis,range:link.range},...(link.extra_axes||[])];
+   for(const [i,spec] of specs.entries()){
+    const row=document.createElement('div');row.className='joint-row';row.dataset.jointAxis=String(i);
+    const axisName='XYZ'[spec.axis.findIndex(v=>Math.abs(v)>0.5)];
+    const label=document.createElement('span');label.textContent=axisName;label.dataset.axis=String('XYZ'.indexOf(axisName));label.title=spec.range.map(v=>(v*180/Math.PI).toFixed(1)).join(' … ')+'°';
+    const slider=document.createElement('input');slider.type='range';slider.step='any';
+    const number=document.createElement('input');number.type='number';number.step='any';number.required=true;
+    for(const input of [slider,number]){input.min=String(spec.range[0]*180/Math.PI);input.max=String(spec.range[1]*180/Math.PI);input.setAttribute('aria-label',`${t('joint_angle')} ${axisName} (°)`);}
+    const reset=document.createElement('button');reset.type='button';reset.append(icon('reload'));reset.title=t('joint_reset');reset.setAttribute('aria-label',`${t('joint_reset')} ${axisName}`);
+    const restore=()=>{const actual=current?.robots.flatMap(r=>r.links).find(l=>l.object_id===link.object_id);const degrees=(actual?.angles?.[i]||0)*180/Math.PI;slider.value=String(degrees);number.value=String(Math.max(Number(number.min),Math.min(Number(number.max),Number(degrees.toFixed(5)))));};
+    const commit=async input=>{
+     if(!input.reportValidity()){restore();return;}
+     const angle=Math.max(spec.range[0],Math.min(spec.range[1],input.valueAsNumber*Math.PI/180));
+     await mutate({kind:'set_joint_angle',id:link.object_id,axis:i,angle});restore();
+    };
+    slider.onpointerdown=e=>{
+     if(e.button!==0||!startJoint(slider,link.object_id,i,spec,restore,'pointer'))return;
+     slider.setPointerCapture(e.pointerId);
+    };
+    slider.oninput=()=>{
+     number.value=String(Number(Number(slider.value).toFixed(5)));
+     if(!jointDrag)startJoint(slider,link.object_id,i,spec,restore,'input');
+     if(jointDrag?.input===slider){jointDrag.latest=Math.max(spec.range[0],Math.min(spec.range[1],slider.valueAsNumber*Math.PI/180));wakeJoint(jointDrag);}
+    };
+    slider.onchange=()=>{if(jointDrag?.input===slider&&jointDrag.source==='input')finishJoint(false);};
+    slider.onpointerup=()=>{if(jointDrag?.input===slider)finishJoint(false);};
+    slider.onpointercancel=()=>{if(jointDrag?.input===slider)finishJoint(true);};
+    slider.onlostpointercapture=()=>{if(jointDrag?.input===slider&&!jointDrag.ending)finishJoint(true);};
+    slider.onblur=()=>{if(jointDrag?.input===slider&&!jointDrag.ending)finishJoint(true);};
+    const motionKeys=['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','PageUp','PageDown','Home','End'];
+    slider.onkeydown=e=>{if(e.key==='Escape'){e.preventDefault();finishJoint(true);}else if(e.key==='Enter'){e.preventDefault();finishJoint(false);}else if(motionKeys.includes(e.key)&&!jointDrag)startJoint(slider,link.object_id,i,spec,restore,'keyboard');};
+    slider.onkeyup=e=>{if(motionKeys.includes(e.key)&&jointDrag?.input===slider)finishJoint(false);};
+    number.onchange=()=>commit(number);
+    number.onkeydown=e=>{if(e.key==='Escape'){e.preventDefault();restore();number.blur();}else if(e.key==='Enter'){e.preventDefault();number.blur();}};
+    reset.onclick=async()=>{await mutate({kind:'set_joint_angle',id:link.object_id,axis:i,angle:Math.max(spec.range[0],Math.min(spec.range[1],0))});restore();};
+    row.append(label,slider,number,reset);
+    const limits=document.createElement('div');limits.className='joint-limit-row';
+    const boundInputs=[];
+    const restoreBounds=()=>{
+     const actual=current?.robots.flatMap(r=>r.links).find(l=>l.object_id===link.object_id);
+     const range=i===0?actual?.range:actual?.extra_axes?.[i-1]?.range;
+     if(!range)return;
+     for(const [bound,input] of boundInputs.entries())input.value=String(Math.max(-180,Math.min(180,Number((range[bound]*180/Math.PI).toFixed(5)))));
+    };
+    const commitBounds=async()=>{
+     if(boundInputs.some(input=>!input.reportValidity())||boundInputs[0].valueAsNumber>=boundInputs[1].valueAsNumber){status('invalid_project',true);restoreBounds();return;}
+     await mutate({kind:'set_joint_range',id:link.object_id,axis:i,range:boundInputs.map(input=>input.valueAsNumber*Math.PI/180)});restoreBounds();
+    };
+    for(const bound of ['lower','upper']){
+     const cell=document.createElement('label');cell.className='joint-bound';cell.dataset.bound=bound;
+     const mark=document.createElement('span');mark.textContent=t(`joint_${bound}`);
+     const input=document.createElement('input');input.type='number';input.min='-180';input.max='180';input.step='any';input.required=true;input.dataset.bound=bound;
+     input.setAttribute('aria-label',`${t(`joint_${bound}`)} ${axisName} (°)`);input.onchange=commitBounds;
+     input.onkeydown=e=>{if(e.key==='Escape'){e.preventDefault();restoreBounds();input.blur();}else if(e.key==='Enter'){e.preventDefault();input.blur();}};
+     boundInputs.push(input);cell.append(mark,input);limits.append(cell);
+    }
+    restoreBounds();row.append(limits);fields.append(row);
+   }
+  }
+ }
+ for(const [i,row] of [...fields.children].entries()){
+  const [slider,number]=row.querySelectorAll('input');
+  if(document.activeElement===slider||document.activeElement===number)continue;
+  const degrees=(link.angles?.[i]||0)*180/Math.PI;slider.value=String(degrees);number.value=String(Math.max(Number(number.min),Math.min(Number(number.max),Number(degrees.toFixed(5)))));
+ }
+}
+for(const [language,labels] of Object.entries({
+ en:{ik_position:'Position IK',ik_base:'Fixed chain base',ik_current:'Use current center as target',ik_solve:'Solve position IK',ik_target:'Target · m',ik_unreachable:'No IK solution found within the limits and budget. Pose unchanged.',ik_help:'Target: selected object center in world meters (Y up). The chosen ancestor stays fixed; joints on the path below it may rotate within their limits. Other descendants follow their parent. Position only, tolerance 1 mm. No collision, balance or orientation constraint. A bounded local search may fail even for a reachable target. Apply with the target icon or Enter; all solved angles form one Undo. Esc restores an uncommitted target field.'},
+ ja:{ik_position:'位置IK',ik_base:'固定するチェーン基点',ik_current:'現在の中心位置を目標にする',ik_solve:'位置IKを適用',ik_target:'目標 · m',ik_unreachable:'制限・計算上限内でIK解が見つかりません。姿勢は変更していません。',ik_help:'選択部位の中心をワールド座標の目標へ移動（m、Y上）。選んだ祖先を固定し、その下から選択部位までの関節を制限内で回転。ほかの子孫も親に追従します。位置のみ、許容誤差1mm。衝突・バランス・向きの制約なし。局所探索のため、到達可能でも解が見つからない場合があります。目標アイコンまたはEnterで適用、全関節を1件のUndoに記録。Escで未確定の入力を復元。'},
+ 'zh-CN':{ik_position:'位置IK',ik_base:'固定链基点',ik_current:'以当前中心为目标',ik_solve:'应用位置IK',ik_target:'目标 · m',ik_unreachable:'在限位与计算预算内未找到IK解，姿态保持不变。',ik_help:'以世界坐标米为单位移动选中部位的中心（Y向上）。固定所选祖先，仅在限位内旋转下方路径上的关节；其他后代随父节点运动。仅约束位置，容差1mm，不含碰撞、平衡或朝向约束。局部搜索可能无法找到可达目标的解。目标图标或Enter应用，全部关节合为一次撤销；Esc恢复未提交的输入。'}
+}))Object.assign(translations[language],labels);
+let ikKey='';
+const ikInputs=[];
+function currentIkTarget(){return current?.objects.find(o=>o.id===camera?.selected)?.position;}
+function resetIkTarget(){const target=currentIkTarget();if(target)ikInputs.forEach((input,i)=>{input.value=String(target[i]);input.dataset.committed=input.value;});}
+async function solveIk(){
+ if(ikInputs.some(input=>!input.reportValidity())||!$('ikBase').value)return;
+ const target=ikInputs.map(input=>input.valueAsNumber);
+ ikInputs.forEach(input=>input.dataset.committed=input.value);
+ await mutate({kind:'solve_ik',id:camera.selected,base:Number($('ikBase').value),target});
+}
+for(let axis=0;axis<3;axis++){
+ const cell=document.createElement('label');cell.className='transform-cell';const label=document.createElement('span');label.textContent='XYZ'[axis];label.dataset.axis=String(axis);
+ const input=document.createElement('input');input.type='number';input.className='transform-number';input.step='any';input.min='-10000';input.max='10000';input.required=true;
+ input.onkeydown=e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();input.value=input.dataset.committed;input.blur();}else if(e.key==='Enter'){e.preventDefault();solveIk();}};
+ cell.append(label,input);ikInputs.push(input);$('ikTarget').append(cell);
+}
+$('ikCurrent').onclick=resetIkTarget;$('ikSolve').onclick=solveIk;
+function renderIk(robot,link){
+ $('ikEditor').hidden=link?.parent==null;
+ if(!robot||link?.parent==null){ikKey='';return;}
+ const key=`${current.project_id}:${link.object_id}:${locale}`;
+ if(key!==ikKey){
+  const oldBase=$('ikBase').value;const sameSelection=ikKey.split(':').slice(0,2).join(':')===key.split(':').slice(0,2).join(':');ikKey=key;
+  const ancestors=[];let cursor=link.parent;
+  while(cursor!=null){ancestors.push(cursor);cursor=robot.links.find(l=>l.object_id===cursor)?.parent;}
+  $('ikBase').replaceChildren(...ancestors.reverse().map(id=>new Option(objectName(current.objects.find(o=>o.id===id)),String(id))));
+  $('ikBase').value=sameSelection&&ancestors.includes(Number(oldBase))?oldBase:String(robot.root);
+  if(!sameSelection)resetIkTarget();
+  ikInputs.forEach((input,i)=>input.setAttribute('aria-label',`${t('ik_target')} ${'XYZ'[i]}`));
+ }
 }
 const gravityInputs=[];
 for(let axis=0;axis<3;axis++){
@@ -232,6 +392,7 @@ $('addRobot').onclick=()=>action(async()=>{
 $('simulate').onclick=()=>action(async()=>render(await api.core.invoke('simulate',{expectedRevision:current.revision,projectId:current.project_id,steps:Number($('simulationSteps').value)})));
 $('resetSimulation').onclick=()=>action(async()=>render(await api.core.invoke('reset_simulation')));
 function renderPhysics(){
+ renderReach();
  renderAssets();
  if(!current?.physics)return;
  $('gravityPreset').value=current.physics.gravity.preset;
@@ -243,7 +404,7 @@ function renderPhysics(){
  $('objectFixed').checked=object?.fixed??true;
  const mass=object?(object.mass_override??(object.mesh_ref?null:object.scale.reduce((a,b)=>a*b,1)*object.material.density)):null;
  $('bodyMass').textContent=object?(mass===null?'— kg':`${mass.toLocaleString(locale,{maximumFractionDigits:2})} kg`):'';
- $('simulationStatus').textContent=current.simulation_running?t('sim_running'):current.simulation?`${current.simulation.engine} · ${current.simulation.time.toFixed(3)} s`:t('sim_idle');
+ $('simulationStatus').textContent=current.reach?`Reach · ${current.reach.time.toFixed(3)} s`:current.simulation_running?t('sim_running'):current.simulation?`${current.simulation.engine} · ${current.simulation.time.toFixed(3)} s`:t('sim_idle');
 }
 
 let assetCatalogData=null,assetWasRunning=false;
@@ -277,17 +438,51 @@ function renderAssets(){
  if(assetCatalogData)filterAssets();
 }
 
+for(const [language,labels] of Object.entries({
+ en:{reach_seed:'Seed',reach_horizon:'Steps',reach_robot:'Reach robot',reach_add:'Add dual-arm robot',reach_reset:'Reset Reach with this seed',reach_step:'Advance 0.02 s',reach_run:'Run to success or timeout',reach_save:'Save Episode checkpoint',reach_close:'Restore authored scene',reach_play:'Replay recorded poses',reach_pause:'Pause replay',reach_frame:'Recorded frame',reach_file:'Saved Episode',reach_refresh:'Refresh Episodes',reach_load:'Load Episode',reach_close_first:'Return to the editor scene before closing.',reach_recorded:'Recorded',reach_idle:'Ready',reach_running:'Running',reach_success:'Success',reach_timeout:'Timeout',reach_help:'Reach v1: isolated fixed-base dual arm in zero gravity. Add a dual-arm template first. Other scene objects are excluded; the authored scene stays unchanged. Seed determines a reference joint goal and target center (green marker). Each action holds 10 × 0.002 s; success needs 5 consecutive observations within 3.5 cm. Steps sets the timeout (1–500). Run uses a reference position-servo controller, not a learned policy. Save creates an immutable checkpoint in episodes/ beside the project; Running means a partial record. Replay/seek uses recorded poses without MuJoCo. Loaded Episodes are read-only; reset starts a new run. Exact rerun comparison requires the same model, engine, Python and platform; seed alone does not ensure cross-version equality.'},
+ ja:{reach_seed:'Seed',reach_horizon:'上限',reach_robot:'Reachロボット',reach_add:'双腕ロボットを追加',reach_reset:'このseedでReachを初期化',reach_step:'0.02秒進める',reach_run:'成功またはtimeoutまで実行',reach_save:'Episodeのチェックポイントを保存',reach_close:'編集シーンに戻す',reach_play:'記録した姿勢を再生',reach_pause:'再生を一時停止',reach_frame:'記録フレーム',reach_file:'保存したEpisode',reach_refresh:'Episode一覧を更新',reach_load:'Episodeを読込',reach_close_first:'先に↩で編集シーンへ戻してください。',reach_recorded:'記録',reach_idle:'待機',reach_running:'実行中',reach_success:'成功',reach_timeout:'Timeout',reach_help:'Reach v1：選択した固定ベース双腕のみ、無重力の独立課題。先に双腕テンプレートを追加。他の物体は除外し、元の編集シーンは変更しません。seedで参照関節目標と中心位置の目標（緑マーカー）を決定。1step＝0.002秒×10、3.5cm以内に5回連続で留まると成功。上限1〜500stepでtimeout。実行は位置サーボの参照制御で、学習方策ではありません。保存先はプロジェクト横のepisodes/、上書きしないチェックポイントです。実行中の記録は部分記録。再生・シークは記録姿勢を使いMuJoCo不要。読込記録は読み取り専用で、resetすると新規実行になります。同一結果の再実行比較はモデル・MuJoCo・Python・実行環境を合わせて行い、seedのみで版を跨ぐ一致は保証しません。'},
+ 'zh-CN':{reach_seed:'Seed',reach_horizon:'上限',reach_robot:'Reach机器人',reach_add:'添加双臂机器人',reach_reset:'使用此seed重置Reach',reach_step:'前进0.02秒',reach_run:'运行至成功或超时',reach_save:'保存Episode检查点',reach_close:'返回编辑场景',reach_play:'回放记录姿态',reach_pause:'暂停回放',reach_frame:'记录帧',reach_file:'已保存Episode',reach_refresh:'刷新Episode列表',reach_load:'加载Episode',reach_close_first:'请先返回编辑场景再关闭。',reach_recorded:'记录',reach_idle:'就绪',reach_running:'运行中',reach_success:'成功',reach_timeout:'超时',reach_help:'Reach v1：仅使用所选固定基座双臂，零重力独立任务。先添加双臂模板；排除其他物体，保留原编辑场景。seed确定参考关节目标与中心目标（绿色标记）。每步0.002秒×10；连续5次处于3.5cm内即成功，上限1–500步。使用位置伺服参考控制器，不是学习策略。检查点保存于项目旁episodes/，不覆盖已有文件；运行中表示部分记录。回放与定位使用记录姿态，无需MuJoCo。加载记录只读，重置开始新的运行。精确重跑比较需相同模型、引擎、Python和平台，仅seed不能保证跨版本一致。'}
+}))Object.assign(translations[language],labels);
+let reachId=null;
+function renderReach(){
+ const r=current?.reach;
+ if(!r){const robots=current?.robots.filter(r=>r.template==='dual_arm')||[];const previous=$('reachRobot').value;$('reachRobot').replaceChildren(...robots.map(r=>new Option(`#${r.root}`,String(r.root))));if(robots.some(r=>String(r.root)===previous))$('reachRobot').value=previous;reachId=null;}
+ else if(reachId!==r.id){reachId=r.id;$('reachSeed').value=r.seed;$('reachHorizon').value=r.horizon;if(!$('reachRobot').querySelector(`option[value="${r.robot}"]`))$('reachRobot').append(new Option(`#${r.robot}`,String(r.robot)));$('reachRobot').value=String(r.robot);}
+ $('reachStatus').textContent=r?`${r.step}/${r.horizon} · ${r.time.toFixed(2)} s · ${(r.distance*100).toFixed(1)} cm · ${t('reach_'+r.outcome)}${!r.live?' · '+t('reach_recorded'):''}`:t('reach_idle');
+ $('reachTarget').textContent=r?`XYZ ${r.target.map(v=>v.toFixed(3)).join(' · ')} m`:'';
+ $('reachFrame').max=String(Math.max(0,(r?.frames||1)-1));if(document.activeElement!==$('reachFrame'))$('reachFrame').value=String(r?.cursor||0);
+ if(r?.saved)$('episodeFile').title=r.saved;
+}
+function reachControls(){
+ const r=current?.reach,locked=busy||!current||!api,other=!!current?.previewing&&!r;
+ $('reachFields').disabled=locked||other;
+ for(const id of ['reachSeed','reachHorizon','reachRobot'])$(id).disabled=locked||other||!!r?.playing;
+ $('reachAdd').disabled=locked||!!current?.previewing;
+ $('reachReset').disabled=locked||other||!$('reachRobot').value;
+ const cannotStep=locked||!r?.live||r.playing||r.cursor+1!==r.frames||r.final_outcome!=='running';
+ $('reachStep').disabled=cannotStep;$('reachRun').disabled=cannotStep;
+ $('reachSave').disabled=locked||!r||r.playing;$('reachClose').disabled=locked||!r;
+ $('reachPlay').disabled=locked||!r||r.frames<2||r.playing;$('reachPause').disabled=locked||!r?.playing;$('reachFrame').disabled=locked||!r;
+ $('episodeFile').disabled=locked||other;$('episodeRefresh').disabled=locked;$('episodeLoad').disabled=locked||other||!$('episodeFile').value;
+}
+function reachRequest(command){return action(async()=>{render(await api.core.invoke('reach_command',{request:{project_id:current.project_id,expected_revision:current.revision,expected_sequence:current.sequence,command}}));if(command.op==='save')await refreshEpisodeFiles();});}
+async function refreshEpisodeFiles(){if(!api)return;const names=await api.core.invoke('episode_files');const previous=current?.reach?.saved||$('episodeFile').value;$('episodeFile').replaceChildren(...names.map(name=>new Option(name,name)));if(names.includes(previous))$('episodeFile').value=previous;controls();}
+$('reachAdd').onclick=()=>mutate({kind:'add_robot',template:'dual_arm'});
+$('reachReset').onclick=()=>{if(!$('reachSeed').reportValidity()||!$('reachHorizon').reportValidity())return;reachRequest({op:'reset',config:{seed:Number($('reachSeed').value),horizon:Number($('reachHorizon').value),robot:Number($('reachRobot').value)}});};
+for(const [element,op] of Object.entries({reachStep:'step',reachRun:'run',reachSave:'save',reachClose:'close',reachPlay:'play',reachPause:'pause'}))$(element).onclick=()=>{const r=current?.reach;if(r)reachRequest({op,id:r.id,...(['step','run'].includes(op)?{expected_step:r.frames-1}:{} )});};
+$('reachFrame').onchange=()=>{if(current?.reach)reachRequest({op:'seek',id:current.reach.id,index:Number($('reachFrame').value)});};
+$('episodeRefresh').onclick=()=>action(refreshEpisodeFiles);$('episodeFile').onchange=controls;$('episodeLoad').onclick=()=>reachRequest({op:'load',name:$('episodeFile').value});
 async function start(){
  localize();if(!api){status('desktop_required',true);return;}
  try{
   await api.event.listen('atom://layout',e=>applyLayout(e.payload));
   if(!isSplit){
-   await api.event.listen('atom://changed',e=>render(e.payload));await api.event.listen('atom://close-blocked',()=>status(current?.asset_importing?'usd_importing':'unsaved_changes',true));await api.event.listen('atom://panel-error',e=>status(e.payload,true));await api.event.listen('atom://viewport',e=>{gpuKey=e.payload;$('gpu').textContent=t(gpuKey);});
+   await api.event.listen('atom://changed',e=>render(e.payload));await api.event.listen('atom://close-blocked',()=>status(current?.asset_importing?'usd_importing':current?.reach?'reach_close_first':'unsaved_changes',true));await api.event.listen('atom://panel-error',e=>status(e.payload,true));await api.event.listen('atom://viewport',e=>{gpuKey=e.payload;$('gpu').textContent=t(gpuKey);});
    await api.event.listen('atom://dock-preview',e=>{const d=e.payload;$('dockPreview').textContent=d?`${d.target?t(d.target)+' · ':''}${t(d.zone==='floating'?'float':d.zone)}`:'';document.body.dataset.drop=d?.target===view?d.zone:'';});
    await api.event.listen('atom://camera',e=>applyCamera(e.payload));
    render(await api.core.invoke('snapshot'));applyCamera(await api.core.invoke('camera_state'));
   }
-  if(!isSplit)physicsCatalog=await api.core.invoke('physics_catalog');applyLayout(await api.core.invoke('workspace_state'));status('ready');
+  if(!isSplit){physicsCatalog=await api.core.invoke('physics_catalog');await refreshEpisodeFiles();}applyLayout(await api.core.invoke('workspace_state'));status('ready');
  }catch(e){status(e?.code||'error',true);}
 }
 start();

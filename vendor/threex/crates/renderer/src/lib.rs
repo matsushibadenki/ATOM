@@ -3,6 +3,7 @@ mod gather;
 pub mod geometry;
 pub mod guides;
 pub mod imported;
+pub mod joint_ranges;
 pub mod mesh_resources;
 use mesh_resources::{MeshBudget, MeshBudgetStatus, MeshCache};
 #[cfg(not(target_arch = "wasm32"))]
@@ -56,6 +57,8 @@ pub struct Renderer {
     imported: imported::Imported,
     guides: guides::Guides,
     guide_view: Option<guides::GuideView>,
+    ranges: joint_ranges::Ranges,
+    range_view: Option<joint_ranges::JointRanges>,
     geometries: [MeshBuffers; 3],
     custom: MeshCache<MeshBuffers>,
     mesh_budget: MeshBudget,
@@ -147,8 +150,11 @@ impl Renderer {
         });
         let guides = guides::Guides::new(&device, format, &shader, &pl);
         let imported = imported::Imported::new(&device, format, &pl);
+        let ranges = joint_ranges::Ranges::new(&device, format);
         Self {
             imported,
+            ranges,
+            range_view: None,
             guides,
             guide_view: None,
             device,
@@ -179,6 +185,9 @@ impl Renderer {
         meshes: impl IntoIterator<Item = imported::MeshView<'a>>,
     ) -> Result<(), String> {
         self.imported.sync(&self.device, meshes)
+    }
+    pub fn set_joint_ranges(&mut self, view: Option<joint_ranges::JointRanges>) {
+        self.range_view = view;
     }
     pub fn set_guides(&mut self, view: Option<guides::GuideView>) {
         self.guide_view = view;
@@ -460,6 +469,17 @@ impl Renderer {
                 &self.geometries[0],
                 &self.bind,
                 &self.instances,
+            );
+        }
+        if let Some(view) = &self.range_view {
+            self.ranges.encode(
+                &self.queue,
+                &mut encoder,
+                target,
+                region,
+                vp,
+                self.guide_view.as_ref().map_or(1., |v| v.scale),
+                view,
             );
         }
         self.queue.submit([encoder.finish()]);

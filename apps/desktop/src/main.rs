@@ -1,6 +1,7 @@
 mod assets;
 mod camera;
 mod camera_input;
+mod control;
 mod joints;
 mod layout;
 mod reach;
@@ -10,14 +11,14 @@ mod window_placement;
 mod workspace;
 use atom_core::{AppCore, EditRequest, Project, ProjectStore, Snapshot};
 use serde::Serialize;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use tauri::{Emitter, Manager};
 
 struct Session {
     core: AppCore,
     store: ProjectStore,
 }
-struct Shared(Mutex<Session>);
+struct Shared(Arc<Mutex<Session>>);
 #[derive(Debug, Serialize)]
 struct UiError {
     code: String,
@@ -216,6 +217,7 @@ fn reset_simulation(webview: tauri::Webview) -> Result<Snapshot, UiError> {
 fn main() {
     let result = tauri::Builder::default()
         .manage(assets::Jobs::default())
+        .manage(control::Runtime::default())
         .manage(viewport::Preview::default())
         .manage(camera::State::default())
         .setup(|app| {
@@ -238,10 +240,12 @@ fn main() {
                     p
                 }
             };
-            app.manage(Shared(Mutex::new(Session {
+            let control_path = store.path().to_owned();
+            app.manage(Shared(Arc::new(Mutex::new(Session {
                 core: AppCore::new(project)?,
                 store,
-            })));
+            }))));
+            control::start(app.handle(), control_path);
             let path = std::env::var_os("ATOM_LAYOUT_PATH")
                 .map(std::path::PathBuf::from)
                 .unwrap_or(app.path().app_config_dir()?.join("dock-layout.json"));
@@ -258,8 +262,11 @@ fn main() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            control::control_request,
+            control::control_diagnose,
             reach::reach_command,
             reach::episode_files,
+            reach::episode_dataset,
             camera::camera_state,
             camera::camera_command,
             transform::transform_command,

@@ -31,7 +31,7 @@ const usdTranslations={
 };
 for(const language of Object.keys(translations))Object.assign(translations[language],usdTranslations[language]);
 
-const paths={step:'m4 3 9 7-9 7z M16 3v14',pause:'M6 3v14 M14 3v14',undo:'M7 5 3 9l4 4 M3 9h8a5 5 0 0 1 5 5',redo:'m13 5 4 4-4 4 M17 9H9a5 5 0 0 0-5 5',select:'M4 2l12 9-6 1-3 6z',move:'M10 2v16 M2 10h16 M7 5l3-3 3 3 M15 7l3 3-3 3 M7 15l3 3 3-3 M5 7l-3 3 3 3',rotate:'M16 6a7 7 0 1 0 1 7 M16 2v5h-5',scale:'M3 3h5v5H3z M11 11h6v6h-6z M8 8l4 4 M12 8v4H8',grid:'M3 3h14v14H3z M3 8h14 M3 12h14 M8 3v14 M12 3v14',axes:'M5 15h12 M5 15V3 M5 15l8-8 M14 12l3 3-3 3 M2 6l3-3 3 3 M9 7h4v4',pan:'M10 2v16 M2 10h16 M7 5l3-3 3 3 M7 15l3 3 3-3 M5 7l-3 3 3 3 M15 7l3 3-3 3',focus:'M3 7V3h4 M13 3h4v4 M17 13v4h-4 M7 17H3v-4 M6 10h8 M10 6v8',group:'M6 2h12v12H6z M2 6v12h12 M6 6h12 M10 2v4',return_group:'M2 3h16v14H2z M2 7h16 M7 3v4 M12 9l-3 3 3 3 M9 12h6',save:'M3 3h11l3 3v11H3z M6 3v5h8V3 M6 17v-6h8v6',reload:'M16 6a7 7 0 1 0 1 7 M16 2v5h-5',check:'m4 10 4 4 8-9',plus:'M10 3v14 M3 10h14',remove:'M4 5h12 M8 5V3h4v2 M6 5l1 12h6l1-12 M9 8v6 M11 8v6',play:'m6 3 10 7-10 7z',cube:'m10 2 7 4v8l-7 4-7-4V6z M3 6l7 4 7-4 M10 10v8',float:'M7 3h10v10H7z M3 7v10h10',return:'M3 4h14v13H3z M11 7l-3 3 3 3 M8 10h7',layout:'M3 3h14v14H3z M7 3v14 M13 3v14',scene:'m10 2 7 4v8l-7 4-7-4V6z M3 6l7 4 7-4 M10 10v8',workflow:'M3 3h5v5H3z M12 12h5v5h-5z M8 5h6v7',viewport:'M2 3h16v12H2z M7 18h6 M10 15v3'};
+const paths={export:'M10 2v10 M6 6l4-4 4 4 M3 11v6h14v-6',step:'m4 3 9 7-9 7z M16 3v14',pause:'M6 3v14 M14 3v14',undo:'M7 5 3 9l4 4 M3 9h8a5 5 0 0 1 5 5',redo:'m13 5 4 4-4 4 M17 9H9a5 5 0 0 0-5 5',select:'M4 2l12 9-6 1-3 6z',move:'M10 2v16 M2 10h16 M7 5l3-3 3 3 M15 7l3 3-3 3 M7 15l3 3 3-3 M5 7l-3 3 3 3',rotate:'M16 6a7 7 0 1 0 1 7 M16 2v5h-5',scale:'M3 3h5v5H3z M11 11h6v6h-6z M8 8l4 4 M12 8v4H8',grid:'M3 3h14v14H3z M3 8h14 M3 12h14 M8 3v14 M12 3v14',axes:'M5 15h12 M5 15V3 M5 15l8-8 M14 12l3 3-3 3 M2 6l3-3 3 3 M9 7h4v4',pan:'M10 2v16 M2 10h16 M7 5l3-3 3 3 M7 15l3 3 3-3 M5 7l-3 3 3 3 M15 7l3 3-3 3',focus:'M3 7V3h4 M13 3h4v4 M17 13v4h-4 M7 17H3v-4 M6 10h8 M10 6v8',group:'M6 2h12v12H6z M2 6v12h12 M6 6h12 M10 2v4',return_group:'M2 3h16v14H2z M2 7h16 M7 3v4 M12 9l-3 3 3 3 M9 12h6',save:'M3 3h11l3 3v11H3z M6 3v5h8V3 M6 17v-6h8v6',reload:'M16 6a7 7 0 1 0 1 7 M16 2v5h-5',check:'m4 10 4 4 8-9',plus:'M10 3v14 M3 10h14',remove:'M4 5h12 M8 5V3h4v2 M6 5l1 12h6l1-12 M9 8v6 M11 8v6',play:'m6 3 10 7-10 7z',cube:'m10 2 7 4v8l-7 4-7-4V6z M3 6l7 4 7-4 M10 10v8',float:'M7 3h10v10H7z M3 7v10h10',return:'M3 4h14v13H3z M11 7l-3 3 3 3 M8 10h7',layout:'M3 3h14v14H3z M7 3v14 M13 3v14',scene:'m10 2 7 4v8l-7 4-7-4V6z M3 6l7 4 7-4 M10 10v8',workflow:'M3 3h5v5H3z M12 12h5v5h-5z M8 5h6v7',viewport:'M2 3h16v12H2z M7 18h6 M10 15v3'};
 function icon(name){const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 20 20');svg.setAttribute('aria-hidden','true');const p=document.createElementNS(svg.namespaceURI,'path');p.setAttribute('d',paths[name]);svg.append(p);return svg;}
 document.querySelectorAll('[data-icon]').forEach(el=>el.append(icon(el.dataset.icon)));
 const $=id=>document.getElementById(id),view=new URLSearchParams(location.search).get('view')||'toolbar',isSplit=view.startsWith('split-');
@@ -392,7 +392,7 @@ $('addRobot').onclick=()=>action(async()=>{
 $('simulate').onclick=()=>action(async()=>render(await api.core.invoke('simulate',{expectedRevision:current.revision,projectId:current.project_id,steps:Number($('simulationSteps').value)})));
 $('resetSimulation').onclick=()=>action(async()=>render(await api.core.invoke('reset_simulation')));
 function renderPhysics(){
- renderReach();
+ renderReach();renderDataset();renderControl();
  renderAssets();
  if(!current?.physics)return;
  $('gravityPreset').value=current.physics.gravity.preset;
@@ -463,6 +463,8 @@ function reachControls(){
  $('reachStep').disabled=cannotStep;$('reachRun').disabled=cannotStep;
  $('reachSave').disabled=locked||!r||r.playing;$('reachClose').disabled=locked||!r;
  $('reachPlay').disabled=locked||!r||r.frames<2||r.playing;$('reachPause').disabled=locked||!r?.playing;$('reachFrame').disabled=locked||!r;
+ $('episodeQuality').disabled=locked||!r||r.playing;$('exportPolicy').disabled=locked||!r||r.playing;
+ $('episodeExport').disabled=locked||!r||r.playing||r.frames<2||r.final_outcome==='running'||($('exportPolicy').value==='success_only'&&r.final_outcome!=='success');
  $('episodeFile').disabled=locked||other;$('episodeRefresh').disabled=locked;$('episodeLoad').disabled=locked||other||!$('episodeFile').value;
 }
 function reachRequest(command){return action(async()=>{render(await api.core.invoke('reach_command',{request:{project_id:current.project_id,expected_revision:current.revision,expected_sequence:current.sequence,command}}));if(command.op==='save')await refreshEpisodeFiles();});}
@@ -472,6 +474,42 @@ $('reachReset').onclick=()=>{if(!$('reachSeed').reportValidity()||!$('reachHoriz
 for(const [element,op] of Object.entries({reachStep:'step',reachRun:'run',reachSave:'save',reachClose:'close',reachPlay:'play',reachPause:'pause'}))$(element).onclick=()=>{const r=current?.reach;if(r)reachRequest({op,id:r.id,...(['step','run'].includes(op)?{expected_step:r.frames-1}:{} )});};
 $('reachFrame').onchange=()=>{if(current?.reach)reachRequest({op:'seek',id:current.reach.id,index:Number($('reachFrame').value)});};
 $('episodeRefresh').onclick=()=>action(refreshEpisodeFiles);$('episodeFile').onchange=controls;$('episodeLoad').onclick=()=>reachRequest({op:'load',name:$('episodeFile').value});
+for(const [language,labels] of Object.entries({
+ en:{control_readonly:'Read / dry-run',control_unchecked:'Unchecked',control_diagnose:'Diagnose local Control API / MCP connection',control_connected:'Connected',control_disconnected:'Unavailable',control_busy:'Core busy',control_help:'Local read-only Control API v1 and MCP stdio. The desktop owns the live Rust document; the bridge attaches through a private Unix socket. Read state/objects, or validate a proposed editor command without changing document, Undo/Redo or saved state. Dry-run does not run physics/collision tests. Diagnose checks discovery, local transport/authentication, version and shared-state access. Start atom-mcp with --project pointing to this project; atom-cli mcp-config generates the client entry. API writes, simulation execution and remote HTTP are not enabled.'},
+ ja:{control_readonly:'読取／dry-run',control_unchecked:'未確認',control_diagnose:'ローカルControl API／MCPの接続診断',control_connected:'接続済み',control_disconnected:'接続不可',control_busy:'Core処理中',control_help:'ローカル読取専用Control API v1とMCP stdio。デスクトップのRust文書へ保護されたUnix socketで接続します。状態・物体の取得、編集Commandのdry-runが可能。dry-runは文書・Undo／Redo・保存状態を変更せず、物理・衝突試験も実行しません。診断では接続先情報・通信／認証・版・共有状態へのアクセスを確認。同じprojectを--projectでatom-mcpへ指定し、atom-cli mcp-configでクライアント設定を生成できます。APIからの変更・物理実行・遠隔HTTPは未提供。'},
+ 'zh-CN':{control_readonly:'读取／dry-run',control_unchecked:'未检查',control_diagnose:'诊断本地Control API／MCP连接',control_connected:'已连接',control_disconnected:'不可用',control_busy:'Core忙碌',control_help:'本地只读Control API v1与MCP stdio。通过私有Unix socket访问桌面持有的Rust文档，读取状态和对象，或对编辑命令预检。dry-run不改变文档、撤销／重做或保存状态，也不运行物理或碰撞测试。诊断检查发现文件、通信／认证、版本与共享状态。为atom-mcp指定同一project的--project参数，用atom-cli mcp-config生成客户端配置。尚未提供API写入、物理执行或远程HTTP。'}
+}))Object.assign(translations[language],labels);
+
+for(const [language,labels] of Object.entries({
+ en:{episode_quality:'Inspect Episode quality',episode_export:'Export learning transitions',export_policy:'Export filter',success_only:'Success only',completed:'Success + timeout',dataset_unchecked:'Quality unchecked',dataset_partial:'Partial · not exportable',dataset_ready:'Completed',dataset_exported:'Exported',episode_export_ineligible:'This Episode does not meet the export filter.',dataset_help:'Inspect the entire recording, independently of the replay cursor. Export defaults to successful Episodes; Success + timeout explicitly includes completed timeout trials. Partial/invalid records are rejected. Files are saved without overwrite to episodes/exports/ beside the project. Each transition pairs observation → next-frame action → next observation. Joint arrays use channel order, radians and Y-up meters. Teacher reference goals are excluded from policy observations. The split group keeps checkpoints of the same model/seed task together; never randomly split transitions into train/eval. Reported joint-limit excess is a warning, not a collision or balance test.',reference_controller_not_learned_policy:'Reference servo controller; not a learned policy',no_collision_balance_or_task_generalization_check:'Collision, balance and task generalization are not tested',split_by_group_not_by_transition:'Split by task group, not by individual transitions',partial_episode:'Partial recording',no_transitions:'No transitions',timeout_not_success_demonstration:'Timeout is not a successful demonstration',observed_joint_limit_excess:'Observed joint-limit excess',contains_custom_actions:'Contains custom actions',dataset_limits:'Max limit excess',dataset_velocity:'Max joint velocity'},
+ ja:{episode_quality:'Episodeの品質を検査',episode_export:'学習用transitionを書き出す',export_policy:'書き出し対象',success_only:'成功のみ',completed:'成功＋timeout',dataset_unchecked:'品質未検査',dataset_partial:'途中記録・書き出し不可',dataset_ready:'完了',dataset_exported:'書き出し済み',episode_export_ineligible:'このEpisodeは書き出し条件を満たしていません。',dataset_help:'再生位置に関係なく記録全体を検査。既定は成功のみ。「成功＋timeout」を選ぶと終了済みtimeoutも含めます。途中・不正な記録は書き出せません。保存先はプロジェクト横のepisodes/exports/、上書きしません。観測→次frameのaction→次観測を対応づけます。関節配列はchannel順、rad、ワールド座標はY-up・m。教師側の参照関節目標は観測から除外。同じmodel／seedのcheckpointは同じsplit groupで学習・評価へ分割し、transition単位で混ぜないでください。関節限界超過は警告として報告し、衝突・バランス試験とは区別します。',reference_controller_not_learned_policy:'参照サーボ制御器・学習済み方策ではありません',no_collision_balance_or_task_generalization_check:'衝突・バランス・課題の汎化は未検証',split_by_group_not_by_transition:'transition単位ではなく課題groupで分割',partial_episode:'途中記録',no_transitions:'transitionなし',timeout_not_success_demonstration:'timeoutは成功デモではありません',observed_joint_limit_excess:'観測関節角の限界超過',contains_custom_actions:'カスタムactionを含みます',dataset_limits:'最大限界超過',dataset_velocity:'最大関節速度'},
+ 'zh-CN':{episode_quality:'检查Episode质量',episode_export:'导出学习transition',export_policy:'导出筛选',success_only:'仅成功',completed:'成功＋超时',dataset_unchecked:'未检查质量',dataset_partial:'部分记录・不可导出',dataset_ready:'已完成',dataset_exported:'已导出',episode_export_ineligible:'此Episode不符合导出条件。',dataset_help:'检查整个记录，不受回放位置影响。默认仅导出成功记录；选择成功＋超时可包含已结束的超时试验。拒绝部分或无效记录。文件保存在项目旁episodes/exports/，不覆盖已有文件。每个transition对应观测→下一帧action→下一观测。关节数组按channel顺序，单位rad，世界坐标Y-up、m。观测不包含教师参考关节目标。同一model／seed的检查点使用同一split group，勿按transition随机划分训练和评估集。关节限位超出仅为警告，不代表进行了碰撞或平衡测试。',reference_controller_not_learned_policy:'参考伺服控制器，并非学习策略',no_collision_balance_or_task_generalization_check:'未验证碰撞、平衡及任务泛化',split_by_group_not_by_transition:'按任务group划分，而非transition',partial_episode:'部分记录',no_transitions:'无transition',timeout_not_success_demonstration:'超时不是成功示范',observed_joint_limit_excess:'观测关节超出限位',contains_custom_actions:'包含自定义action',dataset_limits:'最大限位超出',dataset_velocity:'最大关节速度'}
+}))Object.assign(translations[language],labels);
+let datasetReport=null;
+function renderDataset(){
+ const r=current?.reach,q=datasetReport?.quality,el=$('episodeQualityStatus');
+ if(!q||!r||q.episode_id!==r.id||q.frames!==r.frames){el.textContent=r?t('dataset_unchecked'):'';el.removeAttribute('title');return;}
+ el.textContent=`${datasetReport.exported?t('dataset_exported'):q.complete?t('dataset_ready'):t('dataset_partial')} · ${q.transitions} · ${t('reach_'+q.outcome)}`;
+ el.title=[`${t('dataset_limits')}: ${q.max_limit_excess_rad.toFixed(5)} rad`,`${t('dataset_velocity')}: ${q.max_abs_velocity_rad_s.toFixed(3)} rad/s`,...q.warnings.map(w=>t(w)),datasetReport.exported||''].filter(Boolean).join('\n');
+}
+async function analyzeEpisode(policy){
+ const r=current?.reach;if(!r)return;
+ const request={project_id:current.project_id,expected_revision:current.revision,expected_sequence:current.sequence,episode_id:r.id};
+ datasetReport=await api.core.invoke('episode_dataset',{request,policy});renderDataset();
+}
+$('episodeQuality').onclick=()=>action(()=>analyzeEpisode(null));
+$('episodeExport').onclick=()=>action(()=>analyzeEpisode($('exportPolicy').value));
+$('exportPolicy').onchange=controls;
+
+let controlReport=null;
+function renderControl(){
+ const report=controlReport,el=$('controlStatus');
+ if(!report){el.textContent=t('control_unchecked');el.removeAttribute('data-connected');return;}
+ const failed=report.checks.find(c=>!c.ok);el.dataset.connected=String(report.connected);
+ el.textContent=report.connected?`${t('control_connected')} · API 1 · rev ${report.state.guard.revision}`:t(failed?.code==='busy'?'control_busy':'control_disconnected');
+ el.title=report.checks.map(c=>`${c.stage}: ${c.code}`).join('\n');
+}
+$('controlDiagnose').onclick=()=>action(async()=>{controlReport=await api.core.invoke('control_diagnose');renderControl();});
 async function start(){
  localize();if(!api){status('desktop_required',true);return;}
  try{

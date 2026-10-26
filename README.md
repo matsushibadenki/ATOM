@@ -8,7 +8,7 @@ A desktop environment for robot simulation, language-based planning, and learnin
 
 Rust owns documents, shared state, and rendering. WebViews send commands and display bounded state snapshots. The interface supports English, Japanese, and Simplified Chinese.
 
-Last updated: October 23, 2026 (JST). LLM connections, training, and continuous simulation playback are not implemented. vLLM-apple and Strata are not connected yet. Selected ThreeX and UNGE sources are copied into `vendor/`, so builds do not depend on the original directories.
+Last updated: October 25, 2026 (JST). LLM connections, training, and continuous simulation playback are not implemented. vLLM-apple and Strata are not connected yet. Selected ThreeX and UNGE sources are copied into `vendor/`, so builds do not depend on the original directories.
 
 ## Run
 
@@ -38,6 +38,29 @@ cargo run --locked -p atom-cli -- validate /tmp/example.atom.json
 - [Implementation scope and validation results](docs/FOUNDATION.md)
 - [Docking controls, structure, and limitations](docs/DOCKING.md)
 - For a macOS development app, run `python3 scripts/build-dev-app.py` to create `target/debug/ATOM.app`. This is not a signed distribution build.
+
+## Episode quality and learning data
+
+Inspect a recorded Reach Episode and export aligned observation/action/next-observation transitions from Workflow or CLI. Success-only export is the default; completed timeout trials require an explicit filter. Partial records are rejected, teacher reference joint goals stay outside policy observations, and task grouping metadata helps keep checkpoints together in train/evaluation splits.
+
+```sh
+target/debug/atom-cli episode-quality /absolute/path/run.episode.json
+target/debug/atom-cli episode-export /absolute/path/run.episode.json /absolute/path/run.transitions.json
+```
+
+See [data format, quality checks and limitations](docs/LEARNING_DATA.md). This prepares data; policy training and LeRobot/RLDS conversion remain planned.
+
+## Control API and MCP
+
+Read the running desktop’s shared Rust state, including unsaved edits, or validate an editor command without changing the project or Undo history. Local `atom-mcp` provides five read-only tools; Workflow includes connection diagnosis.
+
+```sh
+cargo build --locked -p atom-cli -p atom-mcp
+target/debug/atom-cli doctor /absolute/path/project.atom.json
+target/debug/atom-cli mcp-config /absolute/path/project.atom.json
+```
+
+Keep the desktop running with the same project. See [Control API, MCP setup and dry-run contract](docs/CONTROL_API.md) for schemas, limits and protocol compatibility. External edit application and simulation jobs remain planned.
 
 ## Workspace and 3D controls
 

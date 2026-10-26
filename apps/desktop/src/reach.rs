@@ -237,3 +237,54 @@ mod tests {
         });
     }
 }
+
+#[tauri::command]
+pub async fn episode_dataset(
+    webview: tauri::Webview,
+    request: atom_core::reach::dataset::Request,
+    policy: Option<atom_core::reach::dataset::ExportPolicy>,
+) -> Result<atom_core::reach::dataset::Analysis, UiError> {
+    authorize(&webview)?;
+    let app = webview.app_handle().clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        let (episode, dir) = {
+            let state = app.state::<Shared>();
+            let session = state.0.try_lock().map_err(|_| error("edit_busy"))?;
+            let episode = session
+                .core
+                .recorded_episode(&request)
+                .map_err(UiError::from)?;
+            let dir = session
+                .store
+                .path()
+                .parent()
+                .ok_or_else(|| error("io_error"))?
+                .join("episodes")
+                .join("exports");
+            (episode, dir)
+        };
+        let (quality, exported) = if let Some(policy) = policy {
+            let dataset = episode.dataset(policy).map_err(UiError::from)?;
+            let label = match policy {
+                atom_core::reach::dataset::ExportPolicy::SuccessOnly => "success_only",
+                atom_core::reach::dataset::ExportPolicy::Completed => "completed",
+            };
+            let name = format!(
+                "reach-{}-{}-{label}.transitions.json",
+                episode.id, dataset.quality.transitions
+            );
+            std::fs::create_dir_all(&dir).map_err(|_| error("io_error"))?;
+            dataset.save(&dir.join(&name)).map_err(UiError::from)?;
+            (dataset.quality, Some(name))
+        } else {
+            (episode.quality().map_err(UiError::from)?, None)
+        };
+        Ok(atom_core::reach::dataset::Analysis {
+            basis: request,
+            quality,
+            exported,
+        })
+    })
+    .await
+    .map_err(|_| error("internal_error"))?
+}

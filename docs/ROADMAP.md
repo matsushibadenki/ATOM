@@ -1,6 +1,6 @@
 # ATOM Roadmap
 
-更新：2026-10-23（JST）。ベース実装済み。詳細は[FOUNDATION.md](FOUNDATION.md)。
+更新：2026-10-25（JST）。ベース実装済み。詳細は[FOUNDATION.md](FOUNDATION.md)。
 
 状態の意味：
 
@@ -12,13 +12,38 @@
 今回の成果物はTauriアプリ、Rustコア、CLI、コピーした依存ソース、テストと設計・検証文書。
 ThreeX／UNGEの採用ソースはhashとコピー元revisionを記録した。
 参考repoのDoneはATOMのDoneへ転記しない。
-## 効果に基づく実装順（2026-10-23）
+## 効果に基づく実装順（2026-10-25）
 
 - 🟢 [Done] 位置IK：既存のFK・関節制限・保存・Undoを使い、選択部位の中心をXYZ目標へ移動する。人型・双腕に対応。Reach／把持の前段となる姿勢生成を先に実装。
 - 🟢 [Done] M1のReach v1：無重力・選択双腕のみのprofileで、固定seedのreset／継続step、参照サーボ制御、成功／timeoutと実物理の時系列記録を実装。任意scene・重力負荷でのReachは別段階。
 - 🟢 [Done] Reach Episodeのmanifest内包・原子的保存、記録姿勢の再生／seek／pause、CLIで再実行・フレーム取得・記録比較。PlanTrace・solver stateからの分岐は未実装。
-- 🟠 [Next] ローカルControl APIの読み取り／dry-runと接続診断、vLLM-apple／Strataの能力照会・短い推論。共有Rust文書と予算付き実行へ接続する。
+- 🟢 [Done] ローカルControl API／MCPの共有状態取得・dry-run・接続診断。[接続仕様と検証](CONTROL_API.md)。
+- 🟢 [Done] Episode品質検査と学習用transition export v1。成功／timeout／途中を区別し、actionの時刻対応・教師入力分離・split group・非上書き保存を実装。[形式と検証](LEARNING_DATA.md)。
+- 🟠 [Next] vLLM-apple／Strataの能力照会・短い推論。共有Rust文書と予算付き実行へ接続する。
 - 🔴 [Later] 位置IKの3D目標ハンドル・ライブプレビュー、向きの制約、衝突・バランスを考慮する姿勢計画。素材表示・操作補助の拡張と並行し、依存が成立した項目から着手。
+
+
+## Episode品質検査／学習用export v1（2026-10-25）
+
+- 🟢 [Done] Episodeの既存整合性検証に加え、完了判定、距離・速度・追従誤差・関節限界超過・action変化量を集計。resetのみ／途中記録・timeout・成功を区別。物理の安全性や学習済み方策の性能とは扱わない。
+- 🟢 [Done] `atom-reach-transitions-v1`：直前観測→次frame action→次観測の対応、channel順へのqpos／qvel変換、成功terminated／timeout truncated。rad・Y-up m・制御周期と出所hashを保持し、教師参照関節目標を観測から除外。
+- 🟢 [Done] 既定の成功のみ／明示的な完了済みtimeout込みfilter、64MiB上限・checksum・原子的no-clobber・同一内容の再export。元Episode・文書・保存状態・Undo／Redo・再生cursorは変更しない。
+- 🟢 [Done] 同じmodel／seed課題のcheckpoint・再実行をまとめるsplit group。source名・Episode ID・GUI revision・horizon・frame数に依存しない。自動splitや意味的な類似軌道の重複除去は未実装。
+- 🟢 [Done] CLI `episode-quality`／`episode-export`と三言語Workflowの検査・exportアイコン。Rust共有状態のguardを確認して記録を固定し、重い集計・ファイル出力はlock外で実行。WebViewへは集計とファイル名のみ返す。
+- 🟢 [Done] 新規Rust 5テストと実MuJoCo 3.1.6：seed 7の成功24遷移／0.48秒、timeout 1遷移を確認。実native Tauriで両filter、途中記録拒否、三言語、狭いWorkflow表示、再exportとIPC経由の共有状態不変を確認。
+- 🟠 [Next] RuntimeGateway能力照会・短い推論、Episode batchの品質選別とholdout分離。
+- 🔴 [Later] LeRobot／RLDS等への変換、画像センサー、BC／ACT基準、学習前後のholdout比較。今回のJSON exportを各frameworkとの互換実装と数えない。
+- ⭕️ [Pending] 他OSのnative UI、浮動windowでのexport操作、実際の学習と汎化性能の測定。
+
+## Control API／MCP v1（2026-10-23）
+
+- 🟢 [Done] 共有Rust状態・件数制限付きscene・能力照会、14種のGUI編集命令のdry-run。ID・revision・runtime sequenceのguard、64件の重複応答cache、不正値・busy・previewの拒否。保存・Undo／Redo履歴・採番を変更しない。
+- 🟢 [Done] private Unix socket、owner／permission検査、token認証、frame上限・期限・同時接続上限、終了cleanupとrestart再接続。GUI／CLI doctorの5段階診断、接続設定と公開request schemaの生成。
+- 🟢 [Done] `atom-mcp` stdio、2026-07-28のper-request metadata／discoverと2025-11-25のinitialize。5 toolsの入出力schema、取消時の返信抑止。公式JSON Schemaで両版とtool出力を検証。
+- 🟢 [Done] 実native macOS Tauriアプリの未保存変更をMCP取得し、dry-run前後の共有state・history・保存file不変を確認。英語／日本語／简体中文の診断表示を確認。
+- 🟠 [Next] RuntimeGatewayの能力照会・短い推論。Episodeのbatch選別・split・学習接続は後段。
+- 🔴 [Later] 外部からの変更適用・非同期simulation job、監査／権限、Streamable HTTPとfunction calling／OpenAPI bridge。
+- ⭕️ [Pending] Linux実機・Windows IPC、各社AI client／account別の実接続、今回追加UIの狭幅／浮動window検証。既存Reachのnative再生scheduler検証は引き続き保留。
 
 ## 再現可能なReach／Episode v1（2026-10-23）
 
@@ -30,7 +55,7 @@ ThreeX／UNGEの採用ソースはhashとコピー元revisionを記録した。
 - 🟢 [Done] Workflowにreset／single-step／終端までrun／保存／終了、記録一覧の読込、seek／play／pauseを三言語で追加。Rustがepisode・cursor・再生世代tokenを所有。古い再生loop・古いrun ID・重複stepを拒否し、全windowへ同じsnapshotを通知。ロード済み記録は読み取り専用でMuJoCo不要。元文書にないIDの選択・フォーカスと、表示中sceneのmesh metadataにも対応。
 - 🟢 [Done] CLIの`reach-run`／`episode-replay`／`episode-compare`。一意episode IDを比較対象から外し、manifest・全frameの完全一致を確認。seed 0〜9を各2回、MuJoCo 3.1.6で同じ遷移と10種すべての成功を確認。seed 7は24step／0.48秒で成功、上限1stepはtimeout。学習済み方策の成績や環境間の物理等価性と扱わない。
 - 🟢 [Done] Worker強制終了後の部分記録保持、終了後process停止、原子的保存・再読込、stale／重複要求、共有再生・元scene復帰を検証。Metalで記録の最終姿勢への描画変化と先頭seekの同一pixel復元を確認。実core＋MuJoCoのGUIで一連の操作と3言語・幅900／280／220px、コンソールエラーなしを検証。
-- 🟠 [Next] Control API／MCP読み取り・dry-run、vLLM-apple／Strataの能力照会、Episode品質検査と学習用export。地球重力下でのサーボ／制御器の調整、任意scene・robotのReach、runtime doctor・非同期job停止も継続課題。
+- 🟠 [Next] vLLM-apple／Strataの能力照会、Episodeのbatch品質選別・学習framework接続。地球重力下でのサーボ／制御器の調整、任意scene・robotのReach、runtime doctor・非同期job停止も継続課題。
 - 🔴 [Later] PlanTrace、solver snapshotからの再開・分岐、衝突回避目標、重力／外乱のrandomization、学習方策比較、LeRobot等へのexport。現在の参照joint目標は教師側情報を使うため、学習方策の入力にそのまま混ぜない。
 - ⭕️ [Pending] native Tauri IPC・OSイベント配送・実window再生scheduler、浮動／複数モニター／他OSでの手動QA、異なるMuJoCo／Python／CPUでの再実行比較。GUIはHTTP host経由の実core、Metal試験はoffscreen。seedだけで環境を跨ぐbit一致を保証しない。
 
@@ -163,7 +188,7 @@ ThreeX／UNGEの採用ソースはhashとコピー元revisionを記録した。
 - 🟢 [Done] MuJoCo 3.1.6で落下・ゼロg・任意方向・摩擦・密度／慣性・両テンプレートを実行。ネイティブUIで保存復元とUndo／Redoを確認。
 - 🟠 [Next] 一般sceneの連続物理／pause、関節支点編集、把持・人型の姿勢安定方策。Reach v1はsingle-step継続・時系列記録・記録再生を実装済み。従来の汎用物理previewは編集状態からの短時間計算と最終姿勢表示。
 - 🟠 [Next] 物体同士の接触ペアoverride、presetの校正・出典管理、明示質量／慣性、一般MJCF import。現在の密度由来の箱モデルから拡張。
-- 🔴 [Later] 液体・浮力・MCP・各社AIの接続は下記計画を継続。
+- 🔴 [Later] 液体・浮力・遠隔MCP・各社AIの接続は下記計画を継続。
 - ⭕️ [Pending] MuJoCo未導入環境・別OSでの配布と実行、実ロボット固有モデル・実機精度の検証。
 
 ## 統合ロボット学習環境への拡張設計
@@ -229,7 +254,7 @@ Rustが文書・ジョブ・表示状態を所有し、外部Workerはそのジ�
 | M2-A 🔴 [Later] | vLLM-apple／Strata接続、SkillPlan、LLM SFT／LoRA、教師候補の検証 | 既存[RuntimeGateway設計](RUNTIME-INTEGRATION.ja.md)に従い、手書き基準→LLM計画→追加学習モデルを固定holdoutで比較。推論runtimeのautotuneを重み学習と数えない |
 | M2-B 🔴 [Later] | RoboCasa adapter、小規模task browser、公式demo再生、収集・注釈・データ変換 | 一つのatomic課題と一つのcomposite課題でreset／action／成功判定／再生を通す。元demo ID・action schema・時刻・splitを保持し、公式loader／evaluatorで照合 |
 | M3-A 🔴 [Later] | テレオペ、介入記録、BC／ACT基準、VLA、階層方策 | 同一観測で手書きcontroller・模倣学習・VLAを比較。LLMはskillを選び、controller／方策が関節命令を担当。教師用正解stateや未来フレームの混入を試験 |
-| M3-B 🔴 [Later] | データ工場：成功／失敗／介入の選別、軌道拡張、品質検査、LeRobot等へのexport | source lineage、重複除去、train／validation／test分離を検証。同一元demoからの拡張は同じsplitに固定し、増量後のholdout改善と費用を測る |
+| M3-B 🔴 [Later] | データ工場：batch選別・軌道拡張・LeRobot等へのexport（単体品質検査／ATOM JSON export v1はDone） | source lineage、重複除去、train／validation／test分離を検証。同一元demoからの拡張は同じsplitに固定し、増量後のholdout改善と費用を測る |
 | M4-A 🔴 [Later] | Genesis WorkerとMJX／Warp Worker、共通TaskSpecの限定subset、ベンチマーク | 同一の小型アーム課題を1／小batch／大batchで測定。compile・warmup・physics・sensor・policyを分離し、VRAM・CPU転送・成功率を比較。対応外の課題を自動移植しない |
 | M4-B 🔴 [Later] | Isaac Lab 3.0 Worker、並列RL／模倣学習、randomization・curriculum | 一つの公式課題で学習→checkpoint→評価→停止／再開を確認。physics／renderer／visualizerを別に固定し、Macの編集UIから遠隔監視できる |
 | M5 🔴 [Later] | RoboCasaのmulti-task／foundation／lifelong評価、失敗からの再収集、実験比較 | 未学習の物体・配置・task compositionと既習課題の忘却を測定。公式protocolと独自研究を別集計し、同一データ量・予算・seed群で比較 |
@@ -283,7 +308,9 @@ MuJoCoの流体モデルは周囲の流体状態を持たない近似で、自�
 
 ### MCP・主要AIからのアクセスと制御
 
-🟠 [Next] **ATOM Control APIをM0-Aから設計・実装する。** 外部AIがATOMを呼び出す入口を`atom-mcp`として用意する。ATOMからvLLM-apple／Strataへ推論を依頼する既存RuntimeGatewayとは方向と責務が異なる。両者ともRustの型付き命令・状態APIを使い、AIがGUI座標をクリックしなくても実験できるようにする。
+🟢 [Done] **M0-C：ローカルControl API v1とstdio MCPの読み取り・dry-run・接続診断を実装。** GUIと同じ`Arc<Mutex<Session>>`を参照し、別Documentを作らない。未保存変更、preview mode、revision／sequenceを取得し、dry-runは同じ編集経路と履歴の複製上で検証する。[仕様・CLI・制限](CONTROL_API.md)。
+
+🔴 [Later] **変更適用・実行job・遠隔接続へ拡張する。** 外部AIがATOMを呼び出す入口を`atom-mcp`として用意する。ATOMからvLLM-apple／Strataへ推論を依頼する既存RuntimeGatewayとは方向と責務が異なる。両者ともRustの型付き命令・状態APIを使い、AIがGUI座標をクリックしなくても実験できるようにする。
 
 ```mermaid
 flowchart LR
@@ -307,7 +334,7 @@ flowchart LR
 | ローカルAI | vLLM-apple／Strataは能力照会でtools対応を確認。非対応時は許可されたSkillPlan schemaによる段階実行を使い、任意コード生成を制御APIへ直結しない |
 | 導入支援 | 英語・日本語・简体中文の設定例、tool説明、能力一覧、最小実験例、SDK例。秘密情報を含めずに設定をexportし、接続・読み取り・編集・実行を個別診断 |
 
-外部ツール名は安定した英語IDにし、入力・出力JSON Schema、単位、例、エラーcode、再試行可否を定義する。次はAPI案であり、現在利用できるtool一覧ではない。
+外部ツール名は安定した英語IDにし、入力・出力JSON Schema、単位、例、エラーcode、再試行可否を定義する。現在提供する5 toolsは[CONTROL_API.md](CONTROL_API.md)を参照。下表の変更・実行toolは将来案。
 
 | tool群（例） | 用途 |
 |---|---|
@@ -327,7 +354,7 @@ flowchart LR
 
 | 段階・状態 | 追加する実装 | 完了条件 |
 |---|---|---|
-| M0-C 🟠 [Next] | Control API、schema、ローカルMCPの読み取りとdry-run、接続診断 | GUI／CLI／MCPで同じprojectを参照。未対応能力・不正値・古いrevision・重複要求を検証 |
+| M0-C 🟢 [Done] | Control API、schema、ローカルMCPの読み取りとdry-run、接続診断 | native macOS GUIの未保存変更を別processのMCPから取得。dry-run後の文書・履歴・ファイル不変、未対応能力・不正値・古いguard・重複要求・再接続を検証 |
 | M1-C 🟢 [Done] | 重力preset／XYZ、箱の密度由来物理素材・摩擦、床、Inspector、保存・履歴、MuJoCo短時間適用 | 落下・ゼロg・摩擦滑り・質量／慣性更新・保存復元を確認。連続実行・任意接触ペア・明示慣性はNextとして分離 |
 | M1-D 🔴 [Later] | MCPから設定変更→reset→run→評価→結果取得 | 一つのAIクライアントで地球／月／火星／ゼロgを同条件比較し、停止・再接続後も結果を追跡できる |
 | M3-C 🔴 [Later] | 水中剛体、浮力・抗力、媒質preset・数値、有限水域 | 浸水率・浮心・浮沈・流れを検証。近似モデルの適用範囲を結果に付記 |

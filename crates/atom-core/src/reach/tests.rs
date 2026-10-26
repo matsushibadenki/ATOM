@@ -577,3 +577,250 @@ fn real_ten_seed_reruns_match_every_transition() {
         "10 seeds x 2: exact transition equality; per first run: {success} success, {timeout} timeout"
     );
 }
+
+#[test]
+fn dataset_aligns_pre_action_observation_and_keeps_teacher_goal_out_of_inputs() {
+    use dataset::ExportPolicy;
+    let e = fixture();
+    let before = serde_json::to_vec(&e).unwrap();
+    let data = e.dataset(ExportPolicy::SuccessOnly).unwrap();
+    assert_eq!(data.transitions.len(), e.frames.len() - 1);
+    for (i, t) in data.transitions.iter().enumerate() {
+        assert_eq!(t.index, i);
+        assert_eq!(t.time_seconds, e.frames[i].observation.time);
+        assert_eq!(t.next_time_seconds, e.frames[i + 1].observation.time);
+        assert_eq!(&t.action_rad, e.frames[i + 1].action.as_ref().unwrap());
+        assert_eq!(
+            t.observation.previous_action_rad,
+            if i == 0 {
+                e.manifest.initial_action.clone()
+            } else {
+                e.frames[i].action.clone().unwrap()
+            }
+        );
+        for (j, c) in e.manifest.channels.iter().enumerate() {
+            assert_eq!(
+                t.observation.joint_position_rad[j],
+                e.frames[i].observation.qpos[c.qpos_index]
+            );
+            assert_eq!(
+                t.next_observation.joint_position_rad[j],
+                e.frames[i + 1].observation.qpos[c.qpos_index]
+            );
+        }
+        assert_eq!(t.next_observation.previous_action_rad, t.action_rad);
+        assert_eq!(t.terminated, i + 1 == data.transitions.len());
+        assert!(!t.truncated);
+    }
+    let json = serde_json::to_value(&data).unwrap();
+    assert!(json["metadata"].get("reference_action").is_none());
+    assert!(json["metadata"].get("initial_action").is_none());
+    for t in json["transitions"].as_array().unwrap() {
+        for key in ["observation", "next_observation"] {
+            let o = t[key].as_object().unwrap();
+            assert_eq!(o.len(), 5);
+            assert!(!o.contains_key("reference_action"));
+            assert!(!o.contains_key("initial_action"));
+        }
+    }
+    assert!(data.quality.complete && data.quality.success_exportable);
+    assert_eq!(before, serde_json::to_vec(&e).unwrap());
+}
+#[test]
+fn dataset_filters_partial_and_timeout_and_checks_integrity_before_metrics() {
+    use dataset::ExportPolicy;
+    let mut e = fixture();
+    e.frames.pop();
+    let q = e.quality().unwrap();
+    assert!(!q.complete && !q.completed_exportable);
+    assert!(q.warnings.contains(&"partial_episode".into()));
+    assert!(e.dataset(ExportPolicy::Completed).is_err());
+    e.frames.truncate(1);
+    assert_eq!(e.quality().unwrap().transitions, 0);
+    assert!(e.dataset(ExportPolicy::SuccessOnly).is_err());
+    let mut e = fixture();
+    // Time out before five consecutive in-tolerance samples.
+    e.manifest.config.horizon = 1;
+    e.frames.truncate(2);
+    e.frames[1].outcome = Outcome::Timeout;
+    assert!(e.dataset(ExportPolicy::SuccessOnly).is_err());
+    let d = e.dataset(ExportPolicy::Completed).unwrap();
+    assert!(d.transitions[0].truncated);
+    assert!(!d.transitions[0].terminated);
+    assert!(
+        d.quality
+            .warnings
+            .contains(&"timeout_not_success_demonstration".into())
+    );
+    e.frames[1].observation.time += 0.001;
+    assert!(e.quality().is_err());
+    let mut e = fixture();
+    e.frames[1].action.as_mut().unwrap()[0] = f64::NAN;
+    assert!(e.quality().is_err());
+}
+#[test]
+fn dataset_group_and_atomic_output_are_stable_and_conflicts_are_preserved() {
+    use dataset::ExportPolicy;
+    let e = fixture();
+    let q = e.quality().unwrap();
+    let mut partial = e.clone();
+    partial.id = Uuid::new_v4();
+    partial.frames.truncate(2);
+    assert_eq!(q.split_group, partial.quality().unwrap().split_group);
+    assert_ne!(q.episode_sha256, partial.quality().unwrap().episode_sha256);
+    partial.manifest.source_sha256 = "a".repeat(64);
+    assert_eq!(q.split_group, partial.quality().unwrap().split_group);
+    partial.manifest.config.horizon = 1;
+    partial.frames[1].outcome = Outcome::Timeout;
+    assert_eq!(q.split_group, partial.quality().unwrap().split_group);
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("output.json");
+    let d = e.dataset(ExportPolicy::SuccessOnly).unwrap();
+    d.save(&path).unwrap();
+    let bytes = std::fs::read(&path).unwrap();
+    d.save(&path).unwrap();
+    assert_eq!(bytes, std::fs::read(&path).unwrap());
+    let envelope: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(
+        envelope["sha256"],
+        digest(&serde_json::to_vec(&envelope["dataset"]).unwrap())
+    );
+    assert_eq!(
+        envelope["dataset"]["transitions"].as_array().unwrap().len(),
+        5
+    );
+    assert!(
+        partial
+            .dataset(ExportPolicy::Completed)
+            .unwrap()
+            .save(&path)
+            .is_err()
+    );
+    assert_eq!(bytes, std::fs::read(&path).unwrap());
+    assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 1);
+}
+#[test]
+fn dataset_remaps_nontrivial_qpos_indices_and_reports_physical_warnings() {
+    use dataset::ExportPolicy;
+    let mut e = fixture();
+    // Reorder source links (legal sibling traversal) so action channel order and qpos differ.
+    e.manifest.project.robots[0].links = [0, 1, 7, 2, 8, 3, 9, 4, 10, 5, 11, 6, 12]
+        .map(|i| e.manifest.project.robots[0].links[i].clone())
+        .to_vec();
+    let m = prepare(&e.manifest.project, e.manifest.config.clone()).unwrap();
+    assert!(
+        m.channels
+            .iter()
+            .enumerate()
+            .any(|(i, c)| i != c.qpos_index)
+    );
+    for f in &mut e.frames {
+        let old = &e.manifest;
+        let mut qpos = vec![0.; m.channels.len()];
+        let mut action = vec![0.; m.channels.len()];
+        for (j, c) in m.channels.iter().enumerate() {
+            let oi = old
+                .channels
+                .iter()
+                .position(|o| o.id == c.id && o.axis == c.axis)
+                .unwrap();
+            qpos[c.qpos_index] = f.observation.qpos[old.channels[oi].qpos_index];
+            action[j] = f.action.as_ref().unwrap_or(&old.initial_action)[oi];
+        }
+        f.observation.qpos = qpos;
+        if f.index > 0 {
+            f.observation.qvel = (0..m.channels.len())
+                .map(|j| 0.1 * (j + 1) as f64)
+                .collect();
+            f.action = Some(action);
+        }
+    }
+    e.manifest = m;
+    e.validate().unwrap();
+    let d = e.dataset(ExportPolicy::SuccessOnly).unwrap();
+    for t in &d.transitions {
+        for (j, c) in e.manifest.channels.iter().enumerate() {
+            assert_eq!(
+                t.next_observation.joint_position_rad[j],
+                e.frames[t.index + 1].observation.qpos[c.qpos_index]
+            );
+            assert_eq!(
+                t.next_observation.joint_velocity_rad_s[j],
+                e.frames[t.index + 1].observation.qvel[c.qpos_index]
+            );
+        }
+    }
+    let c = &e.manifest.channels[0];
+    e.frames[1].observation.qpos[c.qpos_index] = f64::from(c.range[1]) + 0.05;
+    e.frames[1].observation.qvel[c.qpos_index] = 2.5;
+    let q = e.quality().unwrap();
+    assert!((q.max_limit_excess_rad - 0.05).abs() < 1e-10);
+    assert_eq!(q.max_abs_velocity_rad_s, 2.5);
+    assert!(q.warnings.contains(&"observed_joint_limit_excess".into()));
+}
+
+#[test]
+fn dataset_shared_recording_guard_and_analysis_leave_editor_and_cursor_unchanged() {
+    let e = fixture();
+    let dir = tempfile::tempdir().unwrap();
+    e.save(&dir.path().join("reach-analysis.episode.json"))
+        .unwrap();
+    let mut core = AppCore::new(source()).unwrap();
+    let s = core.snapshot();
+    core.reach_command(
+        Request {
+            project_id: s.project_id,
+            expected_revision: s.revision,
+            expected_sequence: s.sequence,
+            command: Command::Load {
+                name: "reach-analysis.episode.json".into(),
+            },
+        },
+        dir.path(),
+    )
+    .unwrap();
+    let s = core.snapshot();
+    let before = serde_json::to_value(&s).unwrap();
+    let request = dataset::Request {
+        project_id: s.project_id,
+        expected_revision: s.revision,
+        expected_sequence: s.sequence,
+        episode_id: e.id,
+    };
+    let frozen = core.recorded_episode(&request).unwrap();
+    frozen.quality().unwrap();
+    frozen
+        .dataset(dataset::ExportPolicy::SuccessOnly)
+        .unwrap()
+        .save(&dir.path().join("training.json"))
+        .unwrap();
+    assert_eq!(before, serde_json::to_value(core.snapshot()).unwrap());
+    let mut bad = request.clone();
+    bad.episode_id = Uuid::new_v4();
+    assert!(core.recorded_episode(&bad).is_err());
+    bad = request.clone();
+    bad.project_id = Uuid::new_v4();
+    assert!(core.recorded_episode(&bad).is_err());
+    bad = request.clone();
+    bad.expected_revision += 1;
+    assert!(core.recorded_episode(&bad).is_err());
+    bad = request.clone();
+    bad.expected_sequence += 1;
+    assert!(core.recorded_episode(&bad).is_err());
+    core.reach_command(
+        Request {
+            project_id: s.project_id,
+            expected_revision: s.revision,
+            expected_sequence: s.sequence,
+            command: Command::Play { id: e.id },
+        },
+        dir.path(),
+    )
+    .unwrap();
+    let s = core.snapshot();
+    let request = dataset::Request {
+        expected_sequence: s.sequence,
+        ..request
+    };
+    assert!(core.recorded_episode(&request).is_err());
+}

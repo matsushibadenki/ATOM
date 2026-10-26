@@ -5,5 +5,6 @@ edition = "2024"
 
 [dependencies]
 atom-core = { path = "../atom-core" }
+atom-control = { path = "../atom-control" }
 serde_json.workspace = true
 futures = "0.3"

@@ -1,4 +1,5 @@
 //! Reproducible isolated dual-arm Reach v1, bounded recording and portable playback.
+pub mod dataset;
 mod worker;
 use crate::*;
 use serde::{Deserialize, Serialize};

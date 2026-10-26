@@ -1,0 +1,12 @@
+[package]
+name = "atom-control"
+version = "0.1.0"
+edition = "2024"
+[dependencies]
+atom-core = { path = "../atom-core" }
+serde.workspace = true
+serde_json.workspace = true
+tempfile = "3.27"
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+socket2 = "=0.6.5"

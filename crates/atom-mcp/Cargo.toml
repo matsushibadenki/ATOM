@@ -1,0 +1,11 @@
+[package]
+name = "atom-mcp"
+version = "0.1.0"
+edition = "2024"
+[dependencies]
+atom-control = { path = "../atom-control" }
+serde.workspace = true
+serde_json.workspace = true
+[dev-dependencies]
+atom-core = { path = "../atom-core" }
+tempfile = "3.27"

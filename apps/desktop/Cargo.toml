@@ -9,6 +9,7 @@ tauri-build = "=2.7.3"
 
 [dependencies]
 atom-core = { path = "../../crates/atom-core" }
+atom-control = { path = "../../crates/atom-control" }
 tauri = { version = "=2.12.4", features = ["unstable"] }
 serde.workspace = true
 serde_json.workspace = true

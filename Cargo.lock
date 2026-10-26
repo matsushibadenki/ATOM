@@ -89,9 +89,22 @@ dependencies = [
 name = "atom-cli"
 version = "0.1.0"
 dependencies = [
+ "atom-control",
  "atom-core",
  "futures",
  "serde_json",
+]
+
+[[package]]
+name = "atom-control"
+version = "0.1.0"
+dependencies = [
+ "atom-core",
+ "libc",
+ "serde",
+ "serde_json",
+ "socket2",
+ "tempfile",
 ]
 
 [[package]]
@@ -114,6 +127,7 @@ dependencies = [
 name = "atom-desktop"
 version = "0.1.0"
 dependencies = [
+ "atom-control",
  "atom-core",
  "objc2-app-kit",
  "serde",
@@ -125,6 +139,17 @@ dependencies = [
  "threex-core",
  "threex-renderer",
  "wgpu",
+]
+
+[[package]]
+name = "atom-mcp"
+version = "0.1.0"
+dependencies = [
+ "atom-control",
+ "atom-core",
+ "serde",
+ "serde_json",
+ "tempfile",
 ]
 
 [[package]]

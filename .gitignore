@@ -5,13 +5,18 @@ target/
 # Local project documents and process locks.
 *.atom.json
 *.atom.json.lock
+*.atom.json.control.json
+*.atom.json.control.lock
 !/templates/**/*.atom.json
 !/tests/fixtures/**/*.atom.json
 
 # Recorded runs, generated artifacts and downloaded asset caches.
 *.episode.json
+*.transitions.json
 !/templates/**/*.episode.json
 !/tests/fixtures/**/*.episode.json
+!/templates/**/*.transitions.json
+!/tests/fixtures/**/*.transitions.json
 episodes/
 /artifacts/
 .asset-cache/

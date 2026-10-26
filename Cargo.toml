@@ -1,11 +1,11 @@
 [workspace]
 resolver = "2"
 members = [
-  "crates/atom-core", "crates/atom-cli", "apps/desktop",
+  "crates/atom-core", "crates/atom-cli", "crates/atom-control", "crates/atom-mcp", "apps/desktop",
   "vendor/threex/crates/core", "vendor/threex/crates/renderer",
   "vendor/unge/crates/unge-core", "vendor/unge/crates/unge-executor",
 ]
-default-members = ["crates/atom-core", "crates/atom-cli"]
+default-members = ["crates/atom-core", "crates/atom-cli", "crates/atom-control", "crates/atom-mcp"]
 
 [workspace.dependencies]
 wgpu = "=27.0.1"

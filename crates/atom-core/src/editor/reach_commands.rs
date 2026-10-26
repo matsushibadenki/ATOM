@@ -112,3 +112,23 @@ impl AppCore {
         Ok(Some(self.snapshot()))
     }
 }
+
+impl AppCore {
+    /// Freeze a validated request's recording for off-lock analysis/export.
+    /// Does not advance runtime sequence, cursor, authored state or history.
+    pub fn recorded_episode(&self, request: &reach::dataset::Request) -> Result<reach::Episode> {
+        self.check(request.expected_revision, request.project_id)?;
+        if request.expected_sequence != self.sequence {
+            return Err(Error::Conflict(self.revision));
+        }
+        let preview = self
+            .reach
+            .as_ref()
+            .filter(|p| p.episode().id == request.episode_id)
+            .ok_or(Error::EditBusy)?;
+        if preview.play_token.is_some() {
+            return Err(Error::EditBusy);
+        }
+        Ok(preview.episode().clone())
+    }
+}

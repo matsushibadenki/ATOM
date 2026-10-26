@@ -6,7 +6,7 @@ pub mod physics;
 pub mod reach;
 pub mod robots;
 mod storage;
-pub use editor::AppCore;
+pub use editor::{AppCore, Change, DryRun};
 pub use physics::{Gravity, GravityPreset, MaterialPreset, PhysicalMaterial, PhysicsSpec};
 pub use robots::RobotTemplate;
 pub mod workflow;
@@ -42,6 +42,8 @@ pub enum Error {
     PhysicsUnavailable,
     #[error("MuJoCo simulation failed or exceeded its budget")]
     PhysicsFailed,
+    #[error("Episode is incomplete or does not match the export filter")]
+    EpisodeExportIneligible,
     #[error("unsaved changes")]
     Unsaved,
     #[error("OpenUSD: {0}")]
@@ -65,6 +67,7 @@ impl Error {
             Self::PhysicsUnavailable => "physics_unavailable",
             Self::PhysicsFailed => "physics_failed",
             Self::Unsaved => "unsaved_changes",
+            Self::EpisodeExportIneligible => "episode_export_ineligible",
             Self::Asset(code) => code,
             Self::Io(_) => "io_error",
             Self::Json(_) => "invalid_json",

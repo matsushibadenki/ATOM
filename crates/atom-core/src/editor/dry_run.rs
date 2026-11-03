@@ -28,6 +28,23 @@ impl AppCore {
         if self.has_preview() {
             return Err(Error::EditBusy);
         }
+        let mut fork = self.fork_authoring()?;
+        let is_physical = matches!(
+            &request.command,
+            Command::SetGravity { .. }
+                | Command::SetMaterial { .. }
+                | Command::SetFloor { .. }
+                | Command::SetJointAngle { .. }
+                | Command::SetJointRange { .. }
+                | Command::SolveIk { .. }
+        );
+        fork.apply(request)?;
+        Ok(self.authoring_diff(&fork, is_physical))
+    }
+    pub(crate) fn fork_authoring(&self) -> Result<Self> {
+        if self.has_preview() {
+            return Err(Error::EditBusy);
+        }
         // Preserve IDs, save points and both history stacks; AppCore::new alone would
         // incorrectly predict Undo/Redo and reuse deleted object IDs.
         let mut fork = Self::new(self.project.clone())?;
@@ -39,16 +56,9 @@ impl AppCore {
         fork.saved_version = self.saved_version;
         fork.undo = self.undo.clone();
         fork.redo = self.redo.clone();
-        let is_physical = matches!(
-            &request.command,
-            Command::SetGravity { .. }
-                | Command::SetMaterial { .. }
-                | Command::SetFloor { .. }
-                | Command::SetJointAngle { .. }
-                | Command::SetJointRange { .. }
-                | Command::SolveIk { .. }
-        );
-        let result = fork.apply(request)?;
+        Ok(fork)
+    }
+    pub(crate) fn authoring_diff(&self, fork: &Self, is_physical: bool) -> DryRun {
         let before = &self.project;
         let after = &fork.project;
         let mut changes = vec![];
@@ -104,15 +114,15 @@ impl AppCore {
         }
         let total_changes = changes.len();
         changes.truncate(64);
-        Ok(DryRun {
+        DryRun {
             project_id: self.project.id,
             revision: self.revision,
             sequence: self.sequence,
-            would_change: result.revision != self.revision,
-            predicted_revision: result.revision,
+            would_change: fork.revision != self.revision,
+            predicted_revision: fork.revision,
             undo_depth_before: self.undo.len(),
-            undo_depth_after: result.undo_depth,
-            redo_depth_after: result.redo_depth,
+            undo_depth_after: fork.undo.len(),
+            redo_depth_after: fork.redo.len(),
             changes,
             total_changes,
             truncated: total_changes > 64,
@@ -121,6 +131,6 @@ impl AppCore {
             } else {
                 vec![]
             },
-        })
+        }
     }
 }

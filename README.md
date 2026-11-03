@@ -8,7 +8,7 @@ A desktop environment for robot simulation, language-based planning, and learnin
 
 Rust owns documents, shared state, and rendering. WebViews send commands and display bounded state snapshots. The interface supports English, Japanese, and Simplified Chinese.
 
-Last updated: October 25, 2026 (JST). LLM connections, training, and continuous simulation playback are not implemented. vLLM-apple and Strata are not connected yet. Selected ThreeX and UNGE sources are copied into `vendor/`, so builds do not depend on the original directories.
+Last updated: November 3, 2026 (JST). Local vLLM-apple/Strata capability probes and bounded connection-test requests are implemented; real-model qualification remains pending. Typed editor-plan generation/validation and dry-run are implemented. Physical robot task planning/execution, training, and continuous simulation playback remain planned. Selected ThreeX and UNGE sources are copied into `vendor/`, so builds do not depend on the original directories.
 
 ## Run
 
@@ -38,6 +38,23 @@ cargo run --locked -p atom-cli -- validate /tmp/example.atom.json
 - [Implementation scope and validation results](docs/FOUNDATION.md)
 - [Docking controls, structure, and limitations](docs/DOCKING.md)
 - For a macOS development app, run `python3 scripts/build-dev-app.py` to create `target/debug/ATOM.app`. This is not a signed distribution build.
+
+## Local LLM runtime connection
+
+Expand LLM in Workflow to save a local vLLM-apple Preview/Daemon or Strata connection, inspect models/readiness, and send a bounded fixed text-generation test. One Rust session is shared across windows. Smoke tests send no project data; SkillPlan generation separately sends only the bounded scene summary shown in its panel.
+
+```sh
+target/debug/atom-cli runtime-probe vllm_apple_preview http://127.0.0.1:8000
+target/debug/atom-cli runtime-smoke vllm_apple_preview http://127.0.0.1:8000 default_model 32
+```
+
+Start a supported server separately. See [profiles, budgets, authentication and qualification limits](docs/RUNTIME_GATEWAY.md). Contract/UI tests pass; real-model inference is pending because the current preview dependency gate rejects the installed versions. Servers, models and dependency changes are not started or installed automatically.
+
+## SkillPlan candidates
+
+In Workflow, expand SkillPlan to inspect the shared unsaved scene summary, generate typed editor candidates, and review validation issues and predicted differences. You can also edit/paste JSON and revalidate locally. Rust previews up to six allowlisted steps sequentially on a detached history copy; the real document and Undo/Redo stay unchanged. Stale scene results are marked explicitly.
+
+See [SkillPlan schema, GUI workflow and validation contract](docs/SKILL_PLAN.md). This milestone offers dry-run only; it does not apply plans or execute physics.
 
 ## Episode quality and learning data
 
@@ -173,7 +190,7 @@ Imported articulations remain fixed in their displayed pose. Texture and MDL ren
 
 Tauri 2 provides the UI shell, Rust owns Document / State, and wgpu handles native 3D rendering. ThreeX supplies rendering code; UNGE supplies workflow execution and macOS panel-composition references. The current foundation integrates a native ThreeX viewport and UNGE task-specification validation.
 
-The planned training pipeline starts with small tabletop-arm tasks in MuJoCo on macOS. Simulation records will support LoRA fine-tuning of small language models and evaluation on held-out conditions. vLLM-apple is intended for lightweight local inference, while Strata will provide teacher and planning candidates. Separate MLX or PyTorch workers will update model weights. Job management and these runtime integrations remain planned.
+The planned training pipeline starts with small tabletop-arm tasks in MuJoCo on macOS. Simulation records will support LoRA fine-tuning of small language models and evaluation on held-out conditions. vLLM-apple is intended for lightweight local inference, while Strata will provide teacher and planning candidates. Separate MLX or PyTorch workers will update model weights. Basic runtime diagnostics and fixed connection tests are implemented; plan generation, training workers and shared execution-job management remain planned.
 
 The following design documents are primarily in Japanese:
 

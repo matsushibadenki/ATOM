@@ -91,6 +91,7 @@ version = "0.1.0"
 dependencies = [
  "atom-control",
  "atom-core",
+ "atom-runtime",
  "futures",
  "serde_json",
 ]
@@ -129,6 +130,7 @@ version = "0.1.0"
 dependencies = [
  "atom-control",
  "atom-core",
+ "atom-runtime",
  "objc2-app-kit",
  "serde",
  "serde_json",
@@ -150,6 +152,17 @@ dependencies = [
  "serde",
  "serde_json",
  "tempfile",
+]
+
+[[package]]
+name = "atom-runtime"
+version = "0.1.0"
+dependencies = [
+ "atom-core",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "sha2",
 ]
 
 [[package]]
@@ -2881,6 +2894,7 @@ checksum = "16a1cfa75cc186dd73d5818e510e042e40927bccc9c236b061cea97e1eb08029"
 dependencies = [
  "base64 0.23.1",
  "bytes",
+ "futures-channel",
  "futures-core",
  "futures-util",
  "http",

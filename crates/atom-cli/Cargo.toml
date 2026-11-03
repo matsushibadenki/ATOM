@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+atom-runtime = { path = "../atom-runtime" }
 atom-core = { path = "../atom-core" }
 atom-control = { path = "../atom-control" }
 serde_json.workspace = true

@@ -1,12 +1,11 @@
 # vLLM-apple / Strata 接続設計
 
-2026-10-23のローカルソース確認に基づく。以下は接続の設計であり、疎通・モデル推論を実行した結果ではない。
-両リポジトリのtracked working treeは確認時にcleanだった。
+2026-11-03のローカルソース確認で更新。以下は目標設計であり、全項目の実装完了を意味しない。能力照会・固定短文テスト・共有Rust状態・三言語GUI／CLIは実装済み。[現在の範囲と検証](RUNTIME_GATEWAY.md)。実モデルは依存gate拒否／server未起動のためPendingであり、契約fixtureの応答と区別する。
 
 | 対象 | 確認したrevision |
 |---|---|
-| `../Soliton/vLLM-apple` | `90f9c2bbd79c24d6d1f82122366e86345268b8b5` |
-| `../Soliton/Strata` | `9de04cd44e927a9a3df6bbc0e94fc1be8b844ba4` |
+| `../Soliton/vLLM-apple` | `9a12be3466aba14c081b1f405156db8286c13b2d` |
+| `../Soliton/Strata` | `c62d5e3a15b40ea51c96aae9e8d36928965f53ab` |
 
 ## 1. vLLM-appleは入口を二つに分ける
 

@@ -5,6 +5,7 @@ mod control;
 mod joints;
 mod layout;
 mod reach;
+mod runtime;
 mod transform;
 mod viewport;
 mod window_placement;
@@ -252,6 +253,10 @@ fn main() {
             app.manage(window_placement::Store::load(Some(
                 path.with_extension("windows.json"),
             )));
+            let runtime_path = std::env::var_os("ATOM_RUNTIME_CONFIG_PATH")
+                .map(std::path::PathBuf::from)
+                .unwrap_or_else(|| path.with_extension("runtime.json"));
+            app.manage(runtime::State::load(runtime_path));
             app.manage(workspace::Workspace::load(path));
             workspace::initialize(app.handle())?;
             #[cfg(target_os = "macos")]
@@ -262,6 +267,9 @@ fn main() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            runtime::planning_scene,
+            runtime::runtime_state,
+            runtime::runtime_command,
             control::control_request,
             control::control_diagnose,
             reach::reach_command,

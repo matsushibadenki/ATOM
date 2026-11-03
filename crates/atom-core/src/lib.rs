@@ -3,6 +3,7 @@ pub mod assets;
 mod editor;
 pub mod mujoco;
 pub mod physics;
+pub mod planning;
 pub mod reach;
 pub mod robots;
 mod storage;

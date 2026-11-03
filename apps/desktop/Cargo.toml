@@ -8,6 +8,7 @@ build = "build.rs"
 tauri-build = "=2.7.3"
 
 [dependencies]
+atom-runtime = { path = "../../crates/atom-runtime" }
 atom-core = { path = "../../crates/atom-core" }
 atom-control = { path = "../../crates/atom-control" }
 tauri = { version = "=2.12.4", features = ["unstable"] }

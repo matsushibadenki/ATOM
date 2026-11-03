@@ -1,6 +1,7 @@
 //! Bounded document history and one owner-scoped transform transaction.
 use super::*;
 mod dry_run;
+mod planning;
 mod reach_commands;
 pub use dry_run::{Change, DryRun};
 use std::collections::VecDeque;

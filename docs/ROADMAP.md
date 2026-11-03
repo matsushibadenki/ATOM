@@ -1,6 +1,6 @@
 # ATOM Roadmap
 
-更新：2026-10-25（JST）。ベース実装済み。詳細は[FOUNDATION.md](FOUNDATION.md)。
+更新：2026-11-03（JST）。ベース実装済み。詳細は[FOUNDATION.md](FOUNDATION.md)。
 
 状態の意味：
 
@@ -12,16 +12,42 @@
 今回の成果物はTauriアプリ、Rustコア、CLI、コピーした依存ソース、テストと設計・検証文書。
 ThreeX／UNGEの採用ソースはhashとコピー元revisionを記録した。
 参考repoのDoneはATOMのDoneへ転記しない。
-## 効果に基づく実装順（2026-10-25）
+## 効果に基づく実装順（2026-11-03）
 
 - 🟢 [Done] 位置IK：既存のFK・関節制限・保存・Undoを使い、選択部位の中心をXYZ目標へ移動する。人型・双腕に対応。Reach／把持の前段となる姿勢生成を先に実装。
 - 🟢 [Done] M1のReach v1：無重力・選択双腕のみのprofileで、固定seedのreset／継続step、参照サーボ制御、成功／timeoutと実物理の時系列記録を実装。任意scene・重力負荷でのReachは別段階。
 - 🟢 [Done] Reach Episodeのmanifest内包・原子的保存、記録姿勢の再生／seek／pause、CLIで再実行・フレーム取得・記録比較。PlanTrace・solver stateからの分岐は未実装。
 - 🟢 [Done] ローカルControl API／MCPの共有状態取得・dry-run・接続診断。[接続仕様と検証](CONTROL_API.md)。
 - 🟢 [Done] Episode品質検査と学習用transition export v1。成功／timeout／途中を区別し、actionの時刻対応・教師入力分離・split group・非上書き保存を実装。[形式と検証](LEARNING_DATA.md)。
-- 🟠 [Next] vLLM-apple／Strataの能力照会・短い推論。共有Rust文書と予算付き実行へ接続する。
+- 🟢 [Done] RuntimeGateway v1：vLLM-apple Preview／Daemon・Strataの能力照会と固定短文テストのRust実装、共有状態・三言語GUI／CLI・接続設定保存。実モデル推論の認定とは分離。[実装範囲](RUNTIME_GATEWAY.md)。
+- 🟢 [Done] 共有scene要約→型付きSkillPlan生成・検証→順次dry-run。三言語GUIで候補・失敗step・差分・staleを確認し、手動JSONでも再検証。[契約と検証](SKILL_PLAN.md)。
+- 🟠 [Next] 計画候補の固定holdout評価・失敗分類、Episode batch品質選別・分離。承認した候補の原子的適用・単一Undoは別の実装段階。
+- ⭕️ [Pending] 実モデル推論。vLLM-appleは現在のMLX／Transformers版がreview済みgate外で拒否、Strataはserver未起動。gateや依存を変更せず保留。
 - 🔴 [Later] 位置IKの3D目標ハンドル・ライブプレビュー、向きの制約、衝突・バランスを考慮する姿勢計画。素材表示・操作補助の拡張と並行し、依存が成立した項目から着手。
 
+
+## SkillPlan候補／dry-run v1（2026-11-03）
+
+- 🟢 [Done] 共有Rust文書の未保存sceneから、選択・祖先を優先した最大8物体／2KiBの要約。posed world Y-up・rad、関節角・制限、Z-up重力、床、安定ID、project／revision／sequenceを保持。名前・パス・形状・Episode・認証情報は送らず、omitted countと送信範囲をGUIで確認。
+- 🟢 [Done] 物体移動・関節角・位置IK・重力／素材preset・床の型付き6 skills、最大6step／IK 1件。入力512byte、prompt 4KiB、生成512token／15秒、候補8KiB。既存3 profileのuser-only生成へ接続し、型・scope・限界・祖先chain・context上限・出力打切りを検証。自動修復・任意命令・実適用なし。
+- 🟢 [Done] 履歴・savepoint・採番を維持した複製上で、既存編集dry-runと適用検証を順次再利用。途中失敗はstep codeを返し、部分diffを公開しない。成功時にstep別と集約差分・履歴予測を返し、元文書・Undo／Redo・sequenceを変更しない。
+- 🟢 [Done] 全window共通のRust候補・検証結果。三言語GUIでJSON・typed step・差分・staleを確認。JSON編集中は古い結果を隠し、手動JSONでの現在scene再検証も可能。生成中の編集やpreviewで古いguardを失効させる。
+- 🟢 [Done] 新規9テスト、全255テスト・Clippy・build。native Tauriの未保存scene→HTTP契約fixture→候補→dry-run、範囲外ID、生成中の編集、ネットワークなし再検証、文書／履歴不変、三言語・約220px幅を確認。[詳細](SKILL_PLAN.md)。fixtureを実モデルの計画品質と扱わない。
+- 🟠 [Next] 計画候補の固定holdout評価・失敗分類、Episode batchの品質選別と分離。
+- 🔴 [Later] 承認済み候補の原子的適用・単一Undo／監査、実行jobとの接続、衝突・バランス・センサーを使う計画、候補記録の保存・export。
+- ⭕️ [Pending] 実モデルによる計画品質・物理task達成、他OS／浮動windowのQA。型検証・dry-runを物理安全性や意図達成の保証と数えない。
+
+## RuntimeGateway v1（2026-11-03）
+
+- 🟢 [Done] ローカルHTTPの3 profile：vLLM-apple Previewはmodels、Daemonはmodels＋healthのcontrol／inference readiness、Strataはmodels＋statusのloaded・vision・JSON・constrained decoding・context・concurrencyを照会。不明値とfalseを区別し、models取得だけで推論成功と表示しない。
+- 🟢 [Done] 観測したtext modelへ固定user-only短文を送る接続テスト。出力1〜128 token、照会各3秒・生成15秒、応答64KiB・表示4KiB・models 64件。本文・role・model／alias・finish reason・報告token数を検証し、prompt／output hashと遅延を記録。自動retry・モデル起動・文書送信・scene適用はしない。
+- 🟢 [Done] 全window共通のRust runtime state、独立revision、同時要求1件、job IDによる遅延応答拒否。HTTP中は共有文書／runtime lockを保持せず、文書・Undo／Redo・sequenceを変えない。profile／originのみ原子的保存・復元し、証拠やtokenは保存しない。
+- 🟢 [Done] CLI `runtime-probe`／`runtime-smoke`、三言語LLMパネル、展開状態・能力・応答・未接続の区別。起動時の自動接続なし。loopback限定、proxy／redirect拒否、Bearer環境変数、認証情報・serverエラー本文の非公開。
+- 🟢 [Done] 新規8テスト、native macOS Tauri→Rust→HTTP契約fixtureで設定・照会・応答・未接続・再起動復元、三言語・約220px幅、Core／履歴／sequence不変を確認。fixtureの固定応答を実LLM推論の証拠とは数えない。
+- 🟢 [Done] 共有sceneの限定要約、型付きSkillPlanのparse／validate、既存dry-runへの接続。実適用はせず、候補の確認・再検証を提供。
+- 🟠 [Next] 計画候補の固定holdout評価と失敗分類。
+- 🔴 [Later] 任意prompt／SSE、推論とsimulationの共有資源job予算、server側cancel、UDS・mTLS・remote HTTPS、学習artifact・LoRA経路。
+- ⭕️ [Pending] 実モデル推論：vLLM-apple `--check`がMLX 0.32.2／Transformers 5.19.0を`unreviewed_mlx`／`unreviewed_transformers`で拒否。Strata実server／model、GPU資源挙動、他OS・浮動window、認証付き本番構成は未検証。[詳細](RUNTIME_GATEWAY.md)。
 
 ## Episode品質検査／学習用export v1（2026-10-25）
 
@@ -31,7 +57,7 @@ ThreeX／UNGEの採用ソースはhashとコピー元revisionを記録した。
 - 🟢 [Done] 同じmodel／seed課題のcheckpoint・再実行をまとめるsplit group。source名・Episode ID・GUI revision・horizon・frame数に依存しない。自動splitや意味的な類似軌道の重複除去は未実装。
 - 🟢 [Done] CLI `episode-quality`／`episode-export`と三言語Workflowの検査・exportアイコン。Rust共有状態のguardを確認して記録を固定し、重い集計・ファイル出力はlock外で実行。WebViewへは集計とファイル名のみ返す。
 - 🟢 [Done] 新規Rust 5テストと実MuJoCo 3.1.6：seed 7の成功24遷移／0.48秒、timeout 1遷移を確認。実native Tauriで両filter、途中記録拒否、三言語、狭いWorkflow表示、再exportとIPC経由の共有状態不変を確認。
-- 🟠 [Next] RuntimeGateway能力照会・短い推論、Episode batchの品質選別とholdout分離。
+- 🟠 [Next] 計画候補の品質評価、Episode batchの品質選別とholdout分離。
 - 🔴 [Later] LeRobot／RLDS等への変換、画像センサー、BC／ACT基準、学習前後のholdout比較。今回のJSON exportを各frameworkとの互換実装と数えない。
 - ⭕️ [Pending] 他OSのnative UI、浮動windowでのexport操作、実際の学習と汎化性能の測定。
 
@@ -41,7 +67,7 @@ ThreeX／UNGEの採用ソースはhashとコピー元revisionを記録した。
 - 🟢 [Done] private Unix socket、owner／permission検査、token認証、frame上限・期限・同時接続上限、終了cleanupとrestart再接続。GUI／CLI doctorの5段階診断、接続設定と公開request schemaの生成。
 - 🟢 [Done] `atom-mcp` stdio、2026-07-28のper-request metadata／discoverと2025-11-25のinitialize。5 toolsの入出力schema、取消時の返信抑止。公式JSON Schemaで両版とtool出力を検証。
 - 🟢 [Done] 実native macOS Tauriアプリの未保存変更をMCP取得し、dry-run前後の共有state・history・保存file不変を確認。英語／日本語／简体中文の診断表示を確認。
-- 🟠 [Next] RuntimeGatewayの能力照会・短い推論。Episodeのbatch選別・split・学習接続は後段。
+- 🟠 [Next] 計画候補の品質評価。Episodeのbatch選別・split・学習接続は後段。
 - 🔴 [Later] 外部からの変更適用・非同期simulation job、監査／権限、Streamable HTTPとfunction calling／OpenAPI bridge。
 - ⭕️ [Pending] Linux実機・Windows IPC、各社AI client／account別の実接続、今回追加UIの狭幅／浮動window検証。既存Reachのnative再生scheduler検証は引き続き保留。
 
@@ -55,7 +81,7 @@ ThreeX／UNGEの採用ソースはhashとコピー元revisionを記録した。
 - 🟢 [Done] Workflowにreset／single-step／終端までrun／保存／終了、記録一覧の読込、seek／play／pauseを三言語で追加。Rustがepisode・cursor・再生世代tokenを所有。古い再生loop・古いrun ID・重複stepを拒否し、全windowへ同じsnapshotを通知。ロード済み記録は読み取り専用でMuJoCo不要。元文書にないIDの選択・フォーカスと、表示中sceneのmesh metadataにも対応。
 - 🟢 [Done] CLIの`reach-run`／`episode-replay`／`episode-compare`。一意episode IDを比較対象から外し、manifest・全frameの完全一致を確認。seed 0〜9を各2回、MuJoCo 3.1.6で同じ遷移と10種すべての成功を確認。seed 7は24step／0.48秒で成功、上限1stepはtimeout。学習済み方策の成績や環境間の物理等価性と扱わない。
 - 🟢 [Done] Worker強制終了後の部分記録保持、終了後process停止、原子的保存・再読込、stale／重複要求、共有再生・元scene復帰を検証。Metalで記録の最終姿勢への描画変化と先頭seekの同一pixel復元を確認。実core＋MuJoCoのGUIで一連の操作と3言語・幅900／280／220px、コンソールエラーなしを検証。
-- 🟠 [Next] vLLM-apple／Strataの能力照会、Episodeのbatch品質選別・学習framework接続。地球重力下でのサーボ／制御器の調整、任意scene・robotのReach、runtime doctor・非同期job停止も継続課題。
+- 🟠 [Next] 型付きLLM計画・Episodeのbatch品質選別・学習framework接続。地球重力下でのサーボ／制御器の調整、任意scene・robotのReach、runtime doctor・非同期job停止も継続課題。
 - 🔴 [Later] PlanTrace、solver snapshotからの再開・分岐、衝突回避目標、重力／外乱のrandomization、学習方策比較、LeRobot等へのexport。現在の参照joint目標は教師側情報を使うため、学習方策の入力にそのまま混ぜない。
 - ⭕️ [Pending] native Tauri IPC・OSイベント配送・実window再生scheduler、浮動／複数モニター／他OSでの手動QA、異なるMuJoCo／Python／CPUでの再実行比較。GUIはHTTP host経由の実core、Metal試験はoffscreen。seedだけで環境を跨ぐbit一致を保証しない。
 

@@ -51,6 +51,9 @@ impl Fake {
             while !end.load(Ordering::Relaxed) {
                 match listener.accept() {
                     Ok((mut s, _)) => {
+                        // Accepted sockets can inherit O_NONBLOCK on macOS/BSD.
+                        // Wait for headers instead of treating an early WouldBlock as EOF.
+                        s.set_nonblocking(false).unwrap();
                         s.set_read_timeout(Some(Duration::from_secs(5))).unwrap();
                         s.set_nodelay(true).unwrap();
                         let mut bytes = vec![];
@@ -521,4 +524,58 @@ fn context_budget_and_invalid_instruction_are_rejected_without_generation() {
             .is_err()
     );
     assert_eq!(n, s.requests.lock().unwrap().len());
+}
+
+#[test]
+fn fixed_evaluation_uses_gateway_and_records_every_case_without_retry() {
+    let s = Fake::start(|r| {
+        Reply::json(if r.path == "/v1/models" {
+            models()
+        } else if r.path == "/v1/status" {
+            json!({"service":"strata","loaded":true,"context":{"max_positions":8192}})
+        } else {
+            // Deliberately valid but wrong for all but the no-op floor task.
+            let mut v = completion();
+            v["choices"][0]["message"]["content"] = json!(
+                "{\"schema_version\":1,\"summary\":\"Fixture only\",\"steps\":[{\"skill\":\"set_floor\",\"enabled\":true}]}"
+            );
+            v
+        })
+    });
+    // Regress the macOS accepted O_NONBLOCK race: TCP connects before headers arrive.
+    let mut delayed = std::net::TcpStream::connect(s.origin.trim_start_matches("http://")).unwrap();
+    delayed
+        .set_read_timeout(Some(Duration::from_secs(2)))
+        .unwrap();
+    thread::sleep(Duration::from_millis(30));
+    delayed
+        .write_all(b"GET /v1/models HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n")
+        .unwrap();
+    delayed.shutdown(std::net::Shutdown::Write).unwrap();
+    let mut response = String::new();
+    delayed.read_to_string(&mut response).unwrap();
+    assert!(response.starts_with("HTTP/1.1 200"));
+    let (bundle, evidence) = evaluation::generate(&s.gateway(Profile::Strata), "test-model");
+    let report = evaluation::evaluate(&bundle).unwrap();
+    assert_eq!((report.total, report.passed), (6, 1));
+    assert_eq!(report.counts["intent_mismatch"], 5, "{report:?}");
+    assert_eq!(evidence.len(), 6);
+    let requests = s.requests.lock().unwrap();
+    assert_eq!(
+        requests
+            .iter()
+            .filter(|r| r.path == "/v1/chat/completions")
+            .count(),
+        6
+    );
+    for record in evidence {
+        assert_eq!(record["completion"]["requested_model"], "test-model");
+        assert_eq!(
+            record["completion"]["prompt_sha256"]
+                .as_str()
+                .unwrap()
+                .len(),
+            64
+        );
+    }
 }

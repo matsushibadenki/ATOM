@@ -7,11 +7,14 @@ fn source() -> Project {
     p
 }
 fn fixture() -> Episode {
+    fixture_seed(7)
+}
+fn fixture_seed(seed: u32) -> Episode {
     let p = source();
     let m = prepare(
         &p,
         Config {
-            seed: 7,
+            seed,
             robot: 1,
             horizon: 5,
         },
@@ -823,4 +826,456 @@ fn dataset_shared_recording_guard_and_analysis_leave_editor_and_cursor_unchanged
         ..request
     };
     assert!(core.recorded_episode(&request).is_err());
+}
+
+#[test]
+fn batch_quality_dedup_and_checkpoint_versions_are_auditable() {
+    use dataset::batch;
+    let dir = tempfile::tempdir().unwrap();
+    let full = fixture();
+    full.save(&dir.path().join("a.episode.json")).unwrap();
+    full.save(&dir.path().join("b.episode.json")).unwrap();
+    let mut partial = full.clone();
+    partial.frames.truncate(2);
+    partial
+        .save(&dir.path().join("partial.episode.json"))
+        .unwrap();
+    std::fs::write(dir.path().join("broken.episode.json"), b"{}").unwrap();
+    let mut request = batch::Request {
+        sources: [
+            "partial.episode.json",
+            "b.episode.json",
+            "broken.episode.json",
+            "a.episode.json",
+        ]
+        .map(|s| dir.path().join(s))
+        .to_vec(),
+        ..Default::default()
+    };
+    let report = request.analyze().unwrap();
+    assert_eq!(report.selected(), 1);
+    assert!(
+        report
+            .entries()
+            .iter()
+            .any(|e| e.reasons.iter().any(|r| r == "partial_episode"))
+    );
+    assert!(
+        report
+            .entries()
+            .iter()
+            .any(|e| e.reasons.iter().any(|r| r == "duplicate_episode"))
+    );
+    assert!(
+        report
+            .entries()
+            .iter()
+            .any(|e| e.quality.is_none() && !e.reasons.is_empty())
+    );
+    let split = report.entries()[0].split;
+    for e in report.entries().iter().filter(|e| e.quality.is_some()) {
+        assert_eq!(e.split, split);
+    }
+    let before = serde_json::to_vec(&report).unwrap();
+    request.sources.reverse();
+    assert_eq!(
+        before,
+        serde_json::to_vec(&request.analyze().unwrap()).unwrap()
+    );
+    let mut version = full.clone();
+    version.manifest.source_revision = Some(8);
+    version
+        .save(&dir.path().join("version.episode.json"))
+        .unwrap();
+    request
+        .sources
+        .push(dir.path().join("version.episode.json"));
+    let versions = request.analyze().unwrap();
+    assert_eq!(versions.selected(), 1);
+    assert!(
+        versions
+            .entries()
+            .iter()
+            .any(|e| e.reasons.iter().any(|r| r == "superseded_episode_version"))
+    );
+    request.limits.max_action_delta_rad = Some(0.);
+    assert_eq!(request.analyze().unwrap().selected(), 0);
+}
+#[test]
+fn batch_partition_is_group_stable_and_not_rebalanced_when_appending() {
+    use dataset::batch;
+    let dir = tempfile::tempdir().unwrap();
+    let e = fixture();
+    e.save(&dir.path().join("a.episode.json")).unwrap();
+    let mut rerun = e.clone();
+    rerun.id = Uuid::new_v4();
+    rerun.save(&dir.path().join("rerun.episode.json")).unwrap();
+    let mut request = batch::Request {
+        sources: vec![dir.path().join("a.episode.json")],
+        ..Default::default()
+    };
+    let split = request.analyze().unwrap().entries()[0].split;
+    request.sources.push(dir.path().join("rerun.episode.json"));
+    let report = request.analyze().unwrap();
+    assert_eq!(report.selected(), 2);
+    for row in report.entries() {
+        assert_eq!(row.split, split);
+    }
+    assert_eq!(report.splits().values().map(|s| s.groups).sum::<usize>(), 1);
+    assert_eq!(
+        report
+            .splits()
+            .values()
+            .map(|s| s.transitions)
+            .sum::<usize>(),
+        10
+    );
+    let mut assignment = std::collections::BTreeSet::new();
+    for i in 0..200 {
+        assignment.insert(
+            request
+                .split
+                .assign(&format!("independent-task-{i}"))
+                .unwrap(),
+        );
+    }
+    assert_eq!(assignment.len(), 3);
+    request.split.validation_bps = 9000;
+    request.split.test_bps = 1000;
+    assert!(request.analyze().is_err());
+    request.split.test_bps = 0;
+    request.limits.max_final_distance_m = Some(f64::NAN);
+    assert!(request.analyze().is_err());
+}
+#[test]
+fn batch_atomic_package_contains_only_selected_splits_and_refuses_changed_sources() {
+    use dataset::batch;
+    let dir = tempfile::tempdir().unwrap();
+    let e = fixture();
+    let path = dir.path().join("run.episode.json");
+    e.save(&path).unwrap();
+    let request = batch::Request {
+        sources: vec![path.clone()],
+        ..Default::default()
+    };
+    let report = request.analyze().unwrap();
+    let out = dir.path().join("curated.batch.json");
+    let receipt = report.save_package(&out).unwrap();
+    let bytes = std::fs::read(&out).unwrap();
+    assert_eq!(receipt.sha256, digest(&bytes));
+    assert_eq!(receipt.bytes, bytes.len() as u64);
+    assert_eq!(report.save_package(&out).unwrap().sha256, receipt.sha256);
+    let value: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(value["datasets"].as_array().unwrap().len(), 1);
+    assert_eq!(
+        value["datasets"][0]["dataset"]["transitions"]
+            .as_array()
+            .unwrap()
+            .len(),
+        5
+    );
+    assert!(
+        value["datasets"][0]["dataset"]["transitions"][0]["observation"]
+            .get("reference_action")
+            .is_none()
+    );
+    assert_eq!(
+        value["datasets"][0]["split"],
+        value["report"]["entries"][0]["split"]
+    );
+    std::fs::write(&out, b"keep existing").unwrap();
+    assert!(report.save_package(&out).is_err());
+    assert_eq!(std::fs::read(&out).unwrap(), b"keep existing");
+    let mut changed = e.clone();
+    changed.id = Uuid::new_v4();
+    std::fs::remove_file(&path).unwrap();
+    changed.save(&path).unwrap();
+    let absent = dir.path().join("not-published.batch.json");
+    assert!(report.save_package(&absent).is_err());
+    assert!(!absent.exists());
+    assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 2);
+}
+#[test]
+fn batch_timeout_filter_conflicting_identity_and_input_budget_are_enforced() {
+    use dataset::{ExportPolicy, batch};
+    let dir = tempfile::tempdir().unwrap();
+    let full = fixture();
+    let mut timeout = full.clone();
+    timeout.frames.truncate(2);
+    timeout.manifest.config.horizon = 1;
+    timeout.frames[1].outcome = Outcome::Timeout;
+    let a = dir.path().join("timeout.episode.json");
+    timeout.save(&a).unwrap();
+    let mut request = batch::Request {
+        sources: vec![a.clone()],
+        ..Default::default()
+    };
+    assert_eq!(request.analyze().unwrap().selected(), 0);
+    request.policy = ExportPolicy::Completed;
+    assert_eq!(request.analyze().unwrap().selected(), 1);
+    // Use a second valid task from a separately prepared deterministic seed.
+    let m = prepare(
+        &source(),
+        Config {
+            seed: 8,
+            robot: 1,
+            horizon: 1,
+        },
+    )
+    .unwrap();
+    let reset = Observation {
+        engine: "MuJoCo fixture".into(),
+        python: "fixture".into(),
+        platform: "fixture".into(),
+        time: 0.,
+        qpos: m.initial_action.clone(),
+        qvel: vec![0.; m.channels.len()],
+        endpoint: timeout.frames[0].observation.endpoint,
+        poses: timeout.frames[0].observation.poses.clone(),
+    };
+    let mut other = Episode {
+        schema_version: 1,
+        id: full.id,
+        manifest: m,
+        frames: vec![],
+    };
+    other.frames.push(Frame {
+        index: 0,
+        action: None,
+        distance: distance(reset.endpoint, other.manifest.target),
+        observation: reset,
+        outcome: Outcome::Running,
+    });
+    let b = dir.path().join("other-task.episode.json");
+    other.save(&b).unwrap();
+    request.sources.push(b);
+    let report = request.analyze().unwrap();
+    assert_eq!(report.selected(), 0);
+    assert!(
+        report
+            .entries()
+            .iter()
+            .all(|e| e.reasons.iter().any(|r| r == "episode_id_conflict"))
+    );
+    let huge = dir.path().join("huge.episode.json");
+    std::fs::File::create(&huge)
+        .unwrap()
+        .set_len(batch::MAX_INPUT_BYTES + 1)
+        .unwrap();
+    request.sources = vec![huge];
+    assert!(request.analyze().is_err());
+}
+
+fn learning_fixture(dir: &Path) -> std::path::PathBuf {
+    use dataset::batch::{Request, Split};
+    let mut request = Request::default();
+    let mut found = std::collections::BTreeSet::new();
+    for seed in 0..100 {
+        let episode = fixture_seed(seed);
+        let split = request
+            .split
+            .assign(&episode.quality().unwrap().split_group)
+            .unwrap();
+        if found.insert(split) {
+            let p = dir.join(format!("seed-{seed}.episode.json"));
+            episode.save(&p).unwrap();
+            request.sources.push(p);
+        }
+        if found.len() == 3 {
+            break;
+        }
+    }
+    assert_eq!(found, [Split::Train, Split::Validation, Split::Test].into());
+    let path = dir.join("source.batch.json");
+    request.analyze().unwrap().save_package(&path).unwrap();
+    path
+}
+#[test]
+fn learning_roundtrip_preserves_splits_channels_and_train_only_normalization() {
+    use crate::learning::Validated;
+    let dir = tempfile::tempdir().unwrap();
+    let path = learning_fixture(dir.path());
+    let data = Validated::load(&path).unwrap();
+    let summary = data.summary();
+    assert!(summary.fit_data_ready && summary.test_data_ready);
+    assert_eq!((summary.feature_dim, summary.action_dim), (42, 12));
+    let prepared = data.prepare().unwrap();
+    let value = serde_json::to_value(&prepared).unwrap();
+    assert_eq!(value["normalization"]["count"], 5);
+    assert_eq!(value["contract"]["channels"].as_array().unwrap().len(), 12);
+    let package: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
+    for item in package["datasets"].as_array().unwrap() {
+        let split = item["split"].as_str().unwrap();
+        assert_eq!(value["splits"][split].as_array().unwrap().len(), 5);
+        assert_eq!(
+            value["splits"][split][0]["action"],
+            item["dataset"]["transitions"][0]["action_rad"]
+        );
+        assert_eq!(
+            value["splits"][split][0]["features"][0],
+            item["dataset"]["transitions"][0]["observation"]["joint_position_rad"][0]
+        );
+    }
+    // Rebuild after changing every held-out velocity. Train statistics must stay identical.
+    let mut request = dataset::batch::Request::default();
+    for entry in package["report"]["entries"].as_array().unwrap() {
+        let source = Path::new(entry["source"].as_str().unwrap());
+        let mut episode = Episode::load(source).unwrap();
+        if entry["split"] != "train" {
+            for frame in episode.frames.iter_mut().skip(1) {
+                frame.observation.qvel.fill(123.);
+            }
+        } else {
+            // The final next observation is never an input sample or normalization datum.
+            episode
+                .frames
+                .last_mut()
+                .unwrap()
+                .observation
+                .qvel
+                .fill(321.);
+        }
+        let replacement = dir.path().join(format!(
+            "new-{}",
+            source.file_name().unwrap().to_string_lossy()
+        ));
+        episode.save(&replacement).unwrap();
+        request.sources.push(replacement);
+    }
+    let other = dir.path().join("modified.batch.json");
+    request.analyze().unwrap().save_package(&other).unwrap();
+    let changed =
+        serde_json::to_value(Validated::load(&other).unwrap().prepare().unwrap()).unwrap();
+    assert_eq!(value["normalization"], changed["normalization"]);
+    assert_eq!(value["splits"]["train"], changed["splits"]["train"]);
+    assert_ne!(value["splits"]["test"], changed["splits"]["test"]);
+    // A portable package no longer depends on the source Episode paths.
+    for source in request.sources {
+        std::fs::remove_file(source).unwrap();
+    }
+    let out = dir.path().join("prepared.bc.json");
+    let digest = prepared.save(&out).unwrap();
+    assert_eq!(digest, prepared.save(&out).unwrap());
+    std::fs::write(&out, b"preserve").unwrap();
+    assert_eq!(
+        prepared.save(&out).err().unwrap().code,
+        "learning_output_conflict"
+    );
+    assert_eq!(std::fs::read(&out).unwrap(), b"preserve");
+}
+#[test]
+fn learning_rejects_split_relabeling_future_fields_timing_and_audit_tampering() {
+    use crate::learning::Validated;
+    let dir = tempfile::tempdir().unwrap();
+    let path = learning_fixture(dir.path());
+    let original: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
+    let mutations: [(&str, serde_json::Value); 5] = [
+        ("/datasets/0/split", serde_json::json!("unknown")),
+        (
+            "/datasets/0/dataset/transitions/0/observation/reference_action",
+            serde_json::json!([0.]),
+        ),
+        (
+            "/datasets/0/dataset/transitions/0/time_seconds",
+            serde_json::json!(0.01),
+        ),
+        ("/report/selected", serde_json::json!(20)),
+        (
+            "/datasets/0/dataset/quality/final_distance_m",
+            serde_json::json!(20.),
+        ),
+    ];
+    for (pointer, value) in mutations {
+        let mut bad = original.clone();
+        let (parent, key) = pointer.rsplit_once('/').unwrap();
+        bad.pointer_mut(parent).unwrap()[key] = value;
+        std::fs::write(&path, serde_json::to_vec(&bad).unwrap()).unwrap();
+        assert!(Validated::load(&path).is_err(), "{pointer}");
+    }
+    let mut bad = original.clone();
+    let old = bad["datasets"][0]["split"].as_str().unwrap();
+    let new = if old == "train" { "test" } else { "train" };
+    let id = bad["datasets"][0]["dataset"]["quality"]["episode_id"].clone();
+    bad["datasets"][0]["split"] = serde_json::json!(new);
+    for entry in bad["report"]["entries"].as_array_mut().unwrap() {
+        if entry["quality"]["episode_id"] == id {
+            entry["split"] = serde_json::json!(new);
+        }
+    }
+    std::fs::write(&path, serde_json::to_vec(&bad).unwrap()).unwrap();
+    assert_eq!(
+        Validated::load(&path).err().unwrap().code,
+        "learning_split_leakage"
+    );
+}
+#[test]
+fn learning_empty_training_partition_never_borrows_holdout_rows() {
+    use crate::learning::Validated;
+    let dir = tempfile::tempdir().unwrap();
+    let path = learning_fixture(dir.path());
+    let value: serde_json::Value = serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
+    let request = dataset::batch::Request {
+        sources: value["report"]["entries"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|e| e["split"] != "train")
+            .map(|e| std::path::PathBuf::from(e["source"].as_str().unwrap()))
+            .collect(),
+        ..Default::default()
+    };
+    let out = dir.path().join("holdout-only.batch.json");
+    request.analyze().unwrap().save_package(&out).unwrap();
+    let data = Validated::load(&out).unwrap();
+    assert!(!data.summary().fit_data_ready);
+    assert_eq!(data.prepare().err().unwrap().code, "learning_no_train");
+}
+#[test]
+fn learning_connection_reports_unavailable_executable_and_malformed_protocol() {
+    use crate::learning::{Validated, diagnose_using};
+    let dir = tempfile::tempdir().unwrap();
+    let path = learning_fixture(dir.path());
+    let data = Validated::load(&path).unwrap();
+    assert_eq!(
+        diagnose_using(
+            &data,
+            std::ffi::OsStr::new("/nonexistent/atom-learning-python")
+        )
+        .err()
+        .unwrap()
+        .code,
+        "learning_python_unavailable"
+    );
+    #[cfg(unix)]
+    assert_eq!(
+        diagnose_using(&data, std::ffi::OsStr::new("/bin/echo"))
+            .err()
+            .unwrap()
+            .code,
+        "learning_worker_protocol"
+    );
+}
+
+#[test]
+#[cfg(unix)]
+fn learning_diagnostic_deadline_kills_and_waits_for_worker() {
+    use std::os::unix::fs::PermissionsExt;
+    let dir = tempfile::tempdir().unwrap();
+    let path = learning_fixture(dir.path());
+    let data = crate::learning::Validated::load(&path).unwrap();
+    let worker = dir.path().join("slow-interpreter");
+    std::fs::write(&worker, b"#!/bin/sh\nexec /bin/sleep 10\n").unwrap();
+    std::fs::set_permissions(&worker, std::fs::Permissions::from_mode(0o700)).unwrap();
+    let start = std::time::Instant::now();
+    let error = crate::learning::diagnose_using_budget(
+        &data,
+        worker.as_os_str(),
+        std::time::Duration::from_millis(50),
+    )
+    .err()
+    .unwrap();
+    assert_eq!(error.code, "learning_worker_timeout");
+    assert!(start.elapsed() < std::time::Duration::from_secs(3));
 }

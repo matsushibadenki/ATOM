@@ -7,6 +7,7 @@ use std::{
     io::Read,
     time::{Duration, Instant},
 };
+pub mod evaluation;
 pub mod planning;
 pub mod session;
 pub const PROMPT: &str = "Reply with ATOM OK only.";

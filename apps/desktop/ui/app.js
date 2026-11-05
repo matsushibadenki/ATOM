@@ -59,7 +59,7 @@ function controls(){
  $('objectFixed').disabled=locked||materialId()===null||!materialId()||!!current?.robots.some(r=>r.links.some(l=>l.object_id===materialId()));
  $('robotTemplate').disabled=locked;$('addRobot').disabled=locked;$('add').disabled=locked;
  document.querySelectorAll('[data-remove-id]').forEach(b=>{const id=Number(b.dataset.removeId);b.disabled=locked||!!current?.robots.some(r=>r.root!==id&&r.links.some(l=>l.object_id===id));});
- reachControls();runtimeControls();planControls();
+ reachControls();runtimeControls();planControls();batchControls();
  $('simulate').disabled=busy||!current||!api||!!current.simulation_running||(current.previewing&&!current.simulation);$('simulationSteps').disabled=busy||!!current?.simulation_running;
  $('resetSimulation').disabled=busy||!current?.simulation||!!current?.simulation_running||!api;
  $('materialTarget').disabled=busy||!!current?.previewing;
@@ -392,7 +392,7 @@ $('addRobot').onclick=()=>action(async()=>{
 $('simulate').onclick=()=>action(async()=>render(await api.core.invoke('simulate',{expectedRevision:current.revision,projectId:current.project_id,steps:Number($('simulationSteps').value)})));
 $('resetSimulation').onclick=()=>action(async()=>render(await api.core.invoke('reset_simulation')));
 function renderPhysics(){
- renderReach();renderDataset();renderControl();renderRuntime();renderPlan();
+ renderReach();renderDataset();renderControl();renderRuntime();renderPlan();renderBatch();
  renderAssets();
  if(!current?.physics)return;
  $('gravityPreset').value=current.physics.gravity.preset;
@@ -468,7 +468,7 @@ function reachControls(){
  $('episodeFile').disabled=locked||other;$('episodeRefresh').disabled=locked;$('episodeLoad').disabled=locked||other||!$('episodeFile').value;
 }
 function reachRequest(command){return action(async()=>{render(await api.core.invoke('reach_command',{request:{project_id:current.project_id,expected_revision:current.revision,expected_sequence:current.sequence,command}}));if(command.op==='save')await refreshEpisodeFiles();});}
-async function refreshEpisodeFiles(){if(!api)return;const names=await api.core.invoke('episode_files');const previous=current?.reach?.saved||$('episodeFile').value;$('episodeFile').replaceChildren(...names.map(name=>new Option(name,name)));if(names.includes(previous))$('episodeFile').value=previous;controls();}
+async function refreshEpisodeFiles(){if(!api)return;const names=await api.core.invoke('episode_files');batchCatalog=names;renderBatch();const previous=current?.reach?.saved||$('episodeFile').value;$('episodeFile').replaceChildren(...names.map(name=>new Option(name,name)));if(names.includes(previous))$('episodeFile').value=previous;controls();}
 $('reachAdd').onclick=()=>mutate({kind:'add_robot',template:'dual_arm'});
 $('reachReset').onclick=()=>{if(!$('reachSeed').reportValidity()||!$('reachHorizon').reportValidity())return;reachRequest({op:'reset',config:{seed:Number($('reachSeed').value),horizon:Number($('reachHorizon').value),robot:Number($('reachRobot').value)}});};
 for(const [element,op] of Object.entries({reachStep:'step',reachRun:'run',reachSave:'save',reachClose:'close',reachPlay:'play',reachPause:'pause'}))$(element).onclick=()=>{const r=current?.reach;if(r)reachRequest({op,id:r.id,...(['step','run'].includes(op)?{expected_step:r.frames-1}:{} )});};
@@ -585,6 +585,7 @@ async function start(){
  localize();if(!api){status('desktop_required',true);return;}
  try{
   await api.event.listen('atom://layout',e=>applyLayout(e.payload));
+  if(!isSplit){await api.event.listen('atom://batch',e=>acceptBatch(e.payload));acceptBatch(await api.core.invoke('batch_state'));}
   if(!isSplit){
    await api.event.listen('atom://runtime',e=>acceptRuntime(e.payload));
    acceptRuntime(await api.core.invoke('runtime_state'));
@@ -596,4 +597,84 @@ async function start(){
   if(!isSplit){physicsCatalog=await api.core.invoke('physics_catalog');await refreshEpisodeFiles();}applyLayout(await api.core.invoke('workspace_state'));status('ready');
  }catch(e){status(e?.code||'error',true);}
 }
+for(const [language,labels] of Object.entries({
+ en:{batch_title:'Dataset',batch_help:'Select up to 64 saved Episodes beside this project. Blank limits mean no maximum. Whole task groups stay in one partition with fixed salt; percentages are approximate and small sets may have empty partitions. Recheck after changing settings or sources. Export revalidates source hashes and writes one no-overwrite package to episodes/exports/. This prepares records; it does not train or certify physics safety.',batch_all:'Select first 64 Episodes',batch_none:'Clear selection',batch_limits:'Quality limits',batch_split:'Partitions',batch_validation:'Validation',batch_test:'Test',batch_train:'Train',batch_analyze:'Analyze selected Episodes',batch_export:'Export analyzed batch',batch_filter:'Filter results',batch_every:'All results',batch_excluded:'Excluded',batch_selected:'Selected',batch_unchecked:'Unchecked',batch_dirty:'Recheck required',batch_working:'Working',batch_empty:'No saved Episodes',batch_groups:'groups',batch_transitions:'transitions',batch_no_limit:'No maximum',batch_velocity:'Velocity · rad/s',batch_tracking:'Tracking error · rad',batch_joint:'Limit excess · rad',batch_delta:'Action change · rad',batch_distance:'Final distance · m',batch_busy:'Batch job running',batch_stale:'Results changed; try again',batch_invalid_sources:'Select 1–64 valid Episode files',batch_export_failed:'Export failed. Recheck sources and existing files.',batch_percent:'Validation + test must be below 100%',batch_salt:'Salt must contain 1–64 UTF-8 bytes, without control characters',velocity_limit:'Velocity exceeds maximum',tracking_error_limit:'Tracking error exceeds maximum',joint_limit_excess:'Joint-limit excess',action_delta_limit:'Action change exceeds maximum',final_distance_limit:'Final distance exceeds maximum',outcome_filtered:'Outcome excluded',duplicate_episode:'Duplicate recording',superseded_episode_version:'Another eligible version selected',episode_id_conflict:'Episode ID reused across tasks',batch_source_error:'Invalid or unreadable source',batch_empty_partition:'Empty partition',batch_proportions:'Hash split: proportions are approximate',batch_correlated:'Similar tasks may still be correlated'},
+ ja:{batch_title:'データセット',batch_help:'このプロジェクトの保存済みEpisodeを最大64件選択。上限の空欄は制限なし。同じ課題groupは固定saltで同じ分割先に保持します。割合は近似で、小規模な集合では空の分割もあります。設定・元記録の変更後は再検査してください。書き出し前に元記録hashを再確認し、episodes/exports/へ上書きせず一括保存します。学習や物理安全性の認定は行いません。',batch_all:'先頭64件を選択',batch_none:'選択を解除',batch_limits:'品質上限',batch_split:'データ分割',batch_validation:'検証',batch_test:'テスト',batch_train:'学習',batch_analyze:'選択したEpisodeを一括検査',batch_export:'検査済みデータを一括書き出し',batch_filter:'結果の絞り込み',batch_every:'すべての結果',batch_excluded:'除外',batch_selected:'採用',batch_unchecked:'未検査',batch_dirty:'再検査が必要',batch_working:'処理中',batch_empty:'保存済みEpisodeなし',batch_groups:'課題',batch_transitions:'遷移',batch_no_limit:'上限なし',batch_velocity:'速度 · rad/s',batch_tracking:'追従誤差 · rad',batch_joint:'限界超過 · rad',batch_delta:'指令変化 · rad',batch_distance:'最終距離 · m',batch_busy:'一括処理を実行中',batch_stale:'結果が更新されました。再操作してください',batch_invalid_sources:'有効なEpisodeを1〜64件選択してください',batch_export_failed:'書き出し失敗。元記録と既存ファイルを確認し、再検査してください。',batch_percent:'検証＋テストは100%未満にしてください',batch_salt:'Saltは制御文字を除く1〜64 UTF-8 byteにしてください',velocity_limit:'速度が上限超過',tracking_error_limit:'追従誤差が上限超過',joint_limit_excess:'関節限界を超過',action_delta_limit:'指令変化が上限超過',final_distance_limit:'最終距離が上限超過',outcome_filtered:'対象外の終了状態',duplicate_episode:'同一記録の重複',superseded_episode_version:'別の適格な保存版を採用',episode_id_conflict:'異なる課題でEpisode IDが重複',batch_source_error:'不正または読めない元記録',batch_empty_partition:'空の分割',batch_proportions:'hash分割：割合は近似',batch_correlated:'類似課題の相関は残る可能性があります'},
+ 'zh-CN':{batch_title:'数据集',batch_help:'选择此项目旁最多64个已保存Episode。上限留空表示不限制。固定salt将同一任务group保留在同一分区，比例为近似值，小集合可能有空分区。设置或源记录改变后请重新检查。导出前校验源hash，在episodes/exports/保存批量文件且不覆盖。本功能不进行训练或物理安全认证。',batch_all:'选择前64个Episode',batch_none:'清除选择',batch_limits:'质量上限',batch_split:'数据划分',batch_validation:'验证',batch_test:'测试',batch_train:'训练',batch_analyze:'批量检查所选Episode',batch_export:'导出已检查的批量数据',batch_filter:'筛选结果',batch_every:'全部结果',batch_excluded:'排除',batch_selected:'选用',batch_unchecked:'未检查',batch_dirty:'需要重新检查',batch_working:'处理中',batch_empty:'无已保存Episode',batch_groups:'任务',batch_transitions:'transition',batch_no_limit:'无上限',batch_velocity:'速度 · rad/s',batch_tracking:'跟踪误差 · rad',batch_joint:'限位超出 · rad',batch_delta:'指令变化 · rad',batch_distance:'最终距离 · m',batch_busy:'批量任务运行中',batch_stale:'结果已更新，请重试',batch_invalid_sources:'请选择1–64个有效Episode',batch_export_failed:'导出失败。请检查源记录与已有文件并重新检查。',batch_percent:'验证＋测试必须小于100%',batch_salt:'Salt必须为1–64 UTF-8字节且不含控制字符',velocity_limit:'速度超过上限',tracking_error_limit:'跟踪误差超过上限',joint_limit_excess:'超出关节限位',action_delta_limit:'指令变化超过上限',final_distance_limit:'最终距离超过上限',outcome_filtered:'结束状态不符',duplicate_episode:'重复记录',superseded_episode_version:'已选用其他合格版本',episode_id_conflict:'不同任务复用Episode ID',batch_source_error:'源记录无效或不可读',batch_empty_partition:'空分区',batch_proportions:'hash划分：比例为近似值',batch_correlated:'相似任务仍可能相关'}
+}))Object.assign(translations[language],labels);
+const batchLimitKeys=['max_abs_velocity_rad_s','max_tracking_error_rad','max_limit_excess_rad','max_action_delta_rad','max_final_distance_m'];
+const batchLimitLabels=['batch_velocity','batch_tracking','batch_joint','batch_delta','batch_distance'];
+let batchSnapshot=null,batchCatalog=[],batchChosen=new Set(),batchDirty=false,batchPending=false,batchLocalError='';
+for(const [i,key] of batchLimitKeys.entries()){
+ const label=document.createElement('label');label.className='batch-setting';const text=document.createElement('span');text.dataset.text=batchLimitLabels[i];label.append(text);
+ const input=document.createElement('input');input.type='number';input.id='batch_'+key;input.min='0';input.step='any';input.dataset.label=batchLimitLabels[i];label.append(input);$('batchLimits').append(label);
+}
+function fillBatch(){if(!batchSnapshot)return;const s=batchSnapshot.settings;$('batchPolicy').value=s.policy;$('batchValidation').value=s.split.validation_bps/100;$('batchTest').value=s.split.test_bps/100;$('batchSalt').value=s.split.salt;for(const key of batchLimitKeys)$('batch_'+key).value=s.limits[key]??'';batchChosen=new Set(batchSnapshot.files);}
+function acceptBatch(s){if(batchSnapshot&&s.revision<batchSnapshot.revision)return;const sync=!batchSnapshot||batchPending||!batchDirty;batchSnapshot=s;if(sync){fillBatch();batchDirty=false;}batchPending=false;renderBatch();}
+function renderBatchFiles(){
+ const focused=$('batchFiles').contains(document.activeElement)?document.activeElement.getAttribute('aria-label'):null;
+ const names=[...new Set([...batchCatalog,...batchChosen])].sort();
+ $('batchFiles').replaceChildren(...names.map(name=>{const row=document.createElement('label'),input=document.createElement('input'),text=document.createElement('span');input.type='checkbox';input.checked=batchChosen.has(name);input.disabled=!!batchSnapshot?.busy;input.setAttribute('aria-label',name);text.textContent=name;input.onchange=()=>{if(input.checked)batchChosen.add(name);else batchChosen.delete(name);markBatchDirty();};row.append(input,text);return row;}));
+ if(!names.length)$('batchFiles').textContent=t('batch_empty');if(focused)[...$('batchFiles').querySelectorAll('input')].find(el=>el.getAttribute('aria-label')===focused)?.focus({preventScroll:true});$('batchCount').textContent=`${batchChosen.size}/64`;
+}
+function markBatchDirty(){batchDirty=true;batchLocalError='';renderBatch();}
+function batchControls(){
+ const working=busy||!!batchSnapshot?.busy||!api;
+ $('batchFields').disabled=working;
+ for(const id of ['batchRefresh','batchAll','batchNone'])$(id).disabled=working;
+ $('batchFiles').querySelectorAll('input').forEach(input=>input.disabled=working);
+ $('batchAnalyze').disabled=working||!batchChosen.size||batchChosen.size>64;
+ $('batchExport').disabled=working||batchDirty||!batchSnapshot?.report?.selected;
+ for(const id of ['learningValidate','learningDiagnose'])$(id).disabled=working||batchDirty||!batchSnapshot?.exported;
+}
+function renderBatch(){
+ const s=batchSnapshot,r=s?.report,working=!!s?.busy;
+ renderBatchFiles();batchControls();
+ $('batchStatus').textContent=batchLocalError?t(batchLocalError):s?.error?t(s.error):working?t('batch_working'):batchDirty?t('batch_dirty'):r?`${r.selected}/${r.entries.length}`:t('batch_unchecked');
+ $('batchSelection').textContent=r?`${t('batch_selected')} ${r.selected} · ${t('batch_excluded')} ${r.rejected}`:'';
+ $('batchSplits').replaceChildren(...(r?['train','validation','test'].map(key=>{const div=document.createElement('div'),name=document.createElement('span'),count=document.createElement('strong'),extra=document.createElement('small');name.textContent=t('batch_'+key);count.textContent=r.splits[key].episodes;extra.textContent=`${r.splits[key].groups} ${t('batch_groups')}\n${r.splits[key].transitions} ${t('batch_transitions')}`;extra.style.whiteSpace='pre-line';div.append(name,count,extra);return div;}):[]));
+ const filter=$('batchFilter').value;$('batchFilter').disabled=!r;
+ $('batchResults').replaceChildren(...(r?.entries||[]).filter(e=>filter==='all'||(filter==='excluded'?!e.selected:e.selected&&e.split===filter)).map(e=>{const li=document.createElement('li'),title=document.createElement('div'),result=document.createElement('span');title.textContent=e.source;result.textContent=[e.selected?t('batch_'+e.split):t('batch_excluded'),...(e.reasons||[]).map(code=>code.startsWith('source_')?t('batch_source_error'):t(code))].join(' · ');li.title=e.quality?`${e.quality.transitions} ${t('batch_transitions')} · ${e.quality.split_group}`:'';li.append(title,result);return li;}));
+ $('batchWarnings').textContent=r?[...r.warnings.filter(w=>w.startsWith('empty_')).map(w=>`${t('batch_empty_partition')}: ${t('batch_'+w.slice(6,-10))}`),t('batch_proportions'),t('batch_correlated')].join('\n'):'';
+ $('batchTrainPercent').textContent=`${Math.max(0,100-Number($('batchValidation').value)-Number($('batchTest').value)).toFixed(2).replace(/\.?0+$/,'')}%`;
+ $('batchExported').textContent=!batchDirty&&s?.exported?`${t('dataset_exported')} · ${s.exported}`:'';
+ for(const key of batchLimitKeys)$('batch_'+key).placeholder=t('batch_no_limit');renderLearning();
+}
+function batchSettings(){
+ for(const input of $('batchFields').querySelectorAll('input'))input.setCustomValidity('');
+ const val=Math.round(Number($('batchValidation').value)*100),test=Math.round(Number($('batchTest').value)*100);
+ if(val+test>=10000)$('batchTest').setCustomValidity(t('batch_percent'));
+ const salt=$('batchSalt').value;if(!salt||new TextEncoder().encode(salt).length>64||/[\x00-\x1f\x7f]/.test(salt))$('batchSalt').setCustomValidity(t('batch_salt'));
+ for(const input of $('batchFields').querySelectorAll('input'))if(!input.reportValidity())return null;
+ return {policy:$('batchPolicy').value,split:{salt,validation_bps:val,test_bps:test},limits:Object.fromEntries(batchLimitKeys.map(key=>[key,$('batch_'+key).value===''?null:Number($('batch_'+key).value)]))};
+}
+async function batchCommand(command){if(!api||!batchSnapshot)return;try{batchLocalError='';batchPending=command.op==='analyze';acceptBatch(await api.core.invoke('batch_command',{expectedRevision:batchSnapshot.revision,command}));}catch(e){batchPending=false;batchLocalError=e?.code||'error';acceptBatch(await api.core.invoke('batch_state'));}}
+
+for(const [language,labels] of Object.entries({
+ en:{learning_bad_format:'Unsupported or malformed learning format',learning_bad_audit:'Batch records and audit disagree',learning_bad_split:'Task group split does not match',learning_bad_sequence:'Time, actions or quality do not match',learning_bad_model:'Model or channel contract does not match',learning_size_error:'Learning artifact exceeds its size limit',learning_validate:'Validate learning format',learning_diagnose:'Diagnose learning adapter',learning_help:'PyTorch BC data adapter for recorded joint servo targets. Export first. Rust validates schema, timing, channels, quality and fixed group splits, then prepares current-observation features. Normalization uses train only. Diagnosis launches the bundled Python loader (ATOM_LEARNING_PYTHON or python3), checks content hashes and, when PyTorch is available, materializes one CPU train/validation batch. No optimizer, training, model download or automatic dependency installation. Test is excluded from fit loaders. Settings/results are shared in Rust.',learning_export_first:'Export a batch first',learning_unchecked:'Adapter unchecked',learning_valid:'Format valid',learning_invalid:'Learning format rejected',learning_normalization:'Normalization: train only',learning_ready:'Adapter ready · no training run',learning_torch_unavailable:'PyTorch unavailable',learning_missing_validation:'Validation partition is empty',learning_empty_train:'Train partition is empty',learning_empty_validation:'Validation partition is empty',learning_empty_test:'Test partition is empty',learning_no_train:'No train data; holdout cannot be used for fitting',learning_python_unavailable:'Python executable unavailable',learning_worker_timeout:'Adapter timed out',learning_worker_protocol:'Adapter protocol mismatch',learning_tensor_failed:'Tensor batch check failed',learning_source_changed:'Exported batch changed; reanalyze and export again',learning_tensor_verified:'CPU train/validation loader verified'},
+ ja:{learning_bad_format:'学習形式が不正または未対応です',learning_bad_audit:'記録と選別結果が一致しません',learning_bad_split:'課題groupの分割が一致しません',learning_bad_sequence:'時系列・指令・品質に不整合があります',learning_bad_model:'モデルまたはchannelの形式が一致しません',learning_size_error:'学習ファイルがサイズ上限を超えています',learning_validate:'学習形式を検証',learning_diagnose:'学習adapterの接続診断',learning_help:'記録した関節サーボ指令を扱うPyTorch BC用データadapter。先に一括exportしてください。Rustが形式・時系列・channel・品質・固定group分割を検証し、現在観測だけから特徴量を生成します。正規化はtrainのみ。診断は同梱Python loaderを起動（ATOM_LEARNING_PYTHONまたはpython3）し、hashを確認。PyTorchがあればCPUでtrain／validationの1batchを読み込みます。最適化・学習・モデル取得・依存の自動導入は行いません。testはfit loaderへ渡しません。結果は共有Rust状態に保持します。',learning_export_first:'先に一括exportしてください',learning_unchecked:'adapter未確認',learning_valid:'学習形式は有効',learning_invalid:'学習形式の検証失敗',learning_normalization:'正規化：学習データのみ',learning_ready:'adapter接続可能・学習未実行',learning_torch_unavailable:'PyTorch未導入／利用不可',learning_missing_validation:'検証データが空です',learning_empty_train:'学習データが空です',learning_empty_validation:'検証データが空です',learning_empty_test:'テストデータが空です',learning_no_train:'学習データなし・holdoutの転用不可',learning_python_unavailable:'Python実行環境が見つかりません',learning_worker_timeout:'adapterが時間切れです',learning_worker_protocol:'adapterの通信形式が不一致',learning_tensor_failed:'tensorの読込検証に失敗',learning_source_changed:'書き出したbatchが変更されています。再検査・再exportしてください',learning_tensor_verified:'CPUの学習／検証loaderを確認済み'},
+ 'zh-CN':{learning_bad_format:'学习格式无效或不受支持',learning_bad_audit:'记录与筛选结果不一致',learning_bad_split:'任务group划分不一致',learning_bad_sequence:'时间、指令或质量不一致',learning_bad_model:'模型或channel格式不一致',learning_size_error:'学习文件超过大小上限',learning_validate:'验证学习格式',learning_diagnose:'诊断学习adapter连接',learning_help:'用于记录关节伺服指令的PyTorch BC数据adapter。请先批量导出。Rust验证格式、时间、channel、质量和固定group划分，仅从当前观测生成特征。归一化仅使用训练集。诊断启动内置Python loader（ATOM_LEARNING_PYTHON或python3）并检查hash；若PyTorch可用，在CPU读取一个训练／验证batch。不优化、不训练、不下载模型或自动安装依赖。test不会进入fit loader。结果由共享Rust状态持有。',learning_export_first:'请先批量导出',learning_unchecked:'adapter未检查',learning_valid:'学习格式有效',learning_invalid:'学习格式验证失败',learning_normalization:'归一化：仅训练数据',learning_ready:'adapter已就绪・未运行训练',learning_torch_unavailable:'PyTorch未安装或不可用',learning_missing_validation:'验证集为空',learning_empty_train:'训练集为空',learning_empty_validation:'验证集为空',learning_empty_test:'测试集为空',learning_no_train:'无训练数据，不得借用holdout',learning_python_unavailable:'Python执行环境不可用',learning_worker_timeout:'adapter超时',learning_worker_protocol:'adapter协议不匹配',learning_tensor_failed:'tensor读取验证失败',learning_source_changed:'已导出的batch已更改，请重新检查并导出',learning_tensor_verified:'已验证CPU训练／验证loader'}
+}))Object.assign(translations[language],labels);
+function learningMessage(code){
+ if(translations[locale][code])return translations[locale][code];
+ const categories={learning_invalid_json:'learning_bad_format',learning_invalid_dataset:'learning_bad_format',learning_unsupported_semantics:'learning_bad_format',learning_invalid_batch:'learning_bad_audit',learning_audit_mismatch:'learning_bad_audit',learning_duplicate_episode:'learning_bad_audit',learning_split_leakage:'learning_bad_split',learning_invalid_channels:'learning_bad_model',learning_incompatible_channels_or_model:'learning_bad_model',learning_invalid_transition:'learning_bad_sequence',learning_invalid_terminal:'learning_bad_sequence',learning_invalid_group_or_outcome:'learning_bad_sequence',learning_invalid_quality:'learning_bad_sequence',learning_quality_mismatch:'learning_bad_sequence',learning_size_limit:'learning_size_error'};
+ return t(categories[code]||'learning_invalid');
+}
+function renderLearning(){
+ const v=!batchDirty?batchSnapshot?.learning:null,s=v?.summary,d=v?.diagnostic;
+ $('learningStatus').textContent=batchSnapshot?.busy?t('batch_working'):!v?t(batchSnapshot?.exported?'learning_unchecked':'learning_export_first'):v.code?learningMessage(v.code):t(v.valid?'learning_valid':'learning_invalid');
+ const lines=[];
+ if(s){lines.push(`${t('learning_valid')} · ${s.feature_dim} → ${s.action_dim}`,`${t('batch_train')} ${s.rows.train} · ${t('batch_validation')} ${s.rows.validation} · ${t('batch_test')} ${s.rows.test}`,t('learning_normalization'),...s.warnings.map(learningMessage));}
+ if(d){lines.push(`Python ${d.python} · PyTorch ${d.framework_version||'—'}`);if(d.tensor_batch_verified)lines.push(t('learning_tensor_verified'));}
+ $('learningChecks').replaceChildren(...lines.map(text=>{const row=document.createElement('li');row.textContent=text;return row;}));
+ $('learningStatus').title=v?.code||'';
+}
+$('learningValidate').onclick=()=>batchCommand({op:'validate_learning'});
+$('learningDiagnose').onclick=()=>batchCommand({op:'diagnose_learning'});
+$('batchAnalyze').onclick=()=>{const settings=batchSettings();if(settings)batchCommand({op:'analyze',settings,files:[...batchChosen].sort()});};
+$('batchExport').onclick=()=>batchCommand({op:'export'});
+$('batchAll').onclick=()=>{batchChosen=new Set(batchCatalog.slice(0,64));markBatchDirty();};$('batchNone').onclick=()=>{batchChosen.clear();markBatchDirty();};
+$('batchRefresh').onclick=()=>action(async()=>{await refreshEpisodeFiles();markBatchDirty();});$('batchFilter').onchange=renderBatch;
+$('batchFields').oninput=markBatchDirty;$('batchFields').onchange=markBatchDirty;
+
 start();

@@ -13,10 +13,16 @@ target/
 # Recorded runs, generated artifacts and downloaded asset caches.
 *.episode.json
 *.transitions.json
+*.batch.json
+*.bc.json
 !/templates/**/*.episode.json
 !/tests/fixtures/**/*.episode.json
 !/templates/**/*.transitions.json
 !/tests/fixtures/**/*.transitions.json
+!/templates/**/*.batch.json
+!/tests/fixtures/**/*.batch.json
+!/templates/**/*.bc.json
+!/tests/fixtures/**/*.bc.json
 episodes/
 /artifacts/
 .asset-cache/

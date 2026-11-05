@@ -1,6 +1,7 @@
 //! Window-independent project owner. UI reads snapshots; all edits use revisions.
 pub mod assets;
 mod editor;
+pub mod learning;
 pub mod mujoco;
 pub mod physics;
 pub mod planning;

@@ -1,6 +1,7 @@
 use atom_core::{AppCore, Project, ProjectStore};
 mod control;
 mod dataset;
+mod learning;
 mod runtime;
 fn main() {
     if let Err(error) = run() {
@@ -10,12 +11,13 @@ fn main() {
 }
 fn run() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<_> = std::env::args().skip(1).collect();
-    if control::run(&args)? || dataset::run(&args)? || runtime::run(&args)? {
+    if control::run(&args)? || dataset::run(&args)? || runtime::run(&args)? || learning::run(&args)?
+    {
         return Ok(());
     }
     if args.is_empty() || args == ["--help"] {
         println!(
-            "ATOM foundation\n  atom-cli runtime-probe <vllm_apple_preview|vllm_apple_daemon|strata> <http://127.0.0.1:port>\n  atom-cli runtime-smoke <profile> <origin> <model> [max_tokens:1..128]\n  atom-cli episode-quality <file.episode.json>\n  atom-cli episode-export <file.episode.json> <output.transitions.json> [success_only|completed]\n  atom-cli control-schema\n  atom-cli control-state <running-project.atom.json>\n  atom-cli control-call <running-project.atom.json> <request.json>\n  atom-cli doctor <running-project.atom.json>\n  atom-cli mcp-config <project.atom.json> [atom-mcp binary]\n  atom-cli reach-run <project.atom.json> <output.episode.json> [seed:u32] [horizon:1..500]\n  atom-cli episode-replay <file.episode.json> [frame]\n  atom-cli episode-compare <a.episode.json> <b.episode.json>\n  atom-cli import-usd <project.atom.json> <local.usd>\n  atom-cli import-hf <project.atom.json> <namespace/repo> <package> [revision]\n  atom-cli catalog <namespace/repo> [revision]\n  atom-cli init <project.atom.json> [name]\n  atom-cli template <project.atom.json> <humanoid|dual_arm>\n  atom-cli export-mjcf <project.atom.json> <output.xml>\n  atom-cli simulate <project.atom.json> [steps:1..1000]\n  atom-cli inspect <project.atom.json>\n  atom-cli validate <project.atom.json>\n\nvalidate checks task specifications; it does not run physics or training."
+            "ATOM foundation\n  atom-cli learning-validate <file.batch.json> [expected_sha256]\n  atom-cli learning-prepare <file.batch.json> <output.bc.json> [expected_sha256]\n  atom-cli learning-diagnose <file.batch.json> [expected_sha256]\n  atom-cli episode-batch-config\n  atom-cli episode-batch <request.json>\n  atom-cli episode-batch-export <request.json> <output.batch.json>\n  atom-cli plan-eval-suite\n  atom-cli plan-evaluate <candidates.json>\n  atom-cli runtime-plan-evaluate <profile> <origin> <model>\n  atom-cli runtime-probe <vllm_apple_preview|vllm_apple_daemon|strata> <http://127.0.0.1:port>\n  atom-cli runtime-smoke <profile> <origin> <model> [max_tokens:1..128]\n  atom-cli episode-quality <file.episode.json>\n  atom-cli episode-export <file.episode.json> <output.transitions.json> [success_only|completed]\n  atom-cli control-schema\n  atom-cli control-state <running-project.atom.json>\n  atom-cli control-call <running-project.atom.json> <request.json>\n  atom-cli doctor <running-project.atom.json>\n  atom-cli mcp-config <project.atom.json> [atom-mcp binary]\n  atom-cli reach-run <project.atom.json> <output.episode.json> [seed:u32] [horizon:1..500]\n  atom-cli episode-replay <file.episode.json> [frame]\n  atom-cli episode-compare <a.episode.json> <b.episode.json>\n  atom-cli import-usd <project.atom.json> <local.usd>\n  atom-cli import-hf <project.atom.json> <namespace/repo> <package> [revision]\n  atom-cli catalog <namespace/repo> [revision]\n  atom-cli init <project.atom.json> [name]\n  atom-cli template <project.atom.json> <humanoid|dual_arm>\n  atom-cli export-mjcf <project.atom.json> <output.xml>\n  atom-cli simulate <project.atom.json> [steps:1..1000]\n  atom-cli inspect <project.atom.json>\n  atom-cli validate <project.atom.json>\n\nvalidate checks task specifications; it does not run physics or training."
         );
         return Ok(());
     }

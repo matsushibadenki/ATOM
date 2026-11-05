@@ -1,4 +1,5 @@
 mod assets;
+mod batch;
 mod camera;
 mod camera_input;
 mod control;
@@ -246,6 +247,9 @@ fn main() {
                 core: AppCore::new(project)?,
                 store,
             }))));
+            app.manage(batch::State::new(
+                control_path.parent().unwrap().join("episodes"),
+            ));
             control::start(app.handle(), control_path);
             let path = std::env::var_os("ATOM_LAYOUT_PATH")
                 .map(std::path::PathBuf::from)
@@ -275,6 +279,8 @@ fn main() {
             reach::reach_command,
             reach::episode_files,
             reach::episode_dataset,
+            batch::batch_state,
+            batch::batch_command,
             camera::camera_state,
             camera::camera_command,
             transform::transform_command,

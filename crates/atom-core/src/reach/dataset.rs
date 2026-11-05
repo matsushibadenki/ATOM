@@ -1,5 +1,6 @@
 //! Auditable single-Episode transition export. No teacher reference goals in policy inputs.
 use super::*;
+pub mod batch;
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
@@ -7,7 +8,8 @@ pub enum ExportPolicy {
     SuccessOnly,
     Completed,
 }
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Quality {
     pub schema_version: u32,
     pub episode_id: Uuid,
@@ -31,7 +33,8 @@ pub struct Quality {
     pub reference_actions_only: bool,
     pub warnings: Vec<String>,
 }
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct PolicyObservation {
     /// All joint arrays follow metadata.channels, never raw qpos array order.
     pub joint_position_rad: Vec<f64>,
@@ -40,7 +43,8 @@ pub struct PolicyObservation {
     pub target_world_m: [f32; 3],
     pub previous_action_rad: Vec<f64>,
 }
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Transition {
     pub index: usize,
     pub time_seconds: f64,
@@ -53,7 +57,8 @@ pub struct Transition {
     pub terminated: bool,
     pub truncated: bool,
 }
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Metadata {
     pub profile: String,
     pub seed: u32,
@@ -76,7 +81,8 @@ pub struct Metadata {
     pub action_semantics: String,
     pub controller_provenance: String,
 }
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Dataset {
     pub schema_version: u32,
     pub format: String,
@@ -300,7 +306,8 @@ pub struct Request {
     pub expected_sequence: u64,
     pub episode_id: Uuid,
 }
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Analysis {
     pub basis: Request,
     pub quality: Quality,

@@ -1,13 +1,35 @@
-use atom_runtime::{Config, Gateway, Profile};
+use atom_runtime::{Config, Gateway, Profile, evaluation};
+use std::io::Read;
 pub fn run(args: &[String]) -> Result<bool, Box<dyn std::error::Error>> {
     let Some(command) = args.first().map(String::as_str) else {
         return Ok(false);
     };
-    if !["runtime-probe", "runtime-smoke"].contains(&command) {
+    if command == "plan-eval-suite" && args.len() == 1 {
+        println!("{}", serde_json::to_string_pretty(&evaluation::manifest())?);
+        return Ok(true);
+    }
+    if command == "plan-evaluate" && args.len() == 2 {
+        let mut bytes = vec![];
+        std::fs::File::open(&args[1])?
+            .take(evaluation::MAX_BUNDLE_BYTES as u64 + 1)
+            .read_to_end(&mut bytes)?;
+        if bytes.len() > evaluation::MAX_BUNDLE_BYTES {
+            return Err("evaluation file exceeds 128 KiB".into());
+        }
+        let bundle: evaluation::Bundle = serde_json::from_slice(&bytes)?;
+        let report = evaluation::evaluate(&bundle)?;
+        println!("{}", serde_json::to_string_pretty(&report)?);
+        if report.passed != report.total {
+            return Err("evaluation has failed or missing cases".into());
+        }
+        return Ok(true);
+    }
+    if !["runtime-probe", "runtime-smoke", "runtime-plan-evaluate"].contains(&command) {
         return Ok(false);
     }
     if (command == "runtime-probe" && args.len() != 3)
         || (command == "runtime-smoke" && !(4..=5).contains(&args.len()))
+        || (command == "runtime-plan-evaluate" && args.len() != 4)
     {
         return Err("invalid runtime arguments; use --help".into());
     }
@@ -24,7 +46,19 @@ pub fn run(args: &[String]) -> Result<bool, Box<dyn std::error::Error>> {
         },
         std::env::var("ATOM_RUNTIME_TOKEN").ok(),
     )?;
-    if command == "runtime-probe" {
+    if command == "runtime-plan-evaluate" {
+        let (bundle, evidence) = evaluation::generate(&g, &args[3]);
+        let report = evaluation::evaluate(&bundle)?;
+        println!(
+            "{}",
+            serde_json::to_string_pretty(
+                &serde_json::json!({"bundle":bundle,"evaluation":report,"completions":evidence})
+            )?
+        );
+        if report.passed != report.total {
+            return Err("evaluation has failed cases".into());
+        }
+    } else if command == "runtime-probe" {
         let c = g.probe();
         println!("{}", serde_json::to_string_pretty(&c)?);
         if !c.connected {

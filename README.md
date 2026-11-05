@@ -199,3 +199,11 @@ The following design documents are primarily in Japanese:
 - [ThreeX / UNGE integration design](docs/REFERENCE-INTEGRATION.ja.md)
 - [Implementation roadmap](docs/ROADMAP.md)
 - [Research sources and open questions](docs/RESEARCH.md)
+
+SkillPlan evaluation: [fixed public holdout tasks, runtime batch generation and offline scoring](docs/PLAN_EVALUATION.md). Run `atom-cli plan-eval-suite`, `atom-cli runtime-plan-evaluate <profile> <origin> <model>`, or `atom-cli plan-evaluate <candidates.json>`. All six cases remain in the denominator, including missing or failed generations; this measures editor intent, not physical task success.
+
+Episode batch curation: [quality limits, deterministic task-group holdouts and atomic batch packages](docs/EPISODE_BATCH.md). Use `atom-cli episode-batch-config`, `episode-batch <request.json>` and `episode-batch-export <request.json> <output.batch.json>`. The offline CLI does not require MuJoCo or a running desktop.
+
+Workflow’s **Dataset** panel provides Episode checkboxes, quality maxima, group split settings, partition counts, exclusion reasons and batch export in English, Japanese and Simplified Chinese. Edited drafts require reanalysis before export; the shared Rust result is used across views. See [GUI usage and verification](docs/EPISODE_BATCH.md#workflow-gui).
+
+Learning handoff: [PyTorch BC data adapter v1](docs/LEARNING_ADAPTER.md) validates saved batch contracts, preserves train/validation/test groups and prepares current-observation features with train-only normalization. Use `learning-validate`, `learning-prepare` or `learning-diagnose`, or the PyTorch · BC controls in Dataset. Diagnosis checks the real Python reader and optional tensor loader; no training or dependency installation runs automatically.

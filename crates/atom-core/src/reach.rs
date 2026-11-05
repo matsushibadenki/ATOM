@@ -375,6 +375,10 @@ impl Episode {
         Ok(())
     }
     pub fn load(path: &Path) -> Result<Self> {
+        Self::load_bounded(path, MAX_BYTES)
+    }
+    pub(crate) fn load_bounded(path: &Path, limit: u64) -> Result<Self> {
+        let limit = limit.min(MAX_BYTES);
         #[derive(Deserialize)]
         #[serde(deny_unknown_fields)]
         struct Envelope {
@@ -383,9 +387,9 @@ impl Episode {
         }
         let mut bytes = Vec::new();
         std::fs::File::open(path)?
-            .take(MAX_BYTES + 1)
+            .take(limit + 1)
             .read_to_end(&mut bytes)?;
-        if bytes.len() as u64 > MAX_BYTES {
+        if bytes.len() as u64 > limit {
             return Err(Error::Invalid("Episode size".into()));
         }
         let envelope: Envelope = serde_json::from_slice(&bytes)?;

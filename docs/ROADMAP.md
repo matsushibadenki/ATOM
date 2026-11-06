@@ -1,6 +1,6 @@
 # ATOM Roadmap
 
-更新：2026-11-05（JST）。ベース実装済み。詳細は[FOUNDATION.md](FOUNDATION.md)。
+更新：2026-11-06（JST）。ベース実装済み。詳細は[FOUNDATION.md](FOUNDATION.md)。
 
 状態の意味：
 
@@ -25,10 +25,19 @@ ThreeX／UNGEの採用ソースはhashとコピー元revisionを記録した。
 - 🟢 [Done] Episode batch品質選別・holdout分離v1。固定saltで課題groupをtrain／validation／testに割り当て、品質閾値・重複／checkpoint選別・原子的な一括exportをCLIで実装。[契約](EPISODE_BATCH.md)。
 - 🟢 [Done] Episode batchの三言語GUI：記録選択・品質上限・分割設定／集計・除外理由・filter・一括export。共有Rust結果・dirty時の再検査・元記録変更拒否を実装。[手順と検証](EPISODE_BATCH.md#workflow-gui)。
 - 🟢 [Done] 分割を維持したPyTorch BC data adapter v1：saved batchの厳密検証、trainのみの正規化、GUI／CLIの形式検証・Python接続診断。実PyTorchのtensor読込・重み学習とは分離。[契約と検証](LEARNING_ADAPTER.md)。
-- 🟠 [Next] 予算付きBC学習job・checkpoint／再読込・固定holdout評価。実PyTorch環境での前段検証後に接続。承認した計画候補の原子的適用・単一Undoは別の実装段階。
+- 🟢 [Done] PyTorch 2.15.0実行環境、予算付きCPU BC学習job・checkpoint／再開・固定test評価。GUI／CLIで実記録による重み更新・再読込を確認。[仕様と実測](BC_TRAINING.md)。
+- 🟠 [Next] 学習済みBC方策をReachの閉ループ実行へ接続し、固定seedで参照サーボと比較。計画候補の原子的適用・単一Undoは別段階。
 - ⭕️ [Pending] 実モデル推論。vLLM-appleは現在のMLX／Transformers版がreview済みgate外で拒否、Strataはserver未起動。gateや依存を変更せず保留。
 - 🔴 [Later] 位置IKの3D目標ハンドル・ライブプレビュー、向きの制約、衝突・バランスを考慮する姿勢計画。素材表示・操作補助の拡張と並行し、依存が成立した項目から着手。
 
+
+## 予算付きBC学習job v1（2026-11-06）
+
+- 🟢 [Done] 専用`.venv-learning`（Python 3.12.16／PyTorch 2.15.0／NumPy 2.5.4）、再構築scriptと依存lock。実Tensor／DataLoaderを確認。MuJoCo 3.1.6の24 seed実記録から成功21件を選別し、学習17／検証2／テスト2 groupを維持。
+- 🟢 [Done] 固定CPU・1スレッドMLP／Adamの実学習。累計1〜10000step・1〜300秒、有限勾配・norm clipping、hard deadline／停止・kill／wait。Rust共有job状態、GUIの開始／再開／停止・保存checkpoint一覧／読込／固定test評価、CLIの学習／評価を実装。
+- 🟢 [Done] trainのみ最適化・正規化、validationのみbest選択、凍結・保存・再読込後にtest評価。last／best・optimizer状態・データ／設定signatureとhash・最終manifestで保存。200→400再開が同環境のfresh 400と重み・指標で一致し、testラベル変更で学習重みが不変なことを確認。[契約と結果](BC_TRAINING.md)。
+- 🟠 [Next] 学習済み方策のReach閉ループ評価・参照サーボ比較、登録とrolloutの再現性。
+- ⭕️ [Pending] 物理課題成功率・汎化改善、MPS／CUDA、他OS／clean machine・native浮動パネル。記録指令RMSEを課題成功率と扱わない。LLM LoRAは別段階。
 
 ## 学習data adapter v1（2026-11-05）
 
@@ -36,8 +45,9 @@ ThreeX／UNGEの採用ソースはhashとコピー元revisionを記録した。
 - 🟢 [Done] `atom-bc-dataset-v1`へ42入力／12指令（既定双腕）のBCデータを準備。三分割・Episode境界・channelを維持し、正規化はtrainのみ。teacher goal・未来観測は入力に混ぜず、testをfit loaderへ渡さない。64MiB上限・原子的no-clobber出力。
 - 🟢 [Done] CLIの`learning-validate`／`learning-prepare`／`learning-diagnose`と三言語GUI。export receiptのhashに接続結果を固定し、共有Rust状態で診断・未導入・データ有効性を区別。固定のPython workerに20秒／stdout 16KiB、異常時kill／wait、依存の自動導入なし。
 - 🟢 [Done] 新規5テストを含む全272テスト・Clippy・build。三分割fixtureでCLI／Python実読込、native Tauriの形式検証・hash差替え拒否・共有状態不変、三言語／220・320pxのGUIを確認。
-- 🟠 [Next] 実PyTorch環境のtensor loader確認後、BC学習job・予算・checkpoint／再読込・holdout評価へ接続。LLM SFT／MLX LoRAは別教材・別工程。
-- ⭕️ [Pending] 現環境はPyTorch未導入。Python loaderの実接続・読込は確認したが、実tensor・重み更新・性能改善とは数えない。他OS／native浮動パネル・外部workerも未検証。
+- 🟢 [Done] 実PyTorchのtensor loader、CPU BC学習job・予算・checkpoint／再開・固定holdout評価。LLM SFT／MLX LoRAは別教材・別工程。
+- 🟢 [Done] 現環境へ専用Python 3.12／PyTorch 2.15.0を導入し、実tensor・重み更新・保存／再読込を確認。
+- ⭕️ [Pending] 他OS／native浮動パネル・外部worker、閉ループ成功率・汎化性能の測定。
 
 ## Episode batch選別／holdout分離 v1（2026-11-05）
 
@@ -45,7 +55,7 @@ ThreeX／UNGEの採用ソースはhashとコピー元revisionを記録した。
 - 🟢 [Done] 固定salt＋既存split groupのhashによるtrain／validation／test分離。同じ課題の再実行・checkpointを跨がせず、入力順・追加・選別閾値で再割当てしない。件数比例は近似、空partitionと類似課題の相関は警告。
 - 🟢 [Done] CLIの既定設定生成・一括検査・一括export。選別結果とsplit付きの既存transition payloadを64MiB上限で逐次書込みし、元記録hash再確認・sync・no-clobberで公開。文書・履歴・元記録は不変。[仕様](EPISODE_BATCH.md)。
 - 🟢 [Done] Datasetの三言語GUI・split／除外理由確認と一括export。native Tauriと220／320pxのUI試験で確認。
-- 🟢 [Done] 学習adapterとの形式検証・接続診断v1。実tensor読込・学習はPending。
+- 🟢 [Done] 学習adapterとの形式検証・接続診断v1。実tensor読込・CPU学習も実装・検証済み。
 - 🟢 [Done] 新規5テストを含む全265テスト（33件は環境依存でignore）、Clippy・build、実CLIの選別／分割／receipt hash／再export／競合保持を確認。
 - ⭕️ [Pending] 新規実物理rollout、実際の学習・holdout改善。既定Pythonと既存`.venv-usd`にMuJoCo moduleがなく、今回の追加経路は記録fixtureで処理契約を検証。
 
@@ -91,7 +101,7 @@ ThreeX／UNGEの採用ソースはhashとコピー元revisionを記録した。
 - 🟢 [Done] 新規Rust 5テストと実MuJoCo 3.1.6：seed 7の成功24遷移／0.48秒、timeout 1遷移を確認。実native Tauriで両filter、途中記録拒否、三言語、狭いWorkflow表示、再exportとIPC経由の共有状態不変を確認。
 - 🟢 [Done] 計画候補の固定評価、Episode batchの品質選別とholdout分離v1。
 - 🟢 [Done] 選別結果のGUI確認。
-- 🟢 [Done] 学習data adapter接続v1。実学習jobは次段階。
+- 🟢 [Done] 学習data adapter接続v1。CPU実学習jobも実装済み。
 - 🔴 [Later] LeRobot／RLDS等への変換、画像センサー、BC／ACT基準、学習前後のholdout比較。今回のJSON exportを各frameworkとの互換実装と数えない。
 - ⭕️ [Pending] 他OSのnative UI、浮動windowでのexport操作、実際の学習と汎化性能の測定。
 
@@ -104,7 +114,7 @@ ThreeX／UNGEの採用ソースはhashとコピー元revisionを記録した。
 - 🟢 [Done] 計画候補の固定評価、Episodeのbatch選別・splitをCLIで実装。
 - 🟢 [Done] 選別結果のGUI確認。
 - 🟢 [Done] 学習data adapterへの形式検証・接続診断。
-- 🟠 [Next] 予算付き学習job・checkpoint／holdout評価。
+- 🟢 [Done] 予算付きCPU学習job・checkpoint／固定holdout評価。
 - 🔴 [Later] 外部からの変更適用・非同期simulation job、監査／権限、Streamable HTTPとfunction calling／OpenAPI bridge。
 - ⭕️ [Pending] Linux実機・Windows IPC、各社AI client／account別の実接続、今回追加UIの狭幅／浮動window検証。既存Reachのnative再生scheduler検証は引き続き保留。
 
@@ -118,7 +128,7 @@ ThreeX／UNGEの採用ソースはhashとコピー元revisionを記録した。
 - 🟢 [Done] Workflowにreset／single-step／終端までrun／保存／終了、記録一覧の読込、seek／play／pauseを三言語で追加。Rustがepisode・cursor・再生世代tokenを所有。古い再生loop・古いrun ID・重複stepを拒否し、全windowへ同じsnapshotを通知。ロード済み記録は読み取り専用でMuJoCo不要。元文書にないIDの選択・フォーカスと、表示中sceneのmesh metadataにも対応。
 - 🟢 [Done] CLIの`reach-run`／`episode-replay`／`episode-compare`。一意episode IDを比較対象から外し、manifest・全frameの完全一致を確認。seed 0〜9を各2回、MuJoCo 3.1.6で同じ遷移と10種すべての成功を確認。seed 7は24step／0.48秒で成功、上限1stepはtimeout。学習済み方策の成績や環境間の物理等価性と扱わない。
 - 🟢 [Done] Worker強制終了後の部分記録保持、終了後process停止、原子的保存・再読込、stale／重複要求、共有再生・元scene復帰を検証。Metalで記録の最終姿勢への描画変化と先頭seekの同一pixel復元を確認。実core＋MuJoCoのGUIで一連の操作と3言語・幅900／280／220px、コンソールエラーなしを検証。
-- 🟠 [Next] 実tensor読込の確認・予算付き学習job。学習data adapterの形式検証／診断・選別結果のGUI・型付きLLM計画・Episodeのbatch品質選別はv1実装済み。地球重力下でのサーボ／制御器の調整、任意scene・robotのReach、runtime doctor・非同期job停止も継続課題。
+- 🟢 [Done] 実tensor読込・予算付きCPU学習job。学習data adapterの形式検証／診断・選別結果のGUI・型付きLLM計画・Episodeのbatch品質選別はv1実装済み。地球重力下でのサーボ／制御器の調整、任意scene・robotのReach、runtime doctor・非同期job停止も継続課題。
 - 🔴 [Later] PlanTrace、solver snapshotからの再開・分岐、衝突回避目標、重力／外乱のrandomization、学習方策比較、LeRobot等へのexport。現在の参照joint目標は教師側情報を使うため、学習方策の入力にそのまま混ぜない。
 - ⭕️ [Pending] native Tauri IPC・OSイベント配送・実window再生scheduler、浮動／複数モニター／他OSでの手動QA、異なるMuJoCo／Python／CPUでの再実行比較。GUIはHTTP host経由の実core、Metal試験はoffscreen。seedだけで環境を跨ぐbit一致を保証しない。
 

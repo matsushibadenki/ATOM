@@ -281,6 +281,8 @@ fn main() {
             reach::episode_dataset,
             batch::batch_state,
             batch::batch_command,
+            batch::batch_cancel,
+            batch::training_jobs,
             camera::camera_state,
             camera::camera_command,
             transform::transform_command,

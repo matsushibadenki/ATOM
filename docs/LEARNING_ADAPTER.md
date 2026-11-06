@@ -9,8 +9,9 @@ examples. SkillPlan/MLX-LM LoRA datasets remain a separate workflow.
 
 The adapter uses PyTorch's documented map-style `Dataset` (`__len__`, `__getitem__`)
 and `DataLoader` interfaces. See the [official data-loading documentation](https://docs.pytorch.org/docs/stable/data.html).
-The real PyTorch tensor path remains unverified in this development environment,
-where the module is unavailable. Python/data-protocol connectivity is tested separately.
+The original November 5 verification had no installed PyTorch. On November 6,
+real tensor loading and CPU training were verified in an isolated environment; see
+[bounded BC jobs](BC_TRAINING.md). Data diagnosis and training remain separate actions.
 
 ## GUI
 
@@ -180,3 +181,5 @@ Final verification: 272 workspace tests passed; 33 environment-dependent tests s
 ignored. Clippy with warnings denied, formatting, JavaScript syntax and the unsigned
 development app build passed. No PyTorch installation, real tensor-success claim,
 optimizer run or new MuJoCo rollout was performed.
+
+November 6 update: [bounded CPU BC training](BC_TRAINING.md) now implements actual optimization, checkpoint/reload/resume and fixed recorded-data holdout evaluation. The earlier unavailable-framework observations above are historical; current local diagnosis uses the new isolated environment.

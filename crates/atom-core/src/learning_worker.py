@@ -67,8 +67,10 @@ def fit_datasets(p, torch):
             return len(self.rows)
         def __getitem__(self, i):
             row = self.rows[i]
-            x = [(v-m)/s for v,m,s in zip(row["features"],p["normalization"]["mean"],p["normalization"]["std"])]
-            return torch.tensor(x, dtype=torch.float32), torch.tensor(row["action"], dtype=torch.float32)
+            x = torch.tensor(row["features"], dtype=torch.float32)
+            mean = torch.tensor(p["normalization"]["mean"], dtype=torch.float32)
+            scale = torch.tensor(p["normalization"]["std"], dtype=torch.float32)
+            return (x-mean)/scale, torch.tensor(row["action"], dtype=torch.float32)
     return {s: BCDataset(p["splits"][s]) for s in ("train", "validation")}
 
 def diagnose(path, digest):

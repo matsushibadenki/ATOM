@@ -14,6 +14,7 @@ use std::{
     io::{Read, Write},
     path::Path,
 };
+pub mod training;
 const MAX_BYTES: u64 = 64 * 1024 * 1024;
 pub const FORMAT: &str = "atom-bc-dataset-v1";
 #[derive(Debug, Serialize)]
@@ -687,7 +688,7 @@ impl Drop for Process {
 }
 /// Launch only the bundled loader script. No shell, downloads, optimizer or model startup.
 pub fn diagnose(data: &Validated) -> Result<Diagnostic> {
-    let python = std::env::var_os("ATOM_LEARNING_PYTHON").unwrap_or_else(|| "python3".into());
+    let python = python_executable();
     diagnose_using(data, &python)
 }
 pub(crate) fn diagnose_using(data: &Validated, python: &std::ffi::OsStr) -> Result<Diagnostic> {
@@ -791,4 +792,21 @@ pub(crate) fn diagnose_using_budget(
         return Err(err("learning_worker_protocol"));
     }
     Ok(reply)
+}
+
+/// Prefer the explicitly configured interpreter, then this checkout's isolated learning env.
+pub fn python_executable() -> std::ffi::OsString {
+    if let Some(path) = std::env::var_os("ATOM_LEARNING_PYTHON") {
+        return path;
+    }
+    let local = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(if cfg!(windows) {
+        "../../.venv-learning/Scripts/python.exe"
+    } else {
+        "../../.venv-learning/bin/python"
+    });
+    if local.is_file() {
+        local.into_os_string()
+    } else {
+        "python3".into()
+    }
 }

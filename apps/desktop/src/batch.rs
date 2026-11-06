@@ -41,6 +41,8 @@ pub struct Snapshot {
     exported_sha256: Option<String>,
     error: Option<String>,
     learning: Option<LearningView>,
+    training: Option<TrainingView>,
+    training_running: bool,
 }
 #[derive(Clone, Serialize)]
 struct LearningView {
@@ -53,19 +55,28 @@ type JobOutput = (
     Option<Report>,
     Option<(String, String)>,
     Option<LearningView>,
+    Option<TrainingView>,
 );
+#[derive(Clone, Serialize)]
+struct TrainingView {
+    directory: String,
+    result: serde_json::Value,
+}
 struct Session {
     snapshot: Snapshot,
     report: Option<Arc<Report>>,
+    last_job: Option<PathBuf>,
 }
 pub struct State {
     session: Mutex<Session>,
     dir: PathBuf,
+    cancel: Mutex<Option<Arc<std::sync::atomic::AtomicBool>>>,
 }
 impl State {
     pub fn new(dir: PathBuf) -> Self {
         Self {
             dir,
+            cancel: Mutex::new(None),
             session: Mutex::new(Session {
                 snapshot: Snapshot {
                     revision: 0,
@@ -77,8 +88,11 @@ impl State {
                     exported_sha256: None,
                     error: None,
                     learning: None,
+                    training: None,
+                    training_running: false,
                 },
                 report: None,
+                last_job: None,
             }),
         }
     }
@@ -107,6 +121,14 @@ pub enum Command {
     Export,
     ValidateLearning,
     DiagnoseLearning,
+    Train {
+        config: atom_core::learning::training::Config,
+        resume: bool,
+    },
+    Evaluate,
+    LoadJob {
+        name: String,
+    },
 }
 fn request(
     dir: &std::path::Path,
@@ -163,11 +185,27 @@ impl Session {
         }
         if matches!(
             command,
-            Command::ValidateLearning | Command::DiagnoseLearning
+            Command::ValidateLearning
+                | Command::DiagnoseLearning
+                | Command::Train { .. }
+                | Command::Evaluate
+                | Command::LoadJob { .. }
         ) && self.snapshot.exported.is_none()
         {
             return Err(error("learning_export_first"));
         }
+        if matches!(
+            command,
+            Command::Train { resume: true, .. } | Command::Evaluate
+        ) && self.last_job.is_none()
+        {
+            return Err(error("learning_checkpoint_missing"));
+        }
+        if let Command::Train { config, .. } = command {
+            config.validate().map_err(|e| error(&e.code))?;
+        }
+        self.snapshot.training_running =
+            matches!(command, Command::Train { .. } | Command::Evaluate);
         let report = match &command {
             Command::Export => Some(
                 self.report
@@ -197,6 +235,8 @@ impl Session {
             self.snapshot.exported = None;
             self.snapshot.exported_sha256 = None;
             self.snapshot.learning = None;
+            self.snapshot.training = None;
+            self.last_job = None;
         }
         self.snapshot.busy = true;
         self.snapshot.error = None;
@@ -217,6 +257,11 @@ pub fn batch_command(
     let mut session = state.session.lock().map_err(|_| error("internal_error"))?;
     let (snapshot, report) = session.begin(expected_revision, &command)?;
     let token = snapshot.revision;
+    let last_job = session.last_job.clone();
+    let cancel = Arc::new(std::sync::atomic::AtomicBool::new(false));
+    if snapshot.training_running {
+        *state.cancel.lock().map_err(|_| error("internal_error"))? = Some(cancel.clone());
+    }
     let dir = state.dir.clone();
     let previous = snapshot.exported.clone();
     let expected_hash = snapshot.exported_sha256.clone();
@@ -224,6 +269,7 @@ pub fn batch_command(
     notify(&app, &snapshot);
     let is_export = matches!(&command, Command::Export);
     let is_diagnose = matches!(&command, Command::DiagnoseLearning);
+    let is_evaluate = matches!(&command, Command::Evaluate);
     tauri::async_runtime::spawn_blocking(move || {
         let result = (|| -> Result<JobOutput, UiError> {
             match command {
@@ -233,6 +279,7 @@ pub fn batch_command(
                             .analyze()
                             .map_err(UiError::from)?,
                     ),
+                    None,
                     None,
                     None,
                 )),
@@ -286,8 +333,50 @@ pub fn batch_command(
                             }
                         }
                     };
-                    Ok((None, None, Some(view)))
+                    Ok((None, None, Some(view), None))
                 }
+                Command::LoadJob { name } => {
+                    if !atom_core::learning::training::valid_name(&name) {
+                        return Err(error("learning_checkpoint_invalid"));
+                    }
+                    let job =
+                        atom_core::learning::training::inspect(&dir.join("training").join(&name))
+                            .map_err(|e| error(&e.code))?;
+                    if job.result["source_sha256"].as_str() != expected_hash.as_deref() {
+                        return Err(error("learning_checkpoint_data_mismatch"));
+                    }
+                    let mut result = job.result;
+                    result.as_object_mut().unwrap().remove("history");
+                    Ok((
+                        None,
+                        None,
+                        None,
+                        Some(TrainingView {
+                            directory: name,
+                            result,
+                        }),
+                    ))
+                }
+                Command::Train { config, resume } => run_training(
+                    &dir,
+                    previous.as_deref().unwrap(),
+                    expected_hash.as_deref().unwrap(),
+                    &config,
+                    if resume { last_job.as_deref() } else { None },
+                    false,
+                    &cancel,
+                    token,
+                ),
+                Command::Evaluate => run_training(
+                    &dir,
+                    previous.as_deref().unwrap(),
+                    expected_hash.as_deref().unwrap(),
+                    &atom_core::learning::training::Config::default(),
+                    last_job.as_deref(),
+                    is_evaluate,
+                    &cancel,
+                    token,
+                ),
                 Command::Export => {
                     let report = report.unwrap();
                     // Reject symlink replacements as well as the core content-hash check.
@@ -312,7 +401,7 @@ pub fn batch_command(
                     let receipt = report
                         .save_package(&out.join(&name))
                         .map_err(|_| error("batch_export_failed"))?;
-                    Ok((None, Some((name, receipt.sha256)), None))
+                    Ok((None, Some((name, receipt.sha256)), None, None))
                 }
             }
         })();
@@ -324,9 +413,17 @@ pub fn batch_command(
             return;
         }
         session.snapshot.busy = false;
+        session.snapshot.training_running = false;
+        *state.cancel.lock().unwrap() = None;
         session.snapshot.revision += 1;
         match result {
-            Ok((report, name, learning)) => {
+            Ok((report, name, learning, training)) => {
+                if let Some(view) = training {
+                    if view.result["kind"] == "training" {
+                        session.last_job = Some(dir.join("training").join(&view.directory));
+                    }
+                    session.snapshot.training = Some(view);
+                }
                 if learning.is_some() {
                     session.snapshot.learning = learning;
                 }
@@ -338,6 +435,8 @@ pub fn batch_command(
                     session.snapshot.exported = Some(name);
                     session.snapshot.exported_sha256 = Some(hash);
                     session.snapshot.learning = None;
+                    session.snapshot.training = None;
+                    session.last_job = None;
                 }
             }
             Err(e) => {
@@ -421,4 +520,83 @@ mod tests {
             assert!(request(dir.path(), Settings::default(), &[link]).is_err());
         }
     }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn run_training(
+    dir: &std::path::Path,
+    filename: &str,
+    hash: &str,
+    config: &atom_core::learning::training::Config,
+    resume: Option<&std::path::Path>,
+    evaluate: bool,
+    cancel: &std::sync::atomic::AtomicBool,
+    token: u64,
+) -> Result<JobOutput, UiError> {
+    let source = dir.join("exports").join(filename);
+    if std::fs::symlink_metadata(&source).is_ok_and(|m| m.file_type().is_symlink()) {
+        return Err(error("batch_invalid_sources"));
+    }
+    let data = atom_core::learning::Validated::load(&source).map_err(|e| error(&e.code))?;
+    if data.summary().source_sha256 != hash {
+        return Err(error("learning_source_changed"));
+    }
+    let parent = dir.join("training");
+    std::fs::create_dir_all(&parent).map_err(|_| error("io_error"))?;
+    let name = format!(
+        "bc-{}-{token}",
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_nanos()
+    );
+    let job = if evaluate {
+        atom_core::learning::training::evaluate(&data, resume.unwrap(), &parent.join(&name), cancel)
+    } else {
+        atom_core::learning::training::train(&data, config, &parent.join(&name), resume, cancel)
+    }
+    .map_err(|e| error(&e.code))?;
+    let mut result = job.result;
+    result.as_object_mut().unwrap().remove("history");
+    Ok((
+        None,
+        None,
+        None,
+        Some(TrainingView {
+            directory: name,
+            result,
+        }),
+    ))
+}
+#[tauri::command]
+pub fn batch_cancel(webview: tauri::Webview, expected_revision: u64) -> Result<(), UiError> {
+    authorize(&webview)?;
+    let state = webview.state::<State>();
+    let session = state.session.lock().map_err(|_| error("internal_error"))?;
+    if session.snapshot.revision != expected_revision {
+        return Err(error("batch_stale"));
+    }
+    if !session.snapshot.training_running {
+        return Err(error("learning_job_not_running"));
+    }
+    if let Some(cancel) = state
+        .cancel
+        .lock()
+        .map_err(|_| error("internal_error"))?
+        .as_ref()
+    {
+        cancel.store(true, std::sync::atomic::Ordering::Relaxed);
+    }
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn training_jobs(webview: tauri::Webview) -> Result<Vec<String>, UiError> {
+    authorize(&webview)?;
+    let dir = webview.state::<State>().dir.join("training");
+    tauri::async_runtime::spawn_blocking(move || {
+        atom_core::learning::training::catalog(&dir).map_err(|e| error(&e.code))
+    })
+    .await
+    .map_err(|_| error("internal_error"))?
 }

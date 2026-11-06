@@ -1,9 +1,61 @@
 use atom_core::learning::{self, Validated};
-use std::path::Path;
+use std::{io::Read, path::Path};
 pub fn run(args: &[String]) -> Result<bool, Box<dyn std::error::Error>> {
     let Some(cmd) = args.first().map(String::as_str) else {
         return Ok(false);
     };
+    if cmd == "learning-job-config" && args.len() == 1 {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&learning::training::Config::default())?
+        );
+        return Ok(true);
+    }
+    if cmd == "learning-train" || cmd == "learning-evaluate" {
+        if (cmd == "learning-train" && !(3..=5).contains(&args.len()))
+            || (cmd == "learning-evaluate" && args.len() != 4)
+        {
+            return Err("invalid learning job arguments; use --help".into());
+        }
+        let result = (|| -> Result<learning::training::Job, Box<dyn std::error::Error>> {
+            let data = Validated::load(Path::new(&args[1]))?;
+            let cancel = std::sync::atomic::AtomicBool::new(false);
+            Ok(if cmd == "learning-train" {
+                let cfg = if let Some(path) = args.get(3) {
+                    let mut b = vec![];
+                    std::fs::File::open(path)?.take(4097).read_to_end(&mut b)?;
+                    if b.len() > 4096 {
+                        return Err("job config size".into());
+                    }
+                    serde_json::from_slice(&b)?
+                } else {
+                    learning::training::Config::default()
+                };
+                learning::training::train(
+                    &data,
+                    &cfg,
+                    Path::new(&args[2]),
+                    args.get(4).map(Path::new),
+                    &cancel,
+                )?
+            } else {
+                learning::training::evaluate(
+                    &data,
+                    Path::new(&args[2]),
+                    Path::new(&args[3]),
+                    &cancel,
+                )?
+            })
+        })();
+        match result {
+            Ok(job) => println!("{}", serde_json::to_string_pretty(&job)?),
+            Err(e) => {
+                println!("{}", serde_json::json!({"ok":false,"code":e.to_string()}));
+                return Err(e);
+            }
+        }
+        return Ok(true);
+    }
     if !["learning-validate", "learning-prepare", "learning-diagnose"].contains(&cmd) {
         return Ok(false);
     }

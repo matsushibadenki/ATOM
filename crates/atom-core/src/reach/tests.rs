@@ -1279,3 +1279,125 @@ fn learning_diagnostic_deadline_kills_and_waits_for_worker() {
     assert_eq!(error.code, "learning_worker_timeout");
     assert!(start.elapsed() < std::time::Duration::from_secs(3));
 }
+
+#[test]
+fn bc_job_rejects_invalid_budgets_and_uncommitted_checkpoints() {
+    use crate::learning::training;
+    let mut cfg = training::Config {
+        max_steps: 0,
+        ..Default::default()
+    };
+    assert!(cfg.validate().is_err());
+    cfg.max_steps = 10001;
+    assert!(cfg.validate().is_err());
+    cfg.max_steps = 20;
+    cfg.max_seconds = 301;
+    assert!(cfg.validate().is_err());
+    cfg.max_seconds = 1;
+    cfg.learning_rate = f64::NAN;
+    assert!(cfg.validate().is_err());
+    let dir = tempfile::tempdir().unwrap();
+    let path = learning_fixture(dir.path());
+    let data = crate::learning::Validated::load(&path).unwrap();
+    let cancel = std::sync::atomic::AtomicBool::new(false);
+    let empty = dir.path().join("partial-job");
+    std::fs::create_dir(&empty).unwrap();
+    std::fs::write(empty.join("last.pt"), b"not a committed job").unwrap();
+    assert!(training::evaluate(&data, &empty, &dir.path().join("evaluation"), &cancel).is_err());
+    assert!(!dir.path().join("evaluation").exists());
+}
+#[test]
+#[ignore = "Requires isolated PyTorch learning environment; real optimizer/checkpoint/holdout contract"]
+fn bc_real_train_resume_and_test_isolation() {
+    use crate::learning::{self, training};
+    let dir = tempfile::tempdir().unwrap();
+    let path = learning_fixture(dir.path());
+    let data = learning::Validated::load(&path).unwrap();
+    let cancel = std::sync::atomic::AtomicBool::new(false);
+    let cfg = training::Config {
+        max_steps: 20,
+        max_seconds: 20,
+        ..Default::default()
+    };
+    let first = training::train(&data, &cfg, &dir.path().join("first"), None, &cancel).unwrap();
+    assert_eq!(first.result["weights_updated"], true);
+    assert_eq!(first.result["checkpoint_reload_verified"], true);
+    let cfg = training::Config {
+        max_steps: 40,
+        ..cfg
+    };
+    let resume = training::train(
+        &data,
+        &cfg,
+        &dir.path().join("resume"),
+        Some(&first.directory),
+        &cancel,
+    )
+    .unwrap();
+    let fresh = training::train(&data, &cfg, &dir.path().join("fresh"), None, &cancel).unwrap();
+    assert_eq!(resume.result["test"], fresh.result["test"]);
+    let evaluation =
+        training::evaluate(&data, &resume.directory, &dir.path().join("test"), &cancel).unwrap();
+    assert_eq!(evaluation.result["test"], resume.result["test"]);
+    assert_eq!(evaluation.result["trained"], false);
+    // Changing held-out action labels must not change learned or validation-selected weights.
+    let package: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
+    let mut request = dataset::batch::Request::default();
+    for entry in package["report"]["entries"].as_array().unwrap() {
+        let source = Path::new(entry["source"].as_str().unwrap());
+        let mut episode = Episode::load(source).unwrap();
+        if entry["split"] == "test" {
+            for frame in episode.frames.iter_mut().skip(1) {
+                for (a, c) in frame
+                    .action
+                    .as_mut()
+                    .unwrap()
+                    .iter_mut()
+                    .zip(&episode.manifest.channels)
+                {
+                    *a = (*a + 0.02).min(f64::from(c.range[1]));
+                }
+            }
+        }
+        let changed = dir.path().join(format!(
+            "changed-{}",
+            source.file_name().unwrap().to_string_lossy()
+        ));
+        episode.save(&changed).unwrap();
+        request.sources.push(changed);
+    }
+    let changed = dir.path().join("changed.batch.json");
+    request.analyze().unwrap().save_package(&changed).unwrap();
+    let changed = learning::Validated::load(&changed).unwrap();
+    let other = training::train(&changed, &cfg, &dir.path().join("other"), None, &cancel).unwrap();
+    assert_ne!(fresh.result["test"], other.result["test"]);
+    let script = "import torch,sys; a=torch.load(sys.argv[1],weights_only=True)['model']; b=torch.load(sys.argv[2],weights_only=True)['model']; assert all(torch.equal(a[k],b[k]) for k in a)";
+    for (a, b) in [
+        (&resume.directory, &fresh.directory),
+        (&fresh.directory, &other.directory),
+    ] {
+        assert!(
+            std::process::Command::new(learning::python_executable())
+                .args(["-I", "-c", script])
+                .arg(a.join("best.pt"))
+                .arg(b.join("best.pt"))
+                .status()
+                .unwrap()
+                .success()
+        );
+    }
+    let mut bad = cfg.clone();
+    bad.learning_rate = 0.01;
+    assert!(
+        training::train(
+            &data,
+            &bad,
+            &dir.path().join("bad-config"),
+            Some(&first.directory),
+            &cancel
+        )
+        .is_err()
+    );
+    assert!(!dir.path().join("bad-config").exists());
+}

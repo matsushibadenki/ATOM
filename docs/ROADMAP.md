@@ -1,6 +1,6 @@
 # ATOM Roadmap
 
-更新：2026-11-06（JST）。ベース実装済み。詳細は[FOUNDATION.md](FOUNDATION.md)。
+更新：2026-11-09（JST）。ベース実装済み。詳細は[FOUNDATION.md](FOUNDATION.md)。
 
 状態の意味：
 
@@ -26,7 +26,14 @@ ThreeX／UNGEの採用ソースはhashとコピー元revisionを記録した。
 - 🟢 [Done] Episode batchの三言語GUI：記録選択・品質上限・分割設定／集計・除外理由・filter・一括export。共有Rust結果・dirty時の再検査・元記録変更拒否を実装。[手順と検証](EPISODE_BATCH.md#workflow-gui)。
 - 🟢 [Done] 分割を維持したPyTorch BC data adapter v1：saved batchの厳密検証、trainのみの正規化、GUI／CLIの形式検証・Python接続診断。実PyTorchのtensor読込・重み学習とは分離。[契約と検証](LEARNING_ADAPTER.md)。
 - 🟢 [Done] PyTorch 2.15.0実行環境、予算付きCPU BC学習job・checkpoint／再開・固定test評価。GUI／CLIで実記録による重み更新・再読込を確認。[仕様と実測](BC_TRAINING.md)。
-- 🟠 [Next] 学習済みBC方策をReachの閉ループ実行へ接続し、固定seedで参照サーボと比較。計画候補の原子的適用・単一Undoは別段階。
+- 🟢 [Done] 凍結BC方策のReach閉ループ評価・固定test群での参照サーボ比較をRust／CLIに実装。実MuJoCoで指令列・qposの再現、成功／timeout、Episode保存・再生を確認。[仕様と結果](BC_ROLLOUT.md)。
+- 🟢 [Done] 閉ループReach評価の三言語GUI：共有Rust jobの開始／停止、参照サーボ・BC方策の成功率／seed別結果、保存比較の再読込、hash検証したEpisodeのネイティブ3D再生連携。[操作と検証](BC_ROLLOUT.md#workflow-gui)。
+- 🟢 [Done] 方策registryと固定test評価履歴比較。checkpoint／学習batch／評価manifestをhashで紐付けて永続化し、三言語GUIで方策選択、同条件の成功率・timeout・平均最終距離／seed別比較、再生へ接続。[仕様と検証](POLICY_REGISTRY.md)。
+- 🟢 [Done] 保存BC評価の分布ずれ・関節限界・失敗分類の診断。trainだけの入力範囲／z目安、適用指令の端点率・追従／指令変化、未到達／保持不足を三言語GUI／CLIへ表示しhash付き別ファイルへ保存。[契約と検証](BC_DIAGNOSTICS.md)。
+- 🟢 [Done] validation分割での閉ループReach評価。GUIの分割選択・開始／停止、元group限定実行、分割名付き履歴・診断・保存Episode再生に接続。固定testとの混在比較・空分割の補充を拒否。[仕様と検証](VALIDATION_REACH.md)。
+- 🟢 [Done] validation上の予算付き候補比較。凍結方策2〜4件の課題一致検証・共有進捗／停止・全件完了時だけの順位・保存／再検証と個別評価再生を実装。[仕様と検証](VALIDATION_CAMPAIGN.md)。
+- 🟢 [Done] 元のholdoutを保持したtrain専用参照記録の追加収集。固定seed走査・holdout／既存課題の実行前除外・予算／停止・品質選別・保存／再検証・明示的な追加batch選択と新規学習を実装。同じ単一validation課題でtimeout→成功を実測し、汎化改善とは分離。[仕様と検証](TRAIN_COLLECTION.md)。
+- 🟠 [Next] 診断に基づく失敗領域の優先収集、方策が訪れた状態への教師ラベル付け、より広い固定validation群での比較。固定testは選択へ転用しない。計画候補の原子的適用・単一Undoは別段階。
 - ⭕️ [Pending] 実モデル推論。vLLM-appleは現在のMLX／Transformers版がreview済みgate外で拒否、Strataはserver未起動。gateや依存を変更せず保留。
 - 🔴 [Later] 位置IKの3D目標ハンドル・ライブプレビュー、向きの制約、衝突・バランスを考慮する姿勢計画。素材表示・操作補助の拡張と並行し、依存が成立した項目から着手。
 
@@ -36,8 +43,15 @@ ThreeX／UNGEの採用ソースはhashとコピー元revisionを記録した。
 - 🟢 [Done] 専用`.venv-learning`（Python 3.12.16／PyTorch 2.15.0／NumPy 2.5.4）、再構築scriptと依存lock。実Tensor／DataLoaderを確認。MuJoCo 3.1.6の24 seed実記録から成功21件を選別し、学習17／検証2／テスト2 groupを維持。
 - 🟢 [Done] 固定CPU・1スレッドMLP／Adamの実学習。累計1〜10000step・1〜300秒、有限勾配・norm clipping、hard deadline／停止・kill／wait。Rust共有job状態、GUIの開始／再開／停止・保存checkpoint一覧／読込／固定test評価、CLIの学習／評価を実装。
 - 🟢 [Done] trainのみ最適化・正規化、validationのみbest選択、凍結・保存・再読込後にtest評価。last／best・optimizer状態・データ／設定signatureとhash・最終manifestで保存。200→400再開が同環境のfresh 400と重み・指標で一致し、testラベル変更で学習重みが不変なことを確認。[契約と結果](BC_TRAINING.md)。
-- 🟠 [Next] 学習済み方策のReach閉ループ評価・参照サーボ比較、登録とrolloutの再現性。
-- ⭕️ [Pending] 物理課題成功率・汎化改善、MPS／CUDA、他OS／clean machine・native浮動パネル。記録指令RMSEを課題成功率と扱わない。LLM LoRAは別段階。
+- 🟢 [Done] 学習済みbest方策のReach閉ループ評価・参照サーボ比較、固定test群／seed・独立reset、指令列・qposの再現性を実測。CLI `learning-rollout`、hash付き比較reportと通常Episodeの保存。[契約と限界](BC_ROLLOUT.md)。
+- 🟢 [Done] GUIから閉ループ評価の開始／停止・比較と再生。保存比較はbatch未選択でも読込可能。実アプリで完了／途中取消／参照・BC双方の再生を確認。
+- 🟢 [Done] 不変の方策／評価リンクregistry、保存方策から学習対象の復元、実行条件一致による履歴A／B比較。GUI自動登録／リンクと既存結果の取り込み、再起動復元を確認。[契約](POLICY_REGISTRY.md)。
+- 🟢 [Done] trainを基準とした保存評価の入力範囲・z目安、関節指令の端点率・追従・変化、未到達／保持不足の診断。共有Rust job・hash付きsidecar・三言語GUI／CLIを実装。[仕様](BC_DIAGNOSTICS.md)。
+- 🟢 [Done] validation群の閉ループ実行・共有GUI開始／停止・registry／履歴／診断／再生連携。旧testキーとCLI既定動作を維持し、別分割の混在を拒否。[契約](VALIDATION_REACH.md)。
+- 🟢 [Done] 登録済み凍結方策2〜4件の予算付きvalidation候補比較。実行前の課題一致検証、共有GUI開始／停止・進捗、全候補完了時だけの順位、hash付き保存／再検証・個別評価再生を実装。test採点・自動方策切替なし。[契約と検証](VALIDATION_CAMPAIGN.md)。
+- 🟢 [Done] train専用の参照記録追加収集・品質選別・追加batchとholdout維持・新規BC学習へのGUI／CLI接続。[契約](TRAIN_COLLECTION.md)。
+- 🟠 [Next] 診断に基づく収集と方策が訪れた状態への教師ラベル付け、広いvalidation群での改善測定。固定testは学習設定やモデルの選択に転用しない。
+- ⭕️ [Pending] 大規模holdoutでの物理課題成功率・汎化改善、MPS／CUDA、他OS／clean machine・native浮動パネル。記録指令RMSEを課題成功率と扱わない。LLM LoRAは別段階。
 
 ## 学習data adapter v1（2026-11-05）
 
@@ -47,7 +61,7 @@ ThreeX／UNGEの採用ソースはhashとコピー元revisionを記録した。
 - 🟢 [Done] 新規5テストを含む全272テスト・Clippy・build。三分割fixtureでCLI／Python実読込、native Tauriの形式検証・hash差替え拒否・共有状態不変、三言語／220・320pxのGUIを確認。
 - 🟢 [Done] 実PyTorchのtensor loader、CPU BC学習job・予算・checkpoint／再開・固定holdout評価。LLM SFT／MLX LoRAは別教材・別工程。
 - 🟢 [Done] 現環境へ専用Python 3.12／PyTorch 2.15.0を導入し、実tensor・重み更新・保存／再読込を確認。
-- ⭕️ [Pending] 他OS／native浮動パネル・外部worker、閉ループ成功率・汎化性能の測定。
+- ⭕️ [Pending] 他OS／native浮動パネル・外部worker、大規模holdoutでの閉ループ成功率・汎化性能の測定。
 
 ## Episode batch選別／holdout分離 v1（2026-11-05）
 

@@ -46,7 +46,7 @@ pub struct Job {
     pub manifest_sha256: String,
     pub result: serde_json::Value,
 }
-fn read(path: &Path, cap: u64) -> Result<Vec<u8>> {
+pub(super) fn read(path: &Path, cap: u64) -> Result<Vec<u8>> {
     if !std::fs::symlink_metadata(path)
         .map_err(|_| err("learning_checkpoint_invalid"))?
         .is_file()
@@ -65,7 +65,7 @@ fn read(path: &Path, cap: u64) -> Result<Vec<u8>> {
     Ok(b)
 }
 type CheckedJob = (serde_json::Value, Vec<(String, Vec<u8>)>);
-fn checked_job(path: &Path) -> Result<CheckedJob> {
+pub(super) fn checked_job(path: &Path) -> Result<CheckedJob> {
     if !std::fs::symlink_metadata(path)
         .map_err(|_| err("learning_checkpoint_invalid"))?
         .is_dir()

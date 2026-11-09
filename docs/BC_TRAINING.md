@@ -179,12 +179,18 @@ apart from request UUIDs. Native QA was closed. Browser checks use actual job-re
 fixtures separately from native IPC, covering budget/cancel/load dispatch, invalid
 caps, three languages, 220/320px, console health and no horizontal overflow.
 
-Pending: closed-loop learned-policy Reach evaluation, reward/success comparison,
-MPS/CUDA training, other OSes and independent clean-machine packaging. Bitwise
+Pending: distribution-shift diagnostics, broader
+physical performance evaluation, MPS/CUDA training, other OSes and independent
+clean-machine packaging. Bitwise
 reproducibility is verified only in the measured environment. LLM/MLX-LM fine-tuning
 and sensor/VLA training remain separate roadmap work.
 
-Final checkpoint: 273 standard workspace tests passed, 34 environment-dependent
+Training milestone checkpoint (2026-11-06): 273 standard workspace tests passed, 34 environment-dependent
 tests ignored. The real PyTorch optimizer/resume/test-isolation test was also run
 explicitly and passed. Clippy with warnings denied, formatting, JavaScript syntax,
 native job operation and three-language 220/320px layout checks passed.
+
+Closed-loop physics evaluation is now available separately through `learning-rollout`; see [BC rollout](BC_ROLLOUT.md). The training GUI and `learning-evaluate` continue to report offline action-prediction metrics.
+
+Saved policy selection and fixed-condition history comparison are available through
+[the policy registry](POLICY_REGISTRY.md); these operations do not optimize weights.

@@ -14,6 +14,11 @@ use std::{
     io::{Read, Write},
     path::Path,
 };
+pub mod campaign;
+pub mod collection;
+pub mod diagnostics;
+pub mod registry;
+pub mod rollout;
 pub mod training;
 const MAX_BYTES: u64 = 64 * 1024 * 1024;
 pub const FORMAT: &str = "atom-bc-dataset-v1";
@@ -37,7 +42,7 @@ fn hash(b: &[u8]) -> String {
 fn sha(s: &str) -> bool {
     s.len() == 64 && s.bytes().all(|c| c.is_ascii_hexdigit())
 }
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct AuditEntry {
     source: std::path::PathBuf,
@@ -47,7 +52,7 @@ struct AuditEntry {
     selected: bool,
     reasons: Vec<String>,
 }
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Audit {
     schema_version: u32,
@@ -59,13 +64,13 @@ struct Audit {
     splits: BTreeMap<Split, batch::Count>,
     warnings: Vec<String>,
 }
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Item {
     split: Split,
     dataset: dataset::Dataset,
 }
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Package {
     schema_version: u32,
@@ -90,7 +95,7 @@ pub struct Validated {
     summary: Summary,
     package: Package,
 }
-fn same(a: &impl Serialize, b: &impl Serialize) -> bool {
+fn same(a: &(impl Serialize + ?Sized), b: &(impl Serialize + ?Sized)) -> bool {
     match (serde_json::to_value(a), serde_json::to_value(b)) {
         (Ok(a), Ok(b)) => a == b,
         _ => false,
@@ -467,6 +472,9 @@ impl Validated {
             warnings,
         };
         Ok(Self { summary, package })
+    }
+    pub fn curation_request(&self) -> batch::Request {
+        self.package.report.request.clone()
     }
     pub fn summary(&self) -> Summary {
         self.summary.clone()

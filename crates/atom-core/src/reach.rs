@@ -49,7 +49,7 @@ pub struct Manifest {
 fn digest(bytes: &[u8]) -> String {
     format!("{:x}", Sha256::digest(bytes))
 }
-fn prepare(source: &Project, config: Config) -> Result<Manifest> {
+pub(crate) fn prepare(source: &Project, config: Config) -> Result<Manifest> {
     source.validate()?;
     if !(1..=500).contains(&config.horizon) {
         return Err(Error::Invalid("Reach horizon 1..500".into()));

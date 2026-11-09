@@ -1401,3 +1401,853 @@ fn bc_real_train_resume_and_test_isolation() {
     );
     assert!(!dir.path().join("bad-config").exists());
 }
+
+#[test]
+fn bc_policy_features_exclude_teacher_and_use_applied_action() {
+    let mut e = fixture();
+    let expected = e.frames.last().unwrap().action.clone().unwrap();
+    e.manifest.reference_action.fill(12345.);
+    e.manifest.channels.reverse();
+    let features = crate::learning::rollout::features(&e);
+    let n = e.manifest.channels.len();
+    assert_eq!(&features[features.len() - n..], &expected);
+    assert_eq!(
+        features[0],
+        e.frames.last().unwrap().observation.qpos[e.manifest.channels[0].qpos_index]
+    );
+    assert!(!features.contains(&12345.));
+    e.frames.truncate(1);
+    let features = crate::learning::rollout::features(&e);
+    assert_eq!(&features[features.len() - n..], &e.manifest.initial_action);
+}
+
+#[test]
+#[ignore = "Requires PyTorch and MuJoCo; actual closed-loop inference/physics and frozen test-group comparison"]
+fn bc_real_closed_loop_reproducible_holdout() {
+    use crate::learning::{self, rollout, training};
+    use dataset::batch::{Request, Split};
+    let dir = tempfile::tempdir().unwrap();
+    let project = source();
+    let mut request = Request {
+        policy: dataset::ExportPolicy::Completed,
+        ..Default::default()
+    };
+    let mut found = std::collections::BTreeSet::new();
+    // Select fixed seeds by group assignment, not by observed outcomes.
+    for seed in 0..100 {
+        let manifest = prepare(
+            &project,
+            Config {
+                seed,
+                robot: 1,
+                horizon: 300,
+            },
+        )
+        .unwrap();
+        let synthetic = fixture_seed(seed);
+        let split = request
+            .split
+            .assign(&synthetic.quality().unwrap().split_group)
+            .unwrap();
+        if found.insert(split) {
+            let mut runner = Runner::reset(&project, manifest.config).unwrap();
+            runner.run().unwrap();
+            let path = dir.path().join(format!("seed-{seed}.episode.json"));
+            runner.episode.save(&path).unwrap();
+            request.sources.push(path);
+        }
+        if found.len() == 3 {
+            break;
+        }
+    }
+    assert!(found.contains(&Split::Test));
+    let path = dir.path().join("data.batch.json");
+    request.analyze().unwrap().save_package(&path).unwrap();
+    let data = learning::Validated::load(&path).unwrap();
+    let cancel = std::sync::atomic::AtomicBool::new(false);
+    std::fs::create_dir(dir.path().join("training")).unwrap();
+    std::fs::create_dir(dir.path().join("exports")).unwrap();
+    std::fs::copy(&path, dir.path().join("exports/data.batch.json")).unwrap();
+    let job = dir.path().join("training/bc-first");
+    training::train(
+        &data,
+        &training::Config {
+            max_steps: 20,
+            ..Default::default()
+        },
+        &job,
+        None,
+        &cancel,
+    )
+    .unwrap();
+    std::fs::create_dir(dir.path().join("rollouts")).unwrap();
+    let a = dir.path().join("rollouts/rollout-a");
+    let b = dir.path().join("rollouts/rollout-b");
+    let report = rollout::compare(&data, &job, &project, &a, &cancel).unwrap();
+    assert_eq!(report["task_groups"], 1);
+    assert_eq!(report["entries"].as_array().unwrap().len(), 2);
+    assert_eq!(report["split"], "test");
+    assert_eq!(report, rollout::inspect(&a).unwrap());
+    let loaded = rollout::episode(&a, 1).unwrap();
+    assert_ne!(loaded.frames.last().unwrap().outcome, Outcome::Running);
+    assert!(rollout::episode(&a, 2).is_err());
+    let tampered = dir.path().join("tampered");
+    std::fs::create_dir(&tampered).unwrap();
+    for file in std::fs::read_dir(&a).unwrap() {
+        let file = file.unwrap();
+        std::fs::copy(file.path(), tampered.join(file.file_name())).unwrap();
+    }
+    let target = tampered.join("00-bc_policy.episode.json");
+    let mut bytes = std::fs::read(&target).unwrap();
+    bytes[0] ^= 1;
+    std::fs::write(&target, bytes).unwrap();
+    assert_eq!(
+        rollout::inspect(&tampered).unwrap_err().code,
+        "learning_rollout_hash"
+    );
+    assert!(rollout::episode(&tampered, 1).is_err());
+    assert_eq!(
+        report,
+        rollout::compare(&data, &job, &project, &b, &cancel).unwrap()
+    );
+    for entry in report["entries"].as_array().unwrap() {
+        let name = entry["episode"].as_str().unwrap();
+        let one = Episode::load(&a.join(name)).unwrap();
+        let two = Episode::load(&b.join(name)).unwrap();
+        assert_eq!(one.frames.len(), two.frames.len());
+        for (x, y) in one.frames.iter().zip(&two.frames) {
+            assert_eq!(x.action, y.action);
+            assert_eq!(x.observation.qpos, y.observation.qpos);
+        }
+        assert_ne!(one.frames.last().unwrap().outcome, Outcome::Running);
+        one.objects_at(one.frames.len() - 1).unwrap();
+    }
+    assert_eq!(
+        rollout::compare(&data, &job, &project, &a, &cancel)
+            .unwrap_err()
+            .code,
+        "learning_output_conflict"
+    );
+    let cancelled = dir.path().join("cancelled");
+    cancel.store(true, std::sync::atomic::Ordering::Relaxed);
+    assert_eq!(
+        rollout::compare(&data, &job, &project, &cancelled, &cancel)
+            .unwrap_err()
+            .code,
+        "learning_rollout_cancelled"
+    );
+    assert!(!cancelled.exists());
+    cancel.store(false, std::sync::atomic::Ordering::Relaxed);
+    let mut incompatible = project.clone();
+    incompatible.objects[0].scale[0] *= 2.;
+    assert_eq!(
+        rollout::compare(&data, &job, &incompatible, &cancelled, &cancel)
+            .unwrap_err()
+            .code,
+        "learning_rollout_scene"
+    );
+    use learning::registry;
+    let p = registry::register(dir.path(), "bc-first", "data.batch.json").unwrap();
+    assert_eq!(
+        p.id,
+        registry::register(dir.path(), "bc-first", "data.batch.json")
+            .unwrap()
+            .id
+    );
+    let ea = registry::attach(dir.path(), &p.id, "rollout-a").unwrap();
+    assert_eq!(
+        ea.id,
+        registry::attach(dir.path(), &p.id, "rollout-a").unwrap().id
+    );
+    let eb = registry::attach(dir.path(), &p.id, "rollout-b").unwrap();
+    let comparison = registry::compare(dir.path(), &ea.id, &eb.id).unwrap();
+    let diagnostic = learning::diagnostics::analyze(dir.path(), &ea.id).unwrap();
+    assert_eq!(diagnostic.fit_split, "train");
+    assert_eq!(diagnostic.split, "test");
+    assert_eq!(diagnostic.training_rows, data.summary().rows[&Split::Train]);
+    assert_eq!(diagnostic.observation_rows, 300);
+    assert_eq!(diagnostic.tasks[0].seed, 20);
+    assert_eq!(diagnostic.tasks[0].classification, "never_reached");
+    assert!(diagnostic.tasks[0].clamped_components > 0);
+    assert!(diagnostic.outside_rows > 0);
+    assert!(diagnostic.joints.iter().any(|j| j.limit_contacts > 0));
+    assert_eq!(diagnostic.features.len(), 42);
+    let saved = learning::diagnostics::save(dir.path(), diagnostic.clone()).unwrap();
+    assert_eq!(
+        saved.file,
+        learning::diagnostics::save(dir.path(), diagnostic)
+            .unwrap()
+            .file
+    );
+
+    assert_eq!(comparison.a.score.tasks, 1);
+    assert_eq!(comparison.a.score.timeouts, 1);
+    assert_eq!(
+        comparison.a.score.mean_final_distance_m,
+        comparison.b.score.mean_final_distance_m
+    );
+    assert_eq!(comparison.rows.len(), 1);
+    assert_eq!(registry::listing(dir.path()).unwrap().evaluations.len(), 2);
+    let validation_dir = dir.path().join("rollouts/rollout-validation");
+    let validation = rollout::compare_partition(
+        &data,
+        &job,
+        &project,
+        &validation_dir,
+        &cancel,
+        rollout::Partition::Validation,
+    )
+    .unwrap();
+    assert_eq!(validation["split"], "validation");
+    assert_eq!(validation["entries"].as_array().unwrap().len(), 2);
+    assert_ne!(
+        validation["entries"][0]["group"],
+        report["entries"][0]["group"]
+    );
+    assert_eq!(validation["entries"][0]["seed"], 2);
+    let ev = registry::attach(dir.path(), &p.id, "rollout-validation").unwrap();
+    assert_eq!(ev.split, rollout::Partition::Validation);
+    assert_eq!(
+        registry::compare(dir.path(), &ea.id, &ev.id)
+            .unwrap_err()
+            .code,
+        "learning_registry_incompatible"
+    );
+    let dv = learning::diagnostics::analyze(dir.path(), &ev.id).unwrap();
+    assert_eq!(dv.split, "validation");
+    assert_eq!(dv.fit_split, "train");
+    assert_eq!(dv.tasks[0].seed, 2);
+    let replay = rollout::episode(&validation_dir, 1).unwrap();
+    assert_eq!(replay.manifest.config.seed, 2);
+    let repeat_dir = dir.path().join("rollouts/rollout-validation-repeat");
+    assert_eq!(
+        validation,
+        rollout::compare_partition(
+            &data,
+            &job,
+            &project,
+            &repeat_dir,
+            &cancel,
+            rollout::Partition::Validation
+        )
+        .unwrap()
+    );
+    let ev_repeat = registry::attach(dir.path(), &p.id, "rollout-validation-repeat").unwrap();
+    registry::compare(dir.path(), &ev.id, &ev_repeat.id).unwrap();
+    // A rehashed test report relabeled as validation must not be linked to validation history.
+    let relabeled = dir.path().join("rollouts/rollout-relabeled");
+    std::fs::create_dir(&relabeled).unwrap();
+    for file in std::fs::read_dir(&a).unwrap() {
+        let file = file.unwrap();
+        std::fs::copy(file.path(), relabeled.join(file.file_name())).unwrap();
+    }
+    let mut relabel = report.clone();
+    relabel["split"] = serde_json::json!("validation");
+    let bytes = serde_json::to_vec(&relabel).unwrap();
+    std::fs::write(relabeled.join("report.json"), &bytes).unwrap();
+    let mut m: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(relabeled.join("manifest.json")).unwrap()).unwrap();
+    m["files"]["report.json"] = serde_json::json!(digest(&bytes));
+    std::fs::write(
+        relabeled.join("manifest.json"),
+        serde_json::to_vec(&m).unwrap(),
+    )
+    .unwrap();
+    assert_eq!(
+        registry::attach(dir.path(), &p.id, "rollout-relabeled")
+            .unwrap_err()
+            .code,
+        "learning_rollout_partition"
+    );
+    cancel.store(true, std::sync::atomic::Ordering::Relaxed);
+    let stopped = dir.path().join("stopped-validation");
+    assert_eq!(
+        rollout::compare_partition(
+            &data,
+            &job,
+            &project,
+            &stopped,
+            &cancel,
+            rollout::Partition::Validation
+        )
+        .unwrap_err()
+        .code,
+        "learning_rollout_cancelled"
+    );
+    assert!(!stopped.exists());
+    cancel.store(false, std::sync::atomic::Ordering::Relaxed);
+    let second = dir.path().join("training/bc-second");
+    training::train(
+        &data,
+        &training::Config {
+            max_steps: 40,
+            seed: 8,
+            ..Default::default()
+        },
+        &second,
+        None,
+        &cancel,
+    )
+    .unwrap();
+    let p2 = registry::register(dir.path(), "bc-second", "data.batch.json").unwrap();
+    assert_ne!(p.id, p2.id);
+    let c = dir.path().join("rollouts/rollout-c");
+    rollout::compare(&data, &second, &project, &c, &cancel).unwrap();
+    let ec = registry::attach(dir.path(), &p2.id, "rollout-c").unwrap();
+    assert_eq!(
+        registry::compare(dir.path(), &ea.id, &ec.id).unwrap().key,
+        comparison.key
+    );
+    assert!(registry::attach(dir.path(), &p.id, "rollout-c").is_err());
+    use learning::campaign;
+    let campaign_config = campaign::Config {
+        policies: vec![p.id.clone(), p2.id.clone()],
+        max_seconds: 60,
+    };
+    let batch_before = std::fs::read(dir.path().join("exports/data.batch.json")).unwrap();
+    let completed = campaign::run(dir.path(), &project, &campaign_config, &cancel, |_| {}).unwrap();
+    assert_eq!(completed.report.status, campaign::Status::Completed);
+    assert_eq!(completed.report.ranking.len(), 2);
+    assert_eq!(completed.report.partition, rollout::Partition::Validation);
+    assert_eq!(completed.report.candidates.len(), 2);
+    for result in &completed.report.candidates {
+        let listing = registry::listing(dir.path()).unwrap();
+        let entry = listing
+            .evaluations
+            .iter()
+            .find(|e| Some(&e.id) == result.evaluation.as_ref())
+            .unwrap();
+        assert_eq!(entry.split, rollout::Partition::Validation);
+    }
+    assert_eq!(
+        campaign::inspect(dir.path(), &completed.file)
+            .unwrap()
+            .report
+            .ranking,
+        completed.report.ranking
+    );
+    let interrupted = campaign::run(
+        dir.path(),
+        &project,
+        &campaign_config,
+        &cancel,
+        |progress| {
+            if progress.completed == 1 {
+                cancel.store(true, std::sync::atomic::Ordering::Relaxed);
+            }
+        },
+    )
+    .unwrap();
+    assert_eq!(interrupted.report.status, campaign::Status::Cancelled);
+    assert!(interrupted.report.ranking.is_empty());
+    assert_eq!(
+        interrupted
+            .report
+            .candidates
+            .iter()
+            .filter(|c| c.status == campaign::Status::Completed)
+            .count(),
+        1
+    );
+    campaign::inspect(dir.path(), &interrupted.file).unwrap();
+    cancel.store(false, std::sync::atomic::Ordering::Relaxed);
+    let runs_before_budget = rollout::catalog(&dir.path().join("rollouts")).unwrap();
+    let budget = campaign::run(
+        dir.path(),
+        &project,
+        &campaign::Config {
+            max_seconds: 1,
+            ..campaign_config.clone()
+        },
+        &cancel,
+        |_| std::thread::sleep(std::time::Duration::from_millis(1100)),
+    )
+    .unwrap();
+    assert_eq!(budget.report.status, campaign::Status::Budget);
+    assert!(budget.report.ranking.is_empty());
+    assert!(budget.report.candidates.iter().all(|c| c.score.is_none()));
+    campaign::inspect(dir.path(), &budget.file).unwrap();
+    assert_eq!(
+        rollout::catalog(&dir.path().join("rollouts")).unwrap(),
+        runs_before_budget
+    );
+
+    assert_eq!(
+        batch_before,
+        std::fs::read(dir.path().join("exports/data.batch.json")).unwrap()
+    );
+    std::fs::write(dir.path().join("campaigns").join(&completed.file), b"{}").unwrap();
+    assert!(campaign::inspect(dir.path(), &completed.file).is_err());
+    // Different original validation groups must be rejected before any candidate physics starts.
+    let mut expanded = request.clone();
+    for seed in 3..100 {
+        let episode = fixture_seed(seed);
+        if expanded
+            .split
+            .assign(&episode.quality().unwrap().split_group)
+            .unwrap()
+            == Split::Validation
+        {
+            let file = dir.path().join("extra-validation.episode.json");
+            episode.save(&file).unwrap();
+            expanded.sources.push(file);
+            break;
+        }
+    }
+    let alt = dir.path().join("exports/expanded.batch.json");
+    expanded.analyze().unwrap().save_package(&alt).unwrap();
+    let alt_data = learning::Validated::load(&alt).unwrap();
+    training::train(
+        &alt_data,
+        &training::Config {
+            max_steps: 20,
+            ..Default::default()
+        },
+        &dir.path().join("training/bc-expanded"),
+        None,
+        &cancel,
+    )
+    .unwrap();
+    let alt_policy = registry::register(dir.path(), "bc-expanded", "expanded.batch.json").unwrap();
+    let runs_before = rollout::catalog(&dir.path().join("rollouts")).unwrap();
+    let incompatible_config = campaign::Config {
+        policies: vec![p.id.clone(), alt_policy.id],
+        max_seconds: 60,
+    };
+    assert_eq!(
+        campaign::run(dir.path(), &project, &incompatible_config, &cancel, |_| {})
+            .unwrap_err()
+            .code,
+        "learning_campaign_incompatible"
+    );
+    assert_eq!(
+        runs_before,
+        rollout::catalog(&dir.path().join("rollouts")).unwrap()
+    );
+    // A rehashed report from a different runtime must not join the fixed-condition comparison.
+    let other = dir.path().join("rollouts/rollout-other");
+    std::fs::create_dir(&other).unwrap();
+    for file in std::fs::read_dir(&a).unwrap() {
+        let file = file.unwrap();
+        std::fs::copy(file.path(), other.join(file.file_name())).unwrap();
+    }
+    let mut changed = report.clone();
+    changed["policy_runtime"]["platform"] = serde_json::json!("different-runtime");
+    let bytes = serde_json::to_vec(&changed).unwrap();
+    std::fs::write(other.join("report.json"), &bytes).unwrap();
+    let mut manifest: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(other.join("manifest.json")).unwrap()).unwrap();
+    manifest["files"]["report.json"] = serde_json::json!(digest(&bytes));
+    std::fs::write(
+        other.join("manifest.json"),
+        serde_json::to_vec(&manifest).unwrap(),
+    )
+    .unwrap();
+    let different = registry::attach(dir.path(), &p.id, "rollout-other").unwrap();
+    assert_eq!(
+        registry::compare(dir.path(), &ea.id, &different.id)
+            .unwrap_err()
+            .code,
+        "learning_registry_incompatible"
+    );
+    let checkpoint = job.join("best.pt");
+    let mut bytes = std::fs::read(&checkpoint).unwrap();
+    bytes[0] ^= 1;
+    std::fs::write(checkpoint, bytes).unwrap();
+    assert_eq!(
+        rollout::compare(&data, &job, &project, &cancelled, &cancel)
+            .unwrap_err()
+            .code,
+        "learning_checkpoint_hash"
+    );
+    assert!(!cancelled.exists());
+    assert!(registry::select(dir.path(), &p.id).is_err());
+    assert!(learning::diagnostics::analyze(dir.path(), &ea.id).is_err());
+    assert!(registry::compare(dir.path(), &ea.id, &eb.id).is_err());
+    println!("closed-loop report: {report}");
+}
+
+#[test]
+fn bc_rollout_requires_original_test_groups_and_compatible_scene_before_worker() {
+    use crate::learning::{Validated, rollout};
+    let dir = tempfile::tempdir().unwrap();
+    let path = learning_fixture(dir.path());
+    let data = Validated::load(&path).unwrap();
+    let out = dir.path().join("result");
+    let missing_job = dir.path().join("missing-job");
+    let cancel = std::sync::atomic::AtomicBool::new(false);
+    let mut changed = source();
+    changed.objects[0].scale[0] *= 2.;
+    assert_eq!(
+        rollout::compare(&data, &missing_job, &changed, &out, &cancel)
+            .unwrap_err()
+            .code,
+        "learning_rollout_scene"
+    );
+    let package: serde_json::Value = serde_json::from_slice(&std::fs::read(path).unwrap()).unwrap();
+    let request = dataset::batch::Request {
+        sources: package["report"]["entries"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|e| e["split"] != "test")
+            .map(|e| std::path::PathBuf::from(e["source"].as_str().unwrap()))
+            .collect(),
+        ..Default::default()
+    };
+    let path = dir.path().join("no-test.batch.json");
+    request.analyze().unwrap().save_package(&path).unwrap();
+    let data = Validated::load(&path).unwrap();
+    assert_eq!(
+        rollout::compare(&data, &missing_job, &source(), &out, &cancel)
+            .unwrap_err()
+            .code,
+        "learning_rollout_requires_test"
+    );
+    assert!(!out.exists());
+}
+
+#[test]
+fn validation_rollout_never_borrows_test_when_validation_is_empty() {
+    use crate::learning::{Validated, rollout};
+    let dir = tempfile::tempdir().unwrap();
+    let path = learning_fixture(dir.path());
+    let package: serde_json::Value = serde_json::from_slice(&std::fs::read(path).unwrap()).unwrap();
+    let request = dataset::batch::Request {
+        sources: package["report"]["entries"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|e| e["split"] != "validation")
+            .map(|e| std::path::PathBuf::from(e["source"].as_str().unwrap()))
+            .collect(),
+        ..Default::default()
+    };
+    let path = dir.path().join("no-validation.batch.json");
+    request.analyze().unwrap().save_package(&path).unwrap();
+    let data = Validated::load(&path).unwrap();
+    assert!(data.summary().test_data_ready);
+    let output = dir.path().join("output");
+    assert_eq!(
+        rollout::compare_partition(
+            &data,
+            &dir.path().join("missing-job"),
+            &source(),
+            &output,
+            &std::sync::atomic::AtomicBool::new(false),
+            rollout::Partition::Validation
+        )
+        .unwrap_err()
+        .code,
+        "learning_rollout_requires_validation"
+    );
+    assert!(!output.exists());
+    assert!(serde_json::from_str::<rollout::Partition>("\"train\"").is_err());
+}
+
+#[test]
+fn collection_admission_and_precancel_preserve_source_without_starting_physics() {
+    use crate::learning::{self, collection};
+    use dataset::batch::{Request, Split};
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::create_dir(dir.path().join("exports")).unwrap();
+    let mut request = Request::default();
+    let mut found = std::collections::BTreeSet::new();
+    for seed in 0..100 {
+        let episode = fixture_seed(seed);
+        let split = request
+            .split
+            .assign(&episode.quality().unwrap().split_group)
+            .unwrap();
+        if found.insert(split) {
+            let path = dir.path().join(format!("seed-{seed}.episode.json"));
+            episode.save(&path).unwrap();
+            request.sources.push(path);
+        }
+        if found.len() == 3 {
+            break;
+        }
+    }
+    let path = dir.path().join("exports/base.batch.json");
+    request.analyze().unwrap().save_package(&path).unwrap();
+    let before = std::fs::read(&path).unwrap();
+    // Collection consumes the self-contained package, not old source paths.
+    for path in &request.sources {
+        std::fs::remove_file(path).unwrap();
+    }
+    let cancel = std::sync::atomic::AtomicBool::new(true);
+    assert_eq!(
+        collection::run_checked(
+            dir.path(),
+            "base.batch.json",
+            Some(&"f".repeat(64)),
+            &source(),
+            &collection::Config::default(),
+            &cancel,
+            |_| panic!("changed source must not run")
+        )
+        .unwrap_err()
+        .code,
+        "learning_source_changed"
+    );
+    let config = collection::Config::default();
+    let saved = collection::run(
+        dir.path(),
+        "base.batch.json",
+        &source(),
+        &config,
+        &cancel,
+        |_| panic!("must not start physics"),
+    )
+    .unwrap();
+    assert_eq!(saved.report.status, collection::Status::Cancelled);
+    assert_eq!(saved.report.attempted, 0);
+    assert!(saved.report.exported.is_none());
+    assert!(saved.report.entries.is_empty());
+    collection::inspect(dir.path(), &saved.file).unwrap();
+    assert_eq!(
+        collection::run(
+            dir.path(),
+            "base.batch.json",
+            &source(),
+            &config,
+            &cancel,
+            |_| {}
+        )
+        .unwrap()
+        .file,
+        saved.file
+    );
+    assert_eq!(before, std::fs::read(&path).unwrap());
+    let data = learning::Validated::load(&path).unwrap();
+    assert_eq!(data.summary().groups[&Split::Test], 1);
+    for bad in [
+        collection::Config {
+            count: 0,
+            ..config.clone()
+        },
+        collection::Config {
+            horizon: 501,
+            ..config.clone()
+        },
+        collection::Config {
+            max_seconds: 301,
+            ..config.clone()
+        },
+        collection::Config {
+            start_seed: u32::MAX,
+            ..config.clone()
+        },
+    ] {
+        assert!(bad.validate().is_err());
+    }
+    assert!(
+        collection::run(
+            dir.path(),
+            "../base.batch.json",
+            &source(),
+            &config,
+            &cancel,
+            |_| {}
+        )
+        .is_err()
+    );
+    let mut incompatible = source();
+    incompatible.set_joint_angle(2, 0, 0.1).unwrap();
+    assert_eq!(
+        collection::run(
+            dir.path(),
+            "base.batch.json",
+            &incompatible,
+            &config,
+            &cancel,
+            |_| {}
+        )
+        .unwrap_err()
+        .code,
+        "learning_rollout_scene"
+    );
+    std::fs::write(dir.path().join("collections").join(&saved.file), b"{}").unwrap();
+    assert!(collection::inspect(dir.path(), &saved.file).is_err());
+}
+
+#[test]
+#[ignore = "Requires MuJoCo; real train-only collection, immutable holdouts, quality rejection and cancellation"]
+fn real_train_collection_preserves_holdouts_and_exports_accepted_subset() {
+    use crate::learning::{self, collection};
+    use dataset::batch::{Request, Split};
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::create_dir(dir.path().join("exports")).unwrap();
+    let mut request = Request::default();
+    let mut found = std::collections::BTreeSet::new();
+    for seed in 0..100 {
+        let episode = fixture_seed(seed);
+        let split = request
+            .split
+            .assign(&episode.quality().unwrap().split_group)
+            .unwrap();
+        if found.insert(split) {
+            let path = dir.path().join(format!("seed-{seed}.episode.json"));
+            episode.save(&path).unwrap();
+            request.sources.push(path);
+        }
+        if found.len() == 3 {
+            break;
+        }
+    }
+    let path = dir.path().join("exports/base.batch.json");
+    request.analyze().unwrap().save_package(&path).unwrap();
+    let original = std::fs::read(&path).unwrap();
+    let old = learning::Validated::load(&path).unwrap().summary();
+    let cancel = std::sync::atomic::AtomicBool::new(false);
+    let project = source();
+    let project_before = serde_json::to_value(&project).unwrap();
+    let config = collection::Config {
+        count: 4,
+        ..Default::default()
+    };
+    let saved = collection::run(
+        dir.path(),
+        "base.batch.json",
+        &project,
+        &config,
+        &cancel,
+        |_| {},
+    )
+    .unwrap();
+    assert_eq!(saved.report.status, collection::Status::Completed);
+    assert_eq!(saved.report.attempted, 4);
+    assert!(saved.report.accepted > 0);
+    assert!(
+        saved
+            .report
+            .entries
+            .iter()
+            .any(|e| e.reasons.iter().any(|r| r == "collection_holdout"))
+    );
+    collection::inspect(dir.path(), &saved.file).unwrap();
+    let augmented = learning::Validated::load(
+        &dir.path()
+            .join("exports")
+            .join(saved.report.exported.as_ref().unwrap()),
+    )
+    .unwrap();
+    for split in [Split::Validation, Split::Test] {
+        assert_eq!(augmented.summary().rows[&split], old.rows[&split]);
+        assert_eq!(augmented.summary().groups[&split], old.groups[&split]);
+    }
+    assert_eq!(
+        augmented.summary().groups[&Split::Train],
+        old.groups[&Split::Train] + saved.report.accepted
+    );
+    for entry in &saved.report.entries {
+        if let Some(name) = &entry.episode {
+            let e = Episode::load(&dir.path().join(name)).unwrap();
+            assert_eq!(
+                request
+                    .split
+                    .assign(&e.quality().unwrap().split_group)
+                    .unwrap(),
+                Split::Train
+            );
+        } else {
+            assert!(!entry.accepted);
+        }
+    }
+    let extended = collection::run(
+        dir.path(),
+        saved.report.exported.as_ref().unwrap(),
+        &project,
+        &collection::Config {
+            count: 1,
+            ..config.clone()
+        },
+        &cancel,
+        |_| {},
+    )
+    .unwrap();
+    collection::inspect(dir.path(), &extended.file).unwrap();
+    let old_new_groups = saved
+        .report
+        .entries
+        .iter()
+        .filter(|e| e.accepted)
+        .map(|e| e.group.as_str())
+        .collect::<std::collections::BTreeSet<_>>();
+    for entry in &extended.report.entries {
+        if old_new_groups.contains(entry.group.as_str()) {
+            assert!(entry.episode.is_none());
+            assert_eq!(entry.reasons, ["collection_existing"]);
+        }
+    }
+    assert_eq!(extended.report.holdout_sha256, saved.report.holdout_sha256);
+    let partial = collection::run(
+        dir.path(),
+        "base.batch.json",
+        &project,
+        &config,
+        &cancel,
+        |p| {
+            if p.attempted == 1 {
+                cancel.store(true, std::sync::atomic::Ordering::Relaxed);
+            }
+        },
+    )
+    .unwrap();
+    assert_eq!(partial.report.status, collection::Status::Cancelled);
+    assert_eq!(partial.report.attempted, 1);
+    collection::inspect(dir.path(), &partial.file).unwrap();
+    cancel.store(false, std::sync::atomic::Ordering::Relaxed);
+    let budget = collection::run(
+        dir.path(),
+        "base.batch.json",
+        &project,
+        &collection::Config {
+            max_seconds: 1,
+            ..config.clone()
+        },
+        &cancel,
+        |_| std::thread::sleep(std::time::Duration::from_millis(1100)),
+    )
+    .unwrap();
+    assert_eq!(budget.report.status, collection::Status::Budget);
+    assert_eq!(budget.report.attempted, 0);
+    collection::inspect(dir.path(), &budget.file).unwrap();
+    // An exact quality maximum excludes real demonstrations while preserving the old batch.
+    request.limits.max_final_distance_m = Some(0.0);
+    request
+        .analyze()
+        .unwrap()
+        .save_package(&dir.path().join("exports/strict.batch.json"))
+        .unwrap();
+    let rejected = collection::run(
+        dir.path(),
+        "strict.batch.json",
+        &project,
+        &collection::Config { count: 1, ..config },
+        &cancel,
+        |_| {},
+    )
+    .unwrap();
+    assert_eq!(rejected.report.accepted, 0);
+    assert!(rejected.report.exported.is_none());
+    assert!(
+        rejected
+            .report
+            .entries
+            .iter()
+            .any(|e| e.episode.is_some() && !e.reasons.is_empty())
+    );
+    collection::inspect(dir.path(), &rejected.file).unwrap();
+    assert_eq!(original, std::fs::read(path).unwrap());
+    assert_eq!(project_before, serde_json::to_value(&project).unwrap());
+    // Rewriting a linked Episode invalidates its collection.
+    let name = saved
+        .report
+        .entries
+        .iter()
+        .find_map(|e| e.episode.as_ref())
+        .unwrap();
+    std::fs::write(dir.path().join(name), b"{}").unwrap();
+    assert!(collection::inspect(dir.path(), &saved.file).is_err());
+}

@@ -19,7 +19,8 @@ impl Worker {
         std::fs::write(&model, mujoco::export(&manifest.project)?)?;
         std::fs::write(&config, serde_json::to_vec(manifest)?)?;
         let mut child = Command::new(
-            std::env::var_os("ATOM_MUJOCO_PYTHON").unwrap_or_else(|| "python3".into()),
+            std::env::var_os("ATOM_MUJOCO_PYTHON")
+                .unwrap_or_else(crate::learning::python_executable),
         )
         .args(["-I", "-c", include_str!("worker.py")])
         .arg(model)

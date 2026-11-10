@@ -285,6 +285,8 @@ fn main() {
             batch::training_jobs,
             batch::campaign_files,
             batch::collection_files,
+            batch::mining_files,
+            batch::supervision_files,
             batch::rollout_jobs,
             batch::rollout_episode,
             camera::camera_state,

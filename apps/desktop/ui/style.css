@@ -164,3 +164,16 @@ body[data-split="true"] #splitter{display:block;width:100vw;height:100vh;backgro
 #collectionSummary{display:block;margin:8px 0;white-space:pre-line;font-size:11px;line-height:1.5;color:var(--muted)}
 #collectionFile{width:100%;max-width:none}
 #collectionResults{max-height:240px;overflow:auto}
+
+#miningPolicy,#miningFile{width:100%;max-width:none}
+#miningStatus,#collectionPriority{flex:1;min-width:0;overflow-wrap:anywhere}
+#miningResults{max-height:240px;overflow:auto}
+#miningPanel>summary .info{margin-left:5px}
+
+#miningSummary{display:block;margin:6px 0;color:var(--muted);font-size:11px;line-height:1.5;white-space:pre-line;overflow-wrap:anywhere}
+
+#teacherFile{width:100%;max-width:none}
+#teacherStatus{flex:1;min-width:0;overflow-wrap:anywhere}
+#teacherSummary{display:block;margin:6px 0;color:var(--color-muted);font-size:11px;line-height:1.5;overflow-wrap:anywhere}
+#teacherResults{max-height:160px;overflow:auto}
+#teacherPanel>summary .info{margin-left:5px}

@@ -145,9 +145,10 @@ checkpoint test report; the collector never executes or scores test tasks.
   horizontal overflow passed; narrow screenshots were inspected. Native IPC,
   simulation and training were verified separately above.
 
-Broader preregistered validation tasks, failure-directed collection or DAgger-style
-labeling of policy-visited states, robust success-rate gains, other OSes and native
-floating-panel event delivery remain unfinished. Additional data alone does not
+Task-level failure-directed collection is available through [Train difficulty](TRAIN_MINING.md).
+Offline labels for policy-visited states are available through [Teacher supervision](TEACHER_SUPERVISION.md).
+Broader preregistered validation tasks, automatic DAgger iterations, robust success-rate
+gains, other OSes and native floating-panel event delivery remain unfinished. Additional data alone does not
 establish policy quality, and repeated validation-driven development can overfit
 validation.
 
@@ -157,3 +158,8 @@ and passed, including the stricter saved-data/Episode verification. Clippy with
 warnings denied, formatting, JavaScript syntax, diff checks and the final macOS
 development app build passed. The final CLI binary also reverified the saved QA
 collection and its exact new Episode/dataset correspondence.
+
+Optional collection config `mining` selects a verified complete difficulty report.
+The same source, first seed and horizon are required; attempts follow its top-ranked
+seeds rather than numeric seed order. Omission preserves sequential behavior and
+legacy record hashes. See [priority collection and its artifact dependencies](TRAIN_MINING.md).

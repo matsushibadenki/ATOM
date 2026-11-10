@@ -2251,3 +2251,598 @@ fn real_train_collection_preserves_holdouts_and_exports_accepted_subset() {
     std::fs::write(dir.path().join(name), b"{}").unwrap();
     assert!(collection::inspect(dir.path(), &saved.file).is_err());
 }
+
+#[test]
+fn mining_config_and_collection_metadata_preserve_legacy_contracts() {
+    use crate::learning::{collection, mining};
+    let config = mining::Config {
+        policy: format!("policy-{}.json", "a".repeat(64)),
+        start_seed: 0,
+        count: 4,
+        horizon: 300,
+        max_seconds: 60,
+    };
+    assert!(config.validate().is_ok());
+    for bad in [
+        mining::Config {
+            count: 1,
+            ..config.clone()
+        },
+        mining::Config {
+            count: 17,
+            ..config.clone()
+        },
+        mining::Config {
+            policy: "../policy.json".into(),
+            ..config.clone()
+        },
+        mining::Config {
+            start_seed: u32::MAX,
+            ..config.clone()
+        },
+        mining::Config {
+            max_seconds: 0,
+            ..config.clone()
+        },
+    ] {
+        assert!(bad.validate().is_err());
+    }
+    let old = serde_json::json!({"start_seed":0,"count":8,"horizon":300,"max_seconds":60});
+    let config: collection::Config = serde_json::from_value(old.clone()).unwrap();
+    assert!(config.mining.is_none());
+    assert_eq!(serde_json::to_value(config).unwrap(), old);
+    assert!(!mining::valid_name("../mining.json"));
+}
+
+#[test]
+#[ignore = "Requires PyTorch and MuJoCo; frozen train difficulty probes and priority reference collection"]
+fn real_train_mining_prioritizes_only_new_train_tasks_and_preserves_holdouts() {
+    use crate::learning::{self, collection, mining, registry, training};
+    use dataset::batch::{Request, Split};
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::create_dir(dir.path().join("exports")).unwrap();
+    std::fs::create_dir(dir.path().join("training")).unwrap();
+    let project = source();
+    let before_project = serde_json::to_value(&project).unwrap();
+    let mut request = Request::default();
+    let mut found = std::collections::BTreeSet::new();
+    for seed in 0..100 {
+        let episode = fixture_seed(seed);
+        let split = request
+            .split
+            .assign(&episode.quality().unwrap().split_group)
+            .unwrap();
+        if found.insert(split) {
+            let path = dir.path().join(format!("seed-{seed}.episode.json"));
+            episode.save(&path).unwrap();
+            request.sources.push(path);
+        }
+        if found.len() == 3 {
+            break;
+        }
+    }
+    let path = dir.path().join("exports/base.batch.json");
+    request.analyze().unwrap().save_package(&path).unwrap();
+    let before = std::fs::read(&path).unwrap();
+    let data = learning::Validated::load(&path).unwrap();
+    let cancel = std::sync::atomic::AtomicBool::new(false);
+    let job = dir.path().join("training/bc-probe");
+    training::train(
+        &data,
+        &training::Config {
+            max_steps: 20,
+            ..Default::default()
+        },
+        &job,
+        None,
+        &cancel,
+    )
+    .unwrap();
+    let checkpoint = std::fs::read(job.join("best.pt")).unwrap();
+    let policy = registry::register(dir.path(), "bc-probe", "base.batch.json").unwrap();
+    for path in &request.sources {
+        std::fs::remove_file(path).unwrap();
+    }
+    let config = mining::Config {
+        policy: policy.id.clone(),
+        start_seed: 0,
+        count: 3,
+        horizon: 300,
+        max_seconds: 60,
+    };
+    assert_eq!(
+        mining::run(
+            dir.path(),
+            &project,
+            &config,
+            Some(&"f".repeat(64)),
+            &cancel,
+            |_| panic!("must reject before workers")
+        )
+        .unwrap_err()
+        .code,
+        "learning_mining_source"
+    );
+    cancel.store(true, std::sync::atomic::Ordering::Relaxed);
+    let stopped = mining::run(dir.path(), &project, &config, None, &cancel, |_| {
+        panic!("pre-cancel must not launch")
+    })
+    .unwrap();
+    assert!(stopped.report.probes.is_empty());
+    assert!(stopped.report.priorities.is_empty());
+    mining::inspect(dir.path(), &stopped.file).unwrap();
+    cancel.store(false, std::sync::atomic::Ordering::Relaxed);
+    let budget = mining::run(
+        dir.path(),
+        &project,
+        &mining::Config {
+            max_seconds: 1,
+            ..config.clone()
+        },
+        None,
+        &cancel,
+        |_| std::thread::sleep(std::time::Duration::from_millis(1100)),
+    )
+    .unwrap();
+    assert_eq!(budget.report.status, mining::Status::Budget);
+    assert!(budget.report.probes.is_empty());
+    assert!(budget.report.priorities.is_empty());
+    mining::inspect(dir.path(), &budget.file).unwrap();
+    let saved = mining::run(
+        dir.path(),
+        &project,
+        &config,
+        Some(&data.summary().source_sha256),
+        &cancel,
+        |_| {},
+    )
+    .unwrap();
+    assert_eq!(saved.report.status, mining::Status::Completed);
+    assert_eq!(saved.report.priorities.len(), 3);
+    assert!(saved.report.skipped_holdout > 0 && saved.report.skipped_existing > 0);
+    mining::inspect(dir.path(), &saved.file).unwrap();
+    for p in &saved.report.probes {
+        assert_eq!(request.split.assign(&p.group).unwrap(), Split::Train);
+        let e = Episode::load(&dir.path().join(&p.episode)).unwrap();
+        assert_eq!(e.manifest.config.seed, p.seed);
+        assert!(
+            !request
+                .sources
+                .iter()
+                .any(|s| s.ends_with(format!("seed-{}.episode.json", p.seed)))
+        );
+    }
+    let repeat = mining::run(dir.path(), &project, &config, None, &cancel, |_| {}).unwrap();
+    assert_eq!(repeat.report.priorities, saved.report.priorities);
+    for (a, b) in saved.report.probes.iter().zip(&repeat.report.probes) {
+        assert_eq!(
+            (
+                a.seed,
+                a.outcome,
+                a.final_distance_m,
+                a.steps,
+                a.clamped_components
+            ),
+            (
+                b.seed,
+                b.outcome,
+                b.final_distance_m,
+                b.steps,
+                b.clamped_components
+            )
+        );
+    }
+    let partial = mining::run(dir.path(), &project, &config, None, &cancel, |p| {
+        if p.completed == 1 {
+            cancel.store(true, std::sync::atomic::Ordering::Relaxed);
+        }
+    })
+    .unwrap();
+    assert_eq!(partial.report.status, mining::Status::Cancelled);
+    assert_eq!(partial.report.probes.len(), 1);
+    assert!(partial.report.priorities.is_empty());
+    mining::inspect(dir.path(), &partial.file).unwrap();
+    cancel.store(false, std::sync::atomic::Ordering::Relaxed);
+    let collect = collection::Config {
+        count: 2,
+        mining: Some(saved.file.clone()),
+        ..Default::default()
+    };
+    let added = collection::run(
+        dir.path(),
+        "base.batch.json",
+        &project,
+        &collect,
+        &cancel,
+        |_| {},
+    )
+    .unwrap();
+    assert_eq!(added.report.status, collection::Status::Completed);
+    assert!(added.report.accepted > 0);
+    assert_eq!(
+        added
+            .report
+            .entries
+            .iter()
+            .map(|e| e.seed)
+            .collect::<Vec<_>>(),
+        saved.report.priorities[..2]
+    );
+    collection::inspect(dir.path(), &added.file).unwrap();
+    let aug = learning::Validated::load(
+        &dir.path()
+            .join("exports")
+            .join(added.report.exported.as_ref().unwrap()),
+    )
+    .unwrap();
+    for split in [Split::Validation, Split::Test] {
+        assert_eq!(aug.summary().rows[&split], data.summary().rows[&split]);
+    }
+    assert!(
+        collection::run(
+            dir.path(),
+            "base.batch.json",
+            &project,
+            &collection::Config {
+                count: 4,
+                ..collect.clone()
+            },
+            &cancel,
+            |_| {}
+        )
+        .is_err()
+    );
+    assert!(
+        collection::run(
+            dir.path(),
+            added.report.exported.as_ref().unwrap(),
+            &project,
+            &collect,
+            &cancel,
+            |_| {}
+        )
+        .is_err()
+    );
+    assert_eq!(checkpoint, std::fs::read(job.join("best.pt")).unwrap());
+    assert_eq!(before, std::fs::read(path).unwrap());
+    assert_eq!(before_project, serde_json::to_value(&project).unwrap());
+    let mut counts = serde_json::to_value(&saved.report).unwrap();
+    counts["skipped_holdout"] = serde_json::json!(u32::MAX);
+    counts["skipped_existing"] = serde_json::json!(1);
+    let bytes = serde_json::to_vec(&counts).unwrap();
+    let name = format!("mining-{}.json", digest(&bytes));
+    std::fs::write(dir.path().join("mining").join(&name), bytes).unwrap();
+    assert!(mining::inspect(dir.path(), &name).is_err());
+    // Relabel BC-visited observations without rewriting their applied-action transitions.
+    use learning::supervision;
+    let label_config = supervision::Config {
+        mining: saved.file.clone(),
+        count: 2,
+        stride: 10,
+        max_seconds: 60,
+    };
+    let original_prepared = serde_json::to_value(data.prepare().unwrap()).unwrap();
+    let labelled = supervision::run(
+        dir.path(),
+        &label_config,
+        Some(&data.summary().source_sha256),
+        &cancel,
+        |_| {},
+    )
+    .unwrap();
+    assert_eq!(labelled.report.status, supervision::Status::Completed);
+    assert!(labelled.report.rows > 0);
+    supervision::inspect(dir.path(), &labelled.file).unwrap();
+    let labelled_path = dir
+        .path()
+        .join("exports")
+        .join(labelled.report.exported.as_ref().unwrap());
+    let labelled_data = learning::Validated::load(&labelled_path).unwrap();
+    assert_eq!(labelled_data.summary().teacher_rows, labelled.report.rows);
+    let prepared = serde_json::to_value(labelled_data.prepare().unwrap()).unwrap();
+    for split in ["validation", "test"] {
+        assert_eq!(
+            original_prepared["splits"][split],
+            prepared["splits"][split]
+        );
+    }
+    let offset = original_prepared["splits"]["train"]
+        .as_array()
+        .unwrap()
+        .len();
+    let probe = saved
+        .report
+        .probes
+        .iter()
+        .find(|p| p.seed == saved.report.priorities[0])
+        .unwrap();
+    let recorded = Episode::load(&dir.path().join(&probe.episode)).unwrap();
+    assert_eq!(
+        prepared["splits"]["train"][offset + 1]["features"],
+        serde_json::json!(learning::rollout::features_at(&recorded, 10))
+    );
+    assert_eq!(
+        prepared["splits"]["train"][offset + 1]["action"],
+        serde_json::json!(recorded.manifest.reference_action)
+    );
+    let trained = training::train(
+        &labelled_data,
+        &training::Config {
+            max_steps: 20,
+            ..Default::default()
+        },
+        &dir.path().join("training/bc-teacher"),
+        None,
+        &cancel,
+    )
+    .unwrap();
+    assert_eq!(trained.result["checkpoint_reload_verified"], true);
+    let next_policy = registry::register(
+        dir.path(),
+        "bc-teacher",
+        labelled.report.exported.as_ref().unwrap(),
+    )
+    .unwrap();
+    let next_pool = mining::run(
+        dir.path(),
+        &project,
+        &mining::Config {
+            policy: next_policy.id,
+            start_seed: 0,
+            count: 2,
+            horizon: 50,
+            max_seconds: 60,
+        },
+        None,
+        &cancel,
+        |_| {},
+    )
+    .unwrap();
+    assert!(
+        next_pool.report.probes.iter().all(|p| !labelled
+            .report
+            .entries
+            .iter()
+            .any(|e| e.group == p.group))
+    );
+    let next_labels = supervision::run(
+        dir.path(),
+        &supervision::Config {
+            mining: next_pool.file,
+            count: 1,
+            stride: 10,
+            max_seconds: 60,
+        },
+        None,
+        &cancel,
+        |_| {},
+    )
+    .unwrap();
+    supervision::inspect(dir.path(), &next_labels.file).unwrap();
+    let next_data = learning::Validated::load(
+        &dir.path()
+            .join("exports")
+            .join(next_labels.report.exported.as_ref().unwrap()),
+    )
+    .unwrap();
+    assert_eq!(
+        next_data.summary().teacher_rows,
+        labelled.report.rows + next_labels.report.rows
+    );
+    assert!(
+        training::train(
+            &labelled_data,
+            &training::Config {
+                max_steps: 40,
+                ..Default::default()
+            },
+            &dir.path().join("training/bad-resume"),
+            Some(&job),
+            &cancel
+        )
+        .is_err()
+    );
+    let partial = supervision::run(dir.path(), &label_config, None, &cancel, |p| {
+        if p.completed == 1 {
+            cancel.store(true, std::sync::atomic::Ordering::Relaxed);
+        }
+    })
+    .unwrap();
+    assert_eq!(partial.report.status, supervision::Status::Cancelled);
+    assert!(partial.report.exported.is_none());
+    assert_eq!(partial.report.entries.len(), 1);
+    supervision::inspect(dir.path(), &partial.file).unwrap();
+    cancel.store(false, std::sync::atomic::Ordering::Relaxed);
+    let budget = supervision::run(
+        dir.path(),
+        &supervision::Config {
+            max_seconds: 1,
+            ..label_config.clone()
+        },
+        None,
+        &cancel,
+        |_| std::thread::sleep(std::time::Duration::from_millis(1100)),
+    )
+    .unwrap();
+    assert_eq!(budget.report.status, supervision::Status::Budget);
+    assert!(budget.report.exported.is_none());
+    supervision::inspect(dir.path(), &budget.file).unwrap();
+    let extended = collection::run(
+        dir.path(),
+        labelled.report.exported.as_ref().unwrap(),
+        &project,
+        &collection::Config {
+            count: 2,
+            ..Default::default()
+        },
+        &cancel,
+        |_| {},
+    )
+    .unwrap();
+    assert!(extended.report.accepted > 0);
+    collection::inspect(dir.path(), &extended.file).unwrap();
+    let extended_data = learning::Validated::load(
+        &dir.path()
+            .join("exports")
+            .join(extended.report.exported.as_ref().unwrap()),
+    )
+    .unwrap();
+    assert_eq!(extended_data.summary().teacher_rows, labelled.report.rows);
+    let damaged = dir
+        .path()
+        .join("exports")
+        .join(labelled.report.exported.as_ref().unwrap());
+    let mut json: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(&damaged).unwrap()).unwrap();
+    json["labels"][0]["teacher"] = serde_json::json!("changed");
+    std::fs::write(&damaged, serde_json::to_vec(&json).unwrap()).unwrap();
+    assert!(supervision::inspect(dir.path(), &labelled.file).is_err());
+    // A valid filename/hash cannot bless a forged ranking.
+    let mut forged = serde_json::to_value(&saved.report).unwrap();
+    forged["priorities"] = serde_json::json!([1234, 1235, 1236]);
+    let bytes = serde_json::to_vec(&forged).unwrap();
+    let file = format!("mining-{}.json", digest(&bytes));
+    std::fs::write(dir.path().join("mining").join(&file), bytes).unwrap();
+    assert!(mining::inspect(dir.path(), &file).is_err());
+    std::fs::write(dir.path().join(&saved.report.probes[0].episode), b"{}").unwrap();
+    assert!(mining::inspect(dir.path(), &saved.file).is_err());
+    assert!(collection::inspect(dir.path(), &added.file).is_err());
+}
+
+#[test]
+fn teacher_labels_keep_applied_actions_separate_and_reject_holdout_or_tampered_states() {
+    use crate::learning;
+    use dataset::batch::{Request, Split};
+    let dir = tempfile::tempdir().unwrap();
+    let mut request = Request::default();
+    let mut found = std::collections::BTreeSet::new();
+    let mut heldout = None;
+    for seed in 0..100 {
+        let episode = fixture_seed(seed);
+        let split = request
+            .split
+            .assign(&episode.quality().unwrap().split_group)
+            .unwrap();
+        if found.insert(split) {
+            if split == Split::Validation {
+                heldout = Some(seed);
+            }
+            let file = dir.path().join(format!("seed-{seed}.episode.json"));
+            episode.save(&file).unwrap();
+            request.sources.push(file);
+        }
+        if found.len() == 3 {
+            break;
+        }
+    }
+    let base = dir.path().join("base.batch.json");
+    request.analyze().unwrap().save_package(&base).unwrap();
+    let old = learning::Validated::load(&base).unwrap();
+    let old_prepared = serde_json::to_value(old.prepare().unwrap()).unwrap();
+    assert!(
+        serde_json::to_value(old.summary())
+            .unwrap()
+            .get("teacher_rows")
+            .is_none()
+    );
+    let mut episode = (0..100)
+        .map(fixture_seed)
+        .find(|e| {
+            request
+                .split
+                .assign(&e.quality().unwrap().split_group)
+                .unwrap()
+                == Split::Train
+                && !request
+                    .sources
+                    .iter()
+                    .any(|p| p.ends_with(format!("seed-{}.episode.json", e.manifest.config.seed)))
+        })
+        .unwrap();
+    episode.frames[1].action = Some(episode.manifest.initial_action.clone());
+    episode.validate().unwrap();
+    let q = episode.quality().unwrap();
+    let label = learning::supervision::Labels {
+        teacher: "reference_goal_servo_v1".into(),
+        mining: format!("mining-{}.json", "a".repeat(64)),
+        policy: format!("policy-{}.json", "b".repeat(64)),
+        checkpoint_sha256: "c".repeat(64),
+        parent_source_sha256: old.summary().source_sha256,
+        stride: 1,
+        episode_sha256: q.episode_sha256,
+        episode: episode.clone(),
+    };
+    let mut package: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(base).unwrap()).unwrap();
+    package["labels"] = serde_json::json!([label]);
+    let path = dir.path().join("teacher.batch.json");
+    std::fs::write(&path, serde_json::to_vec(&package).unwrap()).unwrap();
+    let loaded = learning::Validated::load(&path).unwrap();
+    assert_eq!(loaded.summary().teacher_rows, 5);
+    assert_eq!(loaded.summary().teacher_episodes, 1);
+    let prepared = serde_json::to_value(loaded.prepare().unwrap()).unwrap();
+    for split in ["validation", "test"] {
+        assert_eq!(prepared["splits"][split], old_prepared["splits"][split]);
+    }
+    let offset = old_prepared["splits"]["train"].as_array().unwrap().len();
+    let row = &prepared["splits"]["train"][offset + 1];
+    let features = serde_json::from_value::<Vec<f64>>(row["features"].clone()).unwrap();
+    let n = episode.manifest.channels.len();
+    assert_eq!(features, learning::rollout::features_at(&episode, 1));
+    assert_eq!(
+        &features[features.len() - n..],
+        episode.frames[1].action.as_deref().unwrap()
+    );
+    assert_ne!(
+        features[features.len() - n..],
+        episode.manifest.reference_action
+    );
+    assert_eq!(
+        row["action"],
+        serde_json::json!(episode.manifest.reference_action)
+    );
+    assert_eq!(prepared["normalization"]["count"], 10);
+    assert!(
+        prepared["splits"]["train"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|r| r["index"].as_u64().unwrap() < 5)
+    );
+    let mut stride = package.clone();
+    stride["labels"][0]["stride"] = serde_json::json!(2);
+    std::fs::write(&path, serde_json::to_vec(&stride).unwrap()).unwrap();
+    assert_eq!(
+        learning::Validated::load(&path)
+            .unwrap()
+            .summary()
+            .teacher_rows,
+        3
+    );
+    let mut cases = vec![];
+    let mut bad = package.clone();
+    bad["labels"][0]["stride"] = serde_json::json!(0);
+    cases.push(bad);
+    let mut bad = package.clone();
+    bad["labels"][0]["teacher"] = serde_json::json!("unverified_llm");
+    cases.push(bad);
+    let mut bad = package.clone();
+    bad["labels"][0]["episode"]["manifest"]["reference_action"][0] = serde_json::json!(123.0);
+    cases.push(bad);
+    let mut bad = package.clone();
+    bad["labels"][0]["episode"]["frames"][1]["action"][0] = serde_json::json!(0.01);
+    cases.push(bad);
+    let mut bad = package.clone();
+    let duplicate = bad["labels"][0].clone();
+    bad["labels"].as_array_mut().unwrap().push(duplicate);
+    cases.push(bad);
+    let mut bad = package.clone();
+    let e = fixture_seed(heldout.unwrap());
+    bad["labels"][0]["episode_sha256"] = serde_json::json!(e.quality().unwrap().episode_sha256);
+    bad["labels"][0]["episode"] = serde_json::to_value(e).unwrap();
+    cases.push(bad);
+    for bad in cases {
+        std::fs::write(&path, serde_json::to_vec(&bad).unwrap()).unwrap();
+        assert!(learning::Validated::load(&path).is_err());
+    }
+}

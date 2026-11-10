@@ -35,12 +35,12 @@ impl Partition {
 pub fn partition(report: &serde_json::Value) -> Result<Partition> {
     serde_json::from_value(report["split"].clone()).map_err(|_| err("learning_rollout_partition"))
 }
-struct Policy {
+pub(super) struct Policy {
     child: Child,
     input: ChildStdin,
     replies: mpsc::Receiver<Vec<u8>>,
     _stage: tempfile::TempDir,
-    runtime: serde_json::Value,
+    pub(super) runtime: serde_json::Value,
 }
 impl Drop for Policy {
     fn drop(&mut self) {
@@ -49,7 +49,11 @@ impl Drop for Policy {
     }
 }
 impl Policy {
-    fn start(data: &Validated, job: &Path, cancel: &AtomicBool) -> Result<(Self, String)> {
+    pub(super) fn start(
+        data: &Validated,
+        job: &Path,
+        cancel: &AtomicBool,
+    ) -> Result<(Self, String)> {
         let (report, files) = training::checked_job(job)?;
         let stage = tempfile::tempdir().map_err(|_| err("learning_io"))?;
         let prepared = data.prepare()?;
@@ -133,7 +137,11 @@ impl Policy {
             }
         }
     }
-    fn action(&mut self, runner: &reach::Runner, cancel: &AtomicBool) -> Result<(Vec<f64>, usize)> {
+    pub(super) fn action(
+        &mut self,
+        runner: &reach::Runner,
+        cancel: &AtomicBool,
+    ) -> Result<(Vec<f64>, usize)> {
         let features = features(&runner.episode);
         serde_json::to_writer(&mut self.input, &features)
             .map_err(|_| err("learning_policy_worker"))?;

@@ -1,6 +1,6 @@
 # ATOM Roadmap
 
-更新：2026-11-09（JST）。ベース実装済み。詳細は[FOUNDATION.md](FOUNDATION.md)。
+更新：2026-11-10（JST）。ベース実装済み。詳細は[FOUNDATION.md](FOUNDATION.md)。
 
 状態の意味：
 
@@ -33,7 +33,9 @@ ThreeX／UNGEの採用ソースはhashとコピー元revisionを記録した。
 - 🟢 [Done] validation分割での閉ループReach評価。GUIの分割選択・開始／停止、元group限定実行、分割名付き履歴・診断・保存Episode再生に接続。固定testとの混在比較・空分割の補充を拒否。[仕様と検証](VALIDATION_REACH.md)。
 - 🟢 [Done] validation上の予算付き候補比較。凍結方策2〜4件の課題一致検証・共有進捗／停止・全件完了時だけの順位・保存／再検証と個別評価再生を実装。[仕様と検証](VALIDATION_CAMPAIGN.md)。
 - 🟢 [Done] 元のholdoutを保持したtrain専用参照記録の追加収集。固定seed走査・holdout／既存課題の実行前除外・予算／停止・品質選別・保存／再検証・明示的な追加batch選択と新規学習を実装。同じ単一validation課題でtimeout→成功を実測し、汎化改善とは分離。[仕様と検証](TRAIN_COLLECTION.md)。
-- 🟠 [Next] 診断に基づく失敗領域の優先収集、方策が訪れた状態への教師ラベル付け、より広い固定validation群での比較。固定testは選択へ転用しない。計画候補の原子的適用・単一Undoは別段階。
+- 🟢 [Done] 凍結BCによる新規train課題の難易度探索・失敗課題の優先収集。holdout／既存groupを事前除外し、全pool完了時のみtimeout・距離・seedで順位化。共有GUIの開始／停止・再検証・BC再生、優先seedからの別系統の参照収集とholdout維持に接続。[仕様と検証](TRAIN_MINING.md)。
+- 🟢 [Done] BCが訪れたtrain状態への参照教師ラベルとオフライン集約。実適用指令／物理記録と教師ターゲットを分離し、previous_actionを維持、終端除外・間隔抽出・holdout不変・trainのみ正規化、保存／再検証と新規BC学習へのGUI／CLI接続を実装。[仕様と検証](TEACHER_SUPERVISION.md)。
+- 🟠 [Next] 状態依存IK教師・課題関節のマスク／重み付けと復帰検証、自動DAgger反復・教師／方策の介入混合、train分布診断を使う収集、より広い固定validation群での比較。固定testは選択へ転用しない。計画候補の原子的適用・単一Undoは別段階。
 - ⭕️ [Pending] 実モデル推論。vLLM-appleは現在のMLX／Transformers版がreview済みgate外で拒否、Strataはserver未起動。gateや依存を変更せず保留。
 - 🔴 [Later] 位置IKの3D目標ハンドル・ライブプレビュー、向きの制約、衝突・バランスを考慮する姿勢計画。素材表示・操作補助の拡張と並行し、依存が成立した項目から着手。
 
@@ -50,7 +52,9 @@ ThreeX／UNGEの採用ソースはhashとコピー元revisionを記録した。
 - 🟢 [Done] validation群の閉ループ実行・共有GUI開始／停止・registry／履歴／診断／再生連携。旧testキーとCLI既定動作を維持し、別分割の混在を拒否。[契約](VALIDATION_REACH.md)。
 - 🟢 [Done] 登録済み凍結方策2〜4件の予算付きvalidation候補比較。実行前の課題一致検証、共有GUI開始／停止・進捗、全候補完了時だけの順位、hash付き保存／再検証・個別評価再生を実装。test採点・自動方策切替なし。[契約と検証](VALIDATION_CAMPAIGN.md)。
 - 🟢 [Done] train専用の参照記録追加収集・品質選別・追加batchとholdout維持・新規BC学習へのGUI／CLI接続。[契約](TRAIN_COLLECTION.md)。
-- 🟠 [Next] 診断に基づく収集と方策が訪れた状態への教師ラベル付け、広いvalidation群での改善測定。固定testは学習設定やモデルの選択に転用しない。
+- 🟢 [Done] 新規train課題を凍結BCで実走し、失敗課題を優先して参照記録を収集するGUI／CLI。途中poolに順位を付けず、BC指令を教師データへ自動混入しない。[契約](TRAIN_MINING.md)。
+- 🟢 [Done] 訪問状態のオフライン参照教師ラベル集約と新規学習への接続。教師は既存goal servoで、BC実適用指令や成功記録への偽装をしない。[契約](TEACHER_SUPERVISION.md)。
+- 🟠 [Next] 自動DAgger反復・介入比率・教師復帰と重み付けの検証、分布診断に基づく収集、広いvalidation群での改善測定。固定testは学習設定やモデルの選択に転用しない。
 - ⭕️ [Pending] 大規模holdoutでの物理課題成功率・汎化改善、MPS／CUDA、他OS／clean machine・native浮動パネル。記録指令RMSEを課題成功率と扱わない。LLM LoRAは別段階。
 
 ## 学習data adapter v1（2026-11-05）

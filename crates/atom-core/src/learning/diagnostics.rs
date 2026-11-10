@@ -347,6 +347,8 @@ mod tests {
     #[test]
     fn support_uses_train_only_and_separates_envelope_from_z_heuristic() {
         let summary = Summary {
+            teacher_rows: 0,
+            teacher_episodes: 0,
             schema_version: 1,
             adapter: "pytorch_bc_v1",
             source_sha256: "a".repeat(64),

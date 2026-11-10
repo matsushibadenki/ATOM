@@ -45,6 +45,14 @@ pub struct Snapshot {
     training_running: bool,
     rollout_running: bool,
     campaign_running: bool,
+    supervision_running: bool,
+    supervision_progress: Option<atom_core::learning::supervision::Progress>,
+    supervision_config: Option<atom_core::learning::supervision::Config>,
+    supervision: Option<atom_core::learning::supervision::Saved>,
+    mining_running: bool,
+    mining_progress: Option<atom_core::learning::mining::Progress>,
+    mining_config: Option<atom_core::learning::mining::Config>,
+    mining: Option<atom_core::learning::mining::Saved>,
     collection_running: bool,
     collection_progress: Option<atom_core::learning::collection::Progress>,
     collection_config: Option<atom_core::learning::collection::Config>,
@@ -84,6 +92,8 @@ struct RegistryUpdate {
     diagnostics: Option<atom_core::learning::diagnostics::Saved>,
     campaign: Option<atom_core::learning::campaign::Saved>,
     collection: Option<atom_core::learning::collection::Saved>,
+    mining: Option<atom_core::learning::mining::Saved>,
+    supervision: Option<atom_core::learning::supervision::Saved>,
     dataset_settings: Option<Settings>,
 }
 #[derive(Clone, Serialize)]
@@ -120,6 +130,14 @@ impl State {
                     training: None,
                     training_running: false,
                     rollout_running: false,
+                    supervision_running: false,
+                    supervision_progress: None,
+                    supervision_config: None,
+                    supervision: None,
+                    mining_running: false,
+                    mining_progress: None,
+                    mining_config: None,
+                    mining: None,
                     collection_running: false,
                     collection_progress: None,
                     collection_config: None,
@@ -175,6 +193,21 @@ pub enum Command {
     RegistryRefresh,
     Campaign {
         config: atom_core::learning::campaign::Config,
+    },
+    Supervise {
+        config: atom_core::learning::supervision::Config,
+    },
+    LoadSupervision {
+        name: String,
+    },
+    UseSupervision {
+        name: String,
+    },
+    Mine {
+        config: atom_core::learning::mining::Config,
+    },
+    LoadMining {
+        name: String,
     },
     Collect {
         config: atom_core::learning::collection::Config,
@@ -265,7 +298,9 @@ impl Session {
         }
         if matches!(
             command,
-            Command::Collect { .. }
+            Command::Supervise { .. }
+                | Command::Mine { .. }
+                | Command::Collect { .. }
                 | Command::ValidateLearning
                 | Command::DiagnoseLearning
                 | Command::Train { .. }
@@ -296,6 +331,20 @@ impl Session {
             self.snapshot.campaign = None;
             self.snapshot.campaign_progress = None;
         }
+        if let Command::Supervise { config } = command {
+            config.validate().map_err(|e| error(&e.code))?;
+            self.snapshot.supervision_config = Some(config.clone());
+            self.snapshot.supervision = None;
+            self.snapshot.supervision_progress = None;
+        }
+        self.snapshot.supervision_running = matches!(command, Command::Supervise { .. });
+        if let Command::Mine { config } = command {
+            config.validate().map_err(|e| error(&e.code))?;
+            self.snapshot.mining_config = Some(config.clone());
+            self.snapshot.mining = None;
+            self.snapshot.mining_progress = None;
+        }
+        self.snapshot.mining_running = matches!(command, Command::Mine { .. });
         if let Command::Collect { config } = command {
             config.validate().map_err(|e| error(&e.code))?;
             self.snapshot.collection_config = Some(config.clone());
@@ -374,7 +423,10 @@ pub fn batch_command(
     let mut session = state.session.lock().map_err(|_| error("internal_error"))?;
     let project = if matches!(
         &command,
-        Command::Rollout { .. } | Command::Campaign { .. } | Command::Collect { .. }
+        Command::Rollout { .. }
+            | Command::Campaign { .. }
+            | Command::Collect { .. }
+            | Command::Mine { .. }
     ) {
         Some(
             app.state::<super::Shared>()
@@ -396,6 +448,8 @@ pub fn batch_command(
         || snapshot.rollout_running
         || snapshot.campaign_running
         || snapshot.collection_running
+        || snapshot.mining_running
+        || snapshot.supervision_running
     {
         *state.cancel.lock().map_err(|_| error("internal_error"))? = Some(cancel.clone());
     }
@@ -407,6 +461,7 @@ pub fn batch_command(
     let is_export = matches!(&command, Command::Export);
     let is_diagnose = matches!(&command, Command::DiagnoseLearning);
     let is_evaluate = matches!(&command, Command::Evaluate);
+    let is_use_supervision = matches!(&command, Command::UseSupervision { .. });
     let is_use_collection = matches!(&command, Command::UseCollection { .. });
     tauri::async_runtime::spawn_blocking(move || {
         let result = (|| -> Result<JobOutput, UiError> {
@@ -581,6 +636,8 @@ pub fn batch_command(
                             diagnostics: None,
                             campaign: None,
                             collection: None,
+                            mining: None,
+                            supervision: None,
                             dataset_settings: None,
                         }),
                     ))
@@ -602,6 +659,152 @@ pub fn batch_command(
                             result,
                         }),
                         None,
+                    ))
+                }
+                Command::Supervise { config } => {
+                    let saved = atom_core::learning::supervision::run(
+                        &dir,
+                        &config,
+                        expected_hash.as_deref(),
+                        &cancel,
+                        |progress| {
+                            let state = app.state::<State>();
+                            if let Ok(mut session) = state.session.lock()
+                                && session.snapshot.revision == token
+                                && session.snapshot.supervision_running
+                            {
+                                session.snapshot.supervision_progress = Some(progress);
+                                notify(&app, &session.snapshot);
+                            }
+                        },
+                    )
+                    .map_err(|e| error(&e.code))?;
+                    Ok((
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        Some(RegistryUpdate {
+                            listing: atom_core::learning::registry::listing(&dir)
+                                .map_err(|e| error(&e.code))?,
+                            selected: None,
+                            context: None,
+                            comparison: None,
+                            diagnostics: None,
+                            campaign: None,
+                            collection: None,
+                            mining: None,
+                            supervision: Some(saved),
+                            dataset_settings: None,
+                        }),
+                    ))
+                }
+                Command::LoadSupervision { name } | Command::UseSupervision { name } => {
+                    let saved = atom_core::learning::supervision::inspect(&dir, &name)
+                        .map_err(|e| error(&e.code))?;
+                    let mut receipt = None;
+                    let mut settings = None;
+                    if is_use_supervision {
+                        let name = saved
+                            .report
+                            .exported
+                            .as_ref()
+                            .ok_or_else(|| error("learning_supervision_pool"))?;
+                        let data =
+                            atom_core::learning::Validated::load(&dir.join("exports").join(name))
+                                .map_err(|e| error(&e.code))?;
+                        let r = data.curation_request();
+                        settings = Some(Settings {
+                            policy: r.policy,
+                            split: r.split,
+                            limits: r.limits,
+                        });
+                        receipt = Some((name.clone(), data.summary().source_sha256));
+                    }
+                    Ok((
+                        None,
+                        receipt,
+                        None,
+                        None,
+                        None,
+                        Some(RegistryUpdate {
+                            listing: atom_core::learning::registry::listing(&dir)
+                                .map_err(|e| error(&e.code))?,
+                            selected: None,
+                            context: None,
+                            comparison: None,
+                            diagnostics: None,
+                            campaign: None,
+                            collection: None,
+                            mining: None,
+                            supervision: Some(saved),
+                            dataset_settings: settings,
+                        }),
+                    ))
+                }
+                Command::Mine { config } => {
+                    let saved = atom_core::learning::mining::run(
+                        &dir,
+                        &project.unwrap(),
+                        &config,
+                        expected_hash.as_deref(),
+                        &cancel,
+                        |progress| {
+                            let state = app.state::<State>();
+                            if let Ok(mut session) = state.session.lock()
+                                && session.snapshot.revision == token
+                                && session.snapshot.mining_running
+                            {
+                                session.snapshot.mining_progress = Some(progress);
+                                notify(&app, &session.snapshot);
+                            }
+                        },
+                    )
+                    .map_err(|e| error(&e.code))?;
+                    Ok((
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        Some(RegistryUpdate {
+                            listing: atom_core::learning::registry::listing(&dir)
+                                .map_err(|e| error(&e.code))?,
+                            selected: None,
+                            context: None,
+                            comparison: None,
+                            diagnostics: None,
+                            campaign: None,
+                            collection: None,
+                            mining: Some(saved),
+                            supervision: None,
+                            dataset_settings: None,
+                        }),
+                    ))
+                }
+                Command::LoadMining { name } => {
+                    let saved = atom_core::learning::mining::inspect(&dir, &name)
+                        .map_err(|e| error(&e.code))?;
+                    Ok((
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        Some(RegistryUpdate {
+                            listing: atom_core::learning::registry::listing(&dir)
+                                .map_err(|e| error(&e.code))?,
+                            selected: None,
+                            context: None,
+                            comparison: None,
+                            diagnostics: None,
+                            campaign: None,
+                            collection: None,
+                            mining: Some(saved),
+                            supervision: None,
+                            dataset_settings: None,
+                        }),
                     ))
                 }
                 Command::Collect { config } => {
@@ -640,6 +843,8 @@ pub fn batch_command(
                             diagnostics: None,
                             campaign: None,
                             collection: Some(saved),
+                            mining: None,
+                            supervision: None,
                             dataset_settings: None,
                         }),
                     ))
@@ -682,6 +887,8 @@ pub fn batch_command(
                             diagnostics: None,
                             campaign: None,
                             collection: Some(saved),
+                            mining: None,
+                            supervision: None,
                             dataset_settings: settings,
                         }),
                     ))
@@ -720,6 +927,8 @@ pub fn batch_command(
                             diagnostics: None,
                             campaign: Some(saved),
                             collection: None,
+                            mining: None,
+                            supervision: None,
                             dataset_settings: None,
                         }),
                     ))
@@ -743,6 +952,8 @@ pub fn batch_command(
                             diagnostics: None,
                             campaign: Some(saved),
                             collection: None,
+                            mining: None,
+                            supervision: None,
                             dataset_settings: None,
                         }),
                     ))
@@ -845,6 +1056,8 @@ pub fn batch_command(
                             diagnostics,
                             campaign: None,
                             collection: None,
+                            mining: None,
+                            supervision: None,
                             dataset_settings: None,
                         }),
                     ))
@@ -889,6 +1102,8 @@ pub fn batch_command(
         session.snapshot.rollout_running = false;
         session.snapshot.campaign_running = false;
         session.snapshot.collection_running = false;
+        session.snapshot.mining_running = false;
+        session.snapshot.supervision_running = false;
         session.snapshot.diagnostics_running = false;
         *state.cancel.lock().unwrap() = None;
         session.snapshot.revision += 1;
@@ -896,6 +1111,12 @@ pub fn batch_command(
             Ok((report, name, learning, training, rollout, registry)) => {
                 if let Some(update) = registry {
                     session.snapshot.registry = update.listing;
+                    if let Some(saved) = update.supervision {
+                        session.snapshot.supervision = Some(saved);
+                    }
+                    if let Some(saved) = update.mining {
+                        session.snapshot.mining = Some(saved);
+                    }
                     if let Some(saved) = update.collection {
                         session.snapshot.collection = Some(saved);
                     }
@@ -979,6 +1200,73 @@ pub fn batch_command(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn supervision_uses_the_shared_cancellable_slot_without_an_active_checkpoint() {
+        let state = State::new(PathBuf::from("/not-read"));
+        let mut session = state.session.lock().unwrap();
+        let command = Command::Supervise {
+            config: atom_core::learning::supervision::Config {
+                mining: format!("mining-{}.json", "a".repeat(64)),
+                count: 2,
+                stride: 10,
+                max_seconds: 60,
+            },
+        };
+        assert_eq!(
+            session.begin(0, &command).err().unwrap().code,
+            "learning_export_first"
+        );
+        session.snapshot.exported = Some("fixture.batch.json".into());
+        session.snapshot.exported_sha256 = Some("b".repeat(64));
+        let (snapshot, _) = session.begin(0, &command).unwrap();
+        assert!(snapshot.supervision_running && snapshot.busy);
+        assert!(!snapshot.training_running);
+        assert!(session.last_job.is_none());
+        assert_eq!(
+            session
+                .begin(snapshot.revision, &Command::RegistryRefresh)
+                .err()
+                .unwrap()
+                .code,
+            "batch_busy"
+        );
+    }
+    #[test]
+    fn mining_is_revision_guarded_shared_and_requires_source_but_not_an_active_job() {
+        let state = State::new(PathBuf::from("/not-read"));
+        let mut s = state.session.lock().unwrap();
+        let config = atom_core::learning::mining::Config {
+            policy: format!("policy-{}.json", "a".repeat(64)),
+            start_seed: 0,
+            count: 4,
+            horizon: 300,
+            max_seconds: 60,
+        };
+        assert_eq!(
+            s.begin(
+                0,
+                &Command::Mine {
+                    config: config.clone()
+                }
+            )
+            .err()
+            .unwrap()
+            .code,
+            "learning_export_first"
+        );
+        s.snapshot.exported = Some("fixture.batch.json".into());
+        s.snapshot.exported_sha256 = Some("b".repeat(64));
+        let (snapshot, _) = s.begin(0, &Command::Mine { config }).unwrap();
+        assert!(snapshot.mining_running && snapshot.busy && !snapshot.collection_running);
+        assert!(s.last_job.is_none());
+        assert_eq!(
+            s.begin(snapshot.revision, &Command::RegistryRefresh)
+                .err()
+                .unwrap()
+                .code,
+            "batch_busy"
+        );
+    }
     #[test]
     fn collection_requires_a_source_but_no_checkpoint_and_uses_the_shared_job_slot() {
         let state = State::new(PathBuf::from("/not-read"));
@@ -1333,6 +1621,8 @@ pub fn batch_cancel(webview: tauri::Webview, expected_revision: u64) -> Result<(
         && !session.snapshot.rollout_running
         && !session.snapshot.campaign_running
         && !session.snapshot.collection_running
+        && !session.snapshot.mining_running
+        && !session.snapshot.supervision_running
     {
         return Err(error("learning_job_not_running"));
     }
@@ -1433,6 +1723,28 @@ pub async fn collection_files(webview: tauri::Webview) -> Result<Vec<String>, Ui
     let root = webview.state::<State>().dir.clone();
     tauri::async_runtime::spawn_blocking(move || {
         atom_core::learning::collection::catalog(&root).map_err(|e| error(&e.code))
+    })
+    .await
+    .map_err(|_| error("internal_error"))?
+}
+
+#[tauri::command]
+pub async fn mining_files(webview: tauri::Webview) -> Result<Vec<String>, UiError> {
+    authorize(&webview)?;
+    let root = webview.state::<State>().dir.clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        atom_core::learning::mining::catalog(&root).map_err(|e| error(&e.code))
+    })
+    .await
+    .map_err(|_| error("internal_error"))?
+}
+
+#[tauri::command]
+pub async fn supervision_files(webview: tauri::Webview) -> Result<Vec<String>, UiError> {
+    authorize(&webview)?;
+    let root = webview.state::<State>().dir.clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        atom_core::learning::supervision::catalog(&root).map_err(|e| error(&e.code))
     })
     .await
     .map_err(|_| error("internal_error"))?

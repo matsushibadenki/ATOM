@@ -17,8 +17,10 @@ use std::{
 pub mod campaign;
 pub mod collection;
 pub mod diagnostics;
+pub mod mining;
 pub mod registry;
 pub mod rollout;
+pub mod supervision;
 pub mod training;
 const MAX_BYTES: u64 = 64 * 1024 * 1024;
 pub const FORMAT: &str = "atom-bc-dataset-v1";
@@ -77,6 +79,8 @@ struct Package {
     format: String,
     report: Audit,
     datasets: Vec<Item>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    labels: Vec<supervision::Labels>,
 }
 #[derive(Clone, Debug, Serialize)]
 pub struct Summary {
@@ -90,6 +94,13 @@ pub struct Summary {
     pub fit_data_ready: bool,
     pub test_data_ready: bool,
     pub warnings: Vec<String>,
+    #[serde(skip_serializing_if = "is_zero")]
+    pub teacher_rows: usize,
+    #[serde(skip_serializing_if = "is_zero")]
+    pub teacher_episodes: usize,
+}
+fn is_zero(value: &usize) -> bool {
+    *value == 0
 }
 pub struct Validated {
     summary: Summary,
@@ -459,9 +470,16 @@ impl Validated {
                 ));
             }
         }
+        let teacher_rows = supervision::validate_labels(&package, &mut rows, &mut group_counts)?;
+        if teacher_rows > 0 {
+            warnings.retain(|warning| warning != "learning_empty_train");
+            warnings.push("learning_teacher_supervision".into());
+        }
         let summary = Summary {
             schema_version: 1,
             adapter: "pytorch_bc_v1",
+            teacher_rows,
+            teacher_episodes: package.labels.len(),
             source_sha256: hash(&bytes),
             feature_dim: first.channels.len() * 3 + 6,
             action_dim: first.channels.len(),
@@ -505,14 +523,6 @@ impl Validated {
                     .chain(o.target_world_m.iter().map(|v| f64::from(*v)))
                     .chain(o.previous_action_rad.iter().copied())
                     .collect::<Vec<_>>();
-                if item.split == Split::Train {
-                    count += 1;
-                    for j in 0..dim {
-                        let delta = features[j] - mean[j];
-                        mean[j] += delta / count as f64;
-                        m2[j] += delta * (features[j] - mean[j]);
-                    }
-                }
                 splits.get_mut(&item.split).unwrap().push(Sample {
                     episode_id: item.dataset.quality.episode_id,
                     group: item.dataset.quality.split_group.clone(),
@@ -520,6 +530,26 @@ impl Validated {
                     features,
                     action: t.action_rad.clone(),
                 });
+            }
+        }
+        for labels in &self.package.labels {
+            let group = labels.group();
+            for index in (0..labels.episode.frames.len() - 1).step_by(labels.stride as usize) {
+                splits.get_mut(&Split::Train).unwrap().push(Sample {
+                    episode_id: labels.episode.id,
+                    group: group.clone(),
+                    index,
+                    features: rollout::features_at(&labels.episode, index),
+                    action: labels.episode.manifest.reference_action.clone(),
+                });
+            }
+        }
+        for sample in &splits[&Split::Train] {
+            count += 1;
+            for j in 0..dim {
+                let delta = sample.features[j] - mean[j];
+                mean[j] += delta / count as f64;
+                m2[j] += delta * (sample.features[j] - mean[j]);
             }
         }
         let std = m2

@@ -12,6 +12,8 @@ pub struct Config {
     pub count: u32,
     pub horizon: u32,
     pub max_seconds: u32,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mining: Option<String>,
 }
 impl Default for Config {
     fn default() -> Self {
@@ -20,6 +22,7 @@ impl Default for Config {
             count: 8,
             horizon: 300,
             max_seconds: 60,
+            mining: None,
         }
     }
 }
@@ -29,6 +32,10 @@ impl Config {
             || !(1..=500).contains(&self.horizon)
             || !(1..=300).contains(&self.max_seconds)
             || self.start_seed.checked_add(1023).is_none()
+            || self
+                .mining
+                .as_ref()
+                .is_some_and(|name| !super::mining::valid_name(name))
         {
             return Err(err("learning_collection_config"));
         }
@@ -104,7 +111,7 @@ fn holdout(data: &Validated) -> Result<String> {
         .map_err(|_| err("learning_collection_invalid"))?,
     ))
 }
-fn eligible(
+pub(super) fn eligible(
     data: &Validated,
     project: &Project,
     config: &Config,
@@ -141,10 +148,15 @@ fn eligible(
         Some("collection_holdout")
     } else if data
         .package
-        .report
-        .entries
+        .labels
         .iter()
-        .any(|e| e.quality.as_ref().is_some_and(|q| q.split_group == group))
+        .any(|labels| labels.group() == group)
+        || data
+            .package
+            .report
+            .entries
+            .iter()
+            .any(|e| e.quality.as_ref().is_some_and(|q| q.split_group == group))
     {
         Some("collection_existing")
     } else {
@@ -161,7 +173,7 @@ fn boundary(cancel: &AtomicBool, deadline: Instant) -> Option<Status> {
         None
     }
 }
-fn write_atomic(path: &Path, value: &impl Serialize) -> Result<String> {
+pub(super) fn write_atomic(path: &Path, value: &impl Serialize) -> Result<String> {
     let parent = path.parent().ok_or_else(|| err("learning_io"))?;
     std::fs::create_dir_all(parent).map_err(|_| err("learning_io"))?;
     let mut tmp = tempfile::NamedTempFile::new_in(parent).map_err(|_| err("learning_io"))?;
@@ -213,12 +225,18 @@ pub fn run_checked(
         return Err(err("learning_source_changed"));
     }
     if !data.summary.fit_data_ready
-        || data.package.report.entries.len() + config.count as usize > 64
+        || data.package.report.entries.len() + data.package.labels.len() + config.count as usize
+            > 64
     {
         return Err(err("learning_collection_capacity"));
     }
     // Scene compatibility is checked before creating output or starting a worker.
     eligible(&data, project, config, config.start_seed)?;
+    let priority = config
+        .mining
+        .as_ref()
+        .map(|name| super::mining::selection(root, name, &data, config))
+        .transpose()?;
     let mut report = Report {
         schema_version: 1,
         format: "atom-train-collection-v1".into(),
@@ -238,7 +256,8 @@ pub fn run_checked(
     let mut package = data.package;
     let run_id = crate::Uuid::new_v4();
     // Scan at most 1024 deterministic seeds; skipped holdouts never launch physics.
-    for seed in config.start_seed..=config.start_seed + 1023 {
+    for seed in priority.unwrap_or_else(|| (config.start_seed..=config.start_seed + 1023).collect())
+    {
         if let Some(status) = boundary(cancel, deadline) {
             report.status = status;
             break;
@@ -421,10 +440,26 @@ pub fn inspect(root: &Path, file: &str) -> Result<Saved> {
             .iter()
             .any(|r| r == "collection_holdout" || r == "collection_existing")
     };
-    if report
-        .entries
-        .windows(2)
-        .any(|pair| pair[0].seed >= pair[1].seed)
+    let priority = report
+        .config
+        .mining
+        .as_ref()
+        .map(|name| super::mining::selection(root, name, &original, &report.config))
+        .transpose()?;
+    let order_invalid = if let Some(seeds) = priority {
+        report.entries.len() > seeds.len()
+            || report
+                .entries
+                .iter()
+                .zip(seeds)
+                .any(|(entry, seed)| entry.seed != seed)
+    } else {
+        report
+            .entries
+            .windows(2)
+            .any(|pair| pair[0].seed >= pair[1].seed)
+    };
+    if order_invalid
         || report.entries.iter().any(|e| {
             !sha(&e.group)
                 || e.seed < report.config.start_seed
@@ -476,6 +511,7 @@ pub fn inspect(root: &Path, file: &str) -> Result<Saved> {
                 &augmented.package.report.request.sources
                     [..original.package.report.request.sources.len()],
             )
+            || !same(&original.package.labels, &augmented.package.labels)
             || !same(
                 &original.package.datasets,
                 &augmented.package.datasets[..original.package.datasets.len()],
@@ -495,6 +531,11 @@ pub fn inspect(root: &Path, file: &str) -> Result<Saved> {
                 || !entry.reasons.is_empty()
                 || item.dataset.metadata.horizon != report.config.horizon
                 || !item.dataset.quality.reference_actions_only
+                || original
+                    .package
+                    .labels
+                    .iter()
+                    .any(|labels| labels.group() == entry.group)
                 || original.package.report.entries.iter().any(|e| {
                     e.quality
                         .as_ref()
@@ -526,11 +567,16 @@ pub fn inspect(root: &Path, file: &str) -> Result<Saved> {
             .split
             .assign(&entry.group)
             .map_err(|_| err("learning_collection_invalid"))?;
-        let existed = original.package.report.entries.iter().any(|e| {
-            e.quality
-                .as_ref()
-                .is_some_and(|q| q.split_group == entry.group)
-        });
+        let existed = original
+            .package
+            .labels
+            .iter()
+            .any(|labels| labels.group() == entry.group)
+            || original.package.report.entries.iter().any(|e| {
+                e.quality
+                    .as_ref()
+                    .is_some_and(|q| q.split_group == entry.group)
+            });
         if (entry.reasons.iter().any(|r| r == "collection_holdout")
             && (assigned == Split::Train || entry.reasons.len() != 1))
             || (entry.reasons.iter().any(|r| r == "collection_existing")

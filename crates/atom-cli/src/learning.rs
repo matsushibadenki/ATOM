@@ -4,6 +4,80 @@ pub fn run(args: &[String]) -> Result<bool, Box<dyn std::error::Error>> {
     let Some(cmd) = args.first().map(String::as_str) else {
         return Ok(false);
     };
+    if cmd == "teacher-label" {
+        if args.len() != 3 {
+            return Err("teacher-label <episodes-dir> <config.json>".into());
+        }
+        let mut bytes = vec![];
+        std::fs::File::open(&args[2])?
+            .take(4097)
+            .read_to_end(&mut bytes)?;
+        if bytes.len() > 4096 {
+            return Err("teacher config size".into());
+        }
+        let cfg = serde_json::from_slice(&bytes)?;
+        let saved = learning::supervision::run(
+            Path::new(&args[1]),
+            &cfg,
+            None,
+            &std::sync::atomic::AtomicBool::new(false),
+            |_| {},
+        )?;
+        println!("{}", serde_json::to_string_pretty(&saved)?);
+        return Ok(true);
+    }
+    if cmd == "supervision-inspect" {
+        if args.len() != 3 {
+            return Err("supervision-inspect <episodes-dir> <filename>".into());
+        }
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&learning::supervision::inspect(
+                Path::new(&args[1]),
+                &args[2]
+            )?)?
+        );
+        return Ok(true);
+    }
+    if cmd == "train-mine" {
+        if args.len() != 4 {
+            return Err("train-mine <episodes-dir> <project> <config.json>".into());
+        }
+        let mut bytes = vec![];
+        std::fs::File::open(&args[3])?
+            .take(4097)
+            .read_to_end(&mut bytes)?;
+        if bytes.len() > 4096 {
+            return Err("mining config size".into());
+        }
+        let config = serde_json::from_slice(&bytes)?;
+        let project = atom_core::ProjectStore::open(&args[2])?
+            .load()?
+            .ok_or("project missing")?;
+        let saved = learning::mining::run(
+            Path::new(&args[1]),
+            &project,
+            &config,
+            None,
+            &std::sync::atomic::AtomicBool::new(false),
+            |_| {},
+        )?;
+        println!("{}", serde_json::to_string_pretty(&saved)?);
+        return Ok(true);
+    }
+    if cmd == "mining-inspect" {
+        if args.len() != 3 {
+            return Err("mining-inspect <episodes-dir> <filename>".into());
+        }
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&learning::mining::inspect(
+                Path::new(&args[1]),
+                &args[2]
+            )?)?
+        );
+        return Ok(true);
+    }
     if cmd == "train-collect-config" && args.len() == 1 {
         println!(
             "{}",

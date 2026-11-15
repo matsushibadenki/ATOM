@@ -203,6 +203,8 @@ pub enum Command {
     },
     Dagger {
         config: atom_core::learning::dagger::Config,
+        #[serde(default)]
+        schedules: Vec<Vec<u16>>,
     },
     LoadDagger {
         id: String,
@@ -350,8 +352,9 @@ impl Session {
             self.snapshot.supervision = None;
             self.snapshot.supervision_progress = None;
         }
-        if let Command::Dagger { config } = command {
-            config.validate().map_err(|e| error(&e.code))?;
+        if let Command::Dagger { config, schedules } = command {
+            atom_core::learning::dagger::validate_schedules(config, schedules)
+                .map_err(|e| error(&e.code))?;
             self.snapshot.dagger = None;
             self.snapshot.dagger_progress = None;
         }
@@ -685,11 +688,12 @@ pub fn batch_command(
                 }
                 Command::Dagger { .. } | Command::LoadDagger { .. } => {
                     let report = match command {
-                        Command::Dagger { config } => {
-                            atom_core::learning::dagger::run_with_progress(
+                        Command::Dagger { config, schedules } => {
+                            atom_core::learning::dagger::compare_schedules(
                                 &dir,
                                 &project.unwrap(),
                                 &config,
+                                &schedules,
                                 &cancel,
                                 |progress| {
                                     let state = app.state::<State>();

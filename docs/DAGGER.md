@@ -10,6 +10,14 @@ visited-state IK teacher with an explicit joint mask and weights.
 atom-cli dagger-run /path/to/episodes project.atom.json dagger.json
 ```
 
+In the desktop app, open **Workflow → Dataset → Automatic DAgger**.
+Choose a registered initial policy and enter the teacher percentage for each
+round, such as `100,50`. Enter the IK channel weights as a JSON array and set
+the collection and training limits. The play icon starts the shared job and
+the pause icon requests cooperative stop. Completed rounds stay visible while
+the next stage runs. Use the saved experiment list and load icon to verify a
+report and restore its settings and paired metrics.
+
 A configuration for the default dual-arm fixture might use the following settings.
 Replace the policy ID and use channel IDs from your own endpoint chain.
 
@@ -82,3 +90,20 @@ per round. The fixed validation seeds were 2, 5, 31 and 59.
 
 The integration test verifies policy lineage, realized intervention counts,
 four fixed tasks per branch and the absence of test scores in training jobs.
+
+
+## Compare schedules in the desktop app
+
+Enter one schedule per line in **Teacher % · one schedule per line**. For example,
+enter `100,50` on the first line and `80,40` on the second. The app accepts up to
+four distinct schedules with the same number of rounds. Each schedule starts
+from the selected registered policy and uses the shared collection, seed, IK and
+training settings. Within each schedule, each teacher branch retains its own
+cumulative training data. Validation results are checked against the same task
+definition and execution conditions across schedules.
+
+The comparison displays a table for each schedule and round. Each table shows
+teacher steps, success rate, timeouts and mean final distance in adjacent columns
+for the reference servo and weighted IK. The results and inputs can be restored
+from the saved experiment selector. The comparison report links to the individual
+experiment reports and their validation campaigns.

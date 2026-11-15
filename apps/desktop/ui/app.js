@@ -73,6 +73,7 @@ function localize(){
  document.querySelectorAll('[data-text]').forEach(el=>el.textContent=t(el.dataset.text));document.querySelectorAll('[data-label]').forEach(el=>{el.title=t(el.dataset.label);el.setAttribute('aria-label',t(el.dataset.label));});
  $('status').textContent=t(statusKey);$('gpu').textContent=t(gpuKey);$('report').textContent=t(reportKey);$('locale').value=locale;
  document.querySelectorAll('.transform-number').forEach(el=>el.setAttribute('aria-label',`${t(el.dataset.labelKey)} ${'XYZ'[Number(el.dataset.axis)]}`));
+ if(view==='workflow')renderDagger();
  if(current)render(current);else controls();
 }
 function render(s){
@@ -610,7 +611,7 @@ for(const [i,key] of batchLimitKeys.entries()){
  const input=document.createElement('input');input.type='number';input.id='batch_'+key;input.min='0';input.step='any';input.dataset.label=batchLimitLabels[i];label.append(input);$('batchLimits').append(label);
 }
 function fillBatch(){if(!batchSnapshot)return;const s=batchSnapshot.settings;$('batchPolicy').value=s.policy;$('batchValidation').value=s.split.validation_bps/100;$('batchTest').value=s.split.test_bps/100;$('batchSalt').value=s.split.salt;for(const key of batchLimitKeys)$('batch_'+key).value=s.limits[key]??'';batchChosen=new Set(batchSnapshot.files);}
-function acceptBatch(s){if(batchSnapshot&&s.revision<batchSnapshot.revision)return;const sync=!batchSnapshot||batchPending||!batchDirty;if(s.rollout_running&&s.rollout_partition)$('rolloutPartition').value=s.rollout_partition;if(s.dagger && s.dagger!==batchSnapshot?.dagger && s.dagger.id!==batchSnapshot?.dagger?.id){fillDagger(s.dagger.config);if(api)refreshDaggerFiles(s.dagger.id).catch(()=>{});}const newTeacher=s.supervision?.file!==batchSnapshot?.supervision?.file;if((newTeacher&&s.supervision)||s.supervision_running){const c=s.supervision_running?s.supervision_config:s.supervision.report.config;$('teacherCount').value=c.count;$('teacherStride').value=c.stride;$('teacherSeconds').value=c.max_seconds;}if(newTeacher&&!s.busy&&api)refreshTeacherFiles().catch(()=>{});const newMining=s.mining?.file!==batchSnapshot?.mining?.file;if(newMining&&!s.busy&&api)refreshEpisodeFiles().catch(()=>{});if(s.mining_running&&s.mining_config){$('miningCount').value=s.mining_config.count;}const newCollection=s.collection?.file!==batchSnapshot?.collection?.file;if((newCollection&&s.collection)||s.collection_running){const c=s.collection_running?s.collection_config:s.collection.report.config;if(c){collectionMining=c.mining||null;$('collectionSeed').value=c.start_seed;$('collectionCount').value=c.count;$('collectionHorizon').value=c.horizon;$('collectionSeconds').value=c.max_seconds;}}if(newCollection&&!s.busy&&api)refreshEpisodeFiles().catch(()=>{});if(batchSnapshot&&s.exported_sha256!==batchSnapshot.exported_sha256)collectionMining=null;const newCampaign=s.campaign?.file!==batchSnapshot?.campaign?.file;if(newCampaign&&s.campaign){campaignChosen=new Set(s.campaign.report.config.policies);$('campaignSeconds').value=s.campaign.report.config.max_seconds;}if(s.campaign_running&&s.campaign_config){campaignChosen=new Set(s.campaign_config.policies);$('campaignSeconds').value=s.campaign_config.max_seconds;}const newRollout=s.rollout?.directory!==batchSnapshot?.rollout?.directory;const newJob=s.training?.directory!==batchSnapshot?.training?.directory;batchSnapshot=s;if(newRollout&&!s.busy&&s.rollout?.result.split)$('rolloutPartition').value=s.rollout.result.split;if(newJob&&s.training?.result.config){$('trainingSteps').value=s.training.result.config.max_steps;$('trainingSeconds').value=s.training.result.config.max_seconds;}if(newJob&&!s.busy&&api)refreshTrainingJobs().catch(()=>{});if(newRollout&&!s.busy&&api)refreshRolloutJobs().catch(()=>{});if(newCampaign&&!s.busy&&api)refreshCampaignFiles().catch(()=>{});if(sync){fillBatch();batchDirty=false;}batchPending=false;renderBatch();}
+function acceptBatch(s){if(batchSnapshot&&s.revision<batchSnapshot.revision)return;const sync=!batchSnapshot||batchPending||!batchDirty;if(s.rollout_running&&s.rollout_partition)$('rolloutPartition').value=s.rollout_partition;if(s.dagger && (s.dagger.id!==batchSnapshot?.dagger?.id || (daggerReload && !s.busy && batchSnapshot?.busy))){if(!s.error)fillDagger(s.dagger.config,s.dagger.schedules);if(api)refreshDaggerFiles(s.dagger.id).catch(()=>{});}if(!s.busy)daggerReload=false;const newTeacher=s.supervision?.file!==batchSnapshot?.supervision?.file;if((newTeacher&&s.supervision)||s.supervision_running){const c=s.supervision_running?s.supervision_config:s.supervision.report.config;$('teacherCount').value=c.count;$('teacherStride').value=c.stride;$('teacherSeconds').value=c.max_seconds;}if(newTeacher&&!s.busy&&api)refreshTeacherFiles().catch(()=>{});const newMining=s.mining?.file!==batchSnapshot?.mining?.file;if(newMining&&!s.busy&&api)refreshEpisodeFiles().catch(()=>{});if(s.mining_running&&s.mining_config){$('miningCount').value=s.mining_config.count;}const newCollection=s.collection?.file!==batchSnapshot?.collection?.file;if((newCollection&&s.collection)||s.collection_running){const c=s.collection_running?s.collection_config:s.collection.report.config;if(c){collectionMining=c.mining||null;$('collectionSeed').value=c.start_seed;$('collectionCount').value=c.count;$('collectionHorizon').value=c.horizon;$('collectionSeconds').value=c.max_seconds;}}if(newCollection&&!s.busy&&api)refreshEpisodeFiles().catch(()=>{});if(batchSnapshot&&s.exported_sha256!==batchSnapshot.exported_sha256)collectionMining=null;const newCampaign=s.campaign?.file!==batchSnapshot?.campaign?.file;if(newCampaign&&s.campaign){campaignChosen=new Set(s.campaign.report.config.policies);$('campaignSeconds').value=s.campaign.report.config.max_seconds;}if(s.campaign_running&&s.campaign_config){campaignChosen=new Set(s.campaign_config.policies);$('campaignSeconds').value=s.campaign_config.max_seconds;}const newRollout=s.rollout?.directory!==batchSnapshot?.rollout?.directory;const newJob=s.training?.directory!==batchSnapshot?.training?.directory;batchSnapshot=s;if(newRollout&&!s.busy&&s.rollout?.result.split)$('rolloutPartition').value=s.rollout.result.split;if(newJob&&s.training?.result.config){$('trainingSteps').value=s.training.result.config.max_steps;$('trainingSeconds').value=s.training.result.config.max_seconds;}if(newJob&&!s.busy&&api)refreshTrainingJobs().catch(()=>{});if(newRollout&&!s.busy&&api)refreshRolloutJobs().catch(()=>{});if(newCampaign&&!s.busy&&api)refreshCampaignFiles().catch(()=>{});if(sync){fillBatch();batchDirty=false;}batchPending=false;renderBatch();}
 function renderBatchFiles(){
  const focused=$('batchFiles').contains(document.activeElement)?document.activeElement.getAttribute('aria-label'):null;
  const names=[...new Set([...batchCatalog,...batchChosen])].sort();
@@ -911,12 +912,12 @@ $('teacherRefresh').onclick=()=>refreshTeacherFiles().catch(e=>{batchLocalError=
 $('teacherLoad').onclick=()=>batchCommand({op:'load_supervision',name:$('teacherFile').value});
 $('teacherUse').onclick=()=>batchCommand({op:'use_supervision',name:batchSnapshot.supervision.file});
 for (const [language, labels] of Object.entries({
- en: {dagger_title:'Automatic DAgger',dagger_help:'Enter 1–4 teacher probabilities as percentages, separated by commas. Both branches start from the selected policy and use the same per-step draws. IK weights take an array of object id, zero-based axis and weight from 0.01 to 1. Omitted axes are held. Stop takes effect at a worker boundary.',
- dagger_policy:'Initial policy',dagger_rates:'Teacher % by round',dagger_seed:'Intervention seed',dagger_episodes:'Episodes per round',dagger_fit_seed:'Training seed',dagger_batch:'Batch size',dagger_lr:'Learning rate',dagger_weights:'IK joint weights · JSON',dagger_start:'Start DAgger',dagger_stop:'Stop DAgger',dagger_saved:'Saved experiments',dagger_refresh:'Refresh experiments',dagger_load:'Load and verify experiment',dagger_idle:'Ready',dagger_done:'Complete',dagger_stopped:'Stopped',dagger_incomplete:'Incomplete',dagger_round:'Round',dagger_reference:'Reference servo',dagger_ik:'Weighted IK',dagger_interventions:'Teacher steps',dagger_success:'Success rate',dagger_timeouts:'Timeouts',dagger_distance:'Mean final distance',dagger_collect_reference:'Collecting · reference',dagger_collect_ik:'Collecting · IK',dagger_train_reference:'Training · reference',dagger_train_ik:'Training · IK',dagger_validation:'Fixed validation',learning_dagger_config:'Check the schedule and IK joint weights',learning_dagger_report:'Saved experiment failed verification'},
- ja: {dagger_title:'自動DAgger',dagger_help:'反復ごとの教師介入率を1〜4件、%でカンマ区切りで指定します。両系統は同じ初期方策と各stepの乱数を使います。IKには関節のオブジェクトID、0始まりの軸、0.01〜1の重みを配列で指定します。省略した軸は保持します。停止は処理の区切りで反映します。',
- dagger_policy:'初期方策',dagger_rates:'反復別の教師率 %',dagger_seed:'介入seed',dagger_episodes:'反復ごとの軌跡数',dagger_fit_seed:'学習seed',dagger_batch:'バッチサイズ',dagger_lr:'学習率',dagger_weights:'IK関節の重み · JSON',dagger_start:'DAggerを開始',dagger_stop:'DAggerを停止',dagger_saved:'保存した実験',dagger_refresh:'実験一覧を更新',dagger_load:'実験を検証して読込',dagger_idle:'準備完了',dagger_done:'完了',dagger_stopped:'停止',dagger_incomplete:'未完了',dagger_round:'反復',dagger_reference:'参照サーボ',dagger_ik:'重み付きIK',dagger_interventions:'教師介入回数',dagger_success:'成功率',dagger_timeouts:'タイムアウト',dagger_distance:'平均最終距離',dagger_collect_reference:'収集 · 参照',dagger_collect_ik:'収集 · IK',dagger_train_reference:'学習 · 参照',dagger_train_ik:'学習 · IK',dagger_validation:'固定validation',learning_dagger_config:'介入率とIK関節の重みを確認してください',learning_dagger_report:'保存実験を検証できません'},
- 'zh-CN': {dagger_title:'自动DAgger',dagger_help:'输入1–4轮教师介入百分比，用逗号分隔。两条分支使用相同初始策略和逐步随机数。IK权重数组包含关节对象ID、从0开始的轴和0.01–1的权重。省略的轴保持原位。停止在处理边界生效。',
- dagger_policy:'初始策略',dagger_rates:'逐轮教师比例 %',dagger_seed:'介入种子',dagger_episodes:'每轮轨迹数',dagger_fit_seed:'训练种子',dagger_batch:'批大小',dagger_lr:'学习率',dagger_weights:'IK关节权重 · JSON',dagger_start:'启动DAgger',dagger_stop:'停止DAgger',dagger_saved:'已保存实验',dagger_refresh:'刷新实验',dagger_load:'验证并加载实验',dagger_idle:'就绪',dagger_done:'完成',dagger_stopped:'已停止',dagger_incomplete:'未完成',dagger_round:'轮次',dagger_reference:'参考伺服',dagger_ik:'加权IK',dagger_interventions:'教师介入次数',dagger_success:'成功率',dagger_timeouts:'超时',dagger_distance:'平均最终距离',dagger_collect_reference:'采集 · 参考',dagger_collect_ik:'采集 · IK',dagger_train_reference:'训练 · 参考',dagger_train_ik:'训练 · IK',dagger_validation:'固定验证集',learning_dagger_config:'请检查干预比例与IK权重',learning_dagger_report:'无法验证已保存实验'}
+ en: {dagger_title:'Automatic DAgger',dagger_help:'Enter 1–4 comma-separated teacher percentages per line. Use up to four distinct lines with the same round count to compare schedules. Both branches start from the selected policy and use the same per-step draws. IK weights take an array of object id, zero-based axis and weight from 0.01 to 1. Omitted axes are held. Stop takes effect at a worker boundary.',
+ dagger_policy:'Initial policy',dagger_schedule:'Schedule',learning_dagger_schedules:'Enter distinct schedules with the same round count',dagger_rates:'Teacher % · one schedule per line',dagger_seed:'Intervention seed',dagger_episodes:'Episodes per round',dagger_fit_seed:'Training seed',dagger_batch:'Batch size',dagger_lr:'Learning rate',dagger_weights:'IK joint weights · JSON',dagger_start:'Start DAgger',dagger_stop:'Stop DAgger',dagger_saved:'Saved experiments',dagger_refresh:'Refresh experiments',dagger_load:'Load and verify experiment',dagger_idle:'Ready',dagger_done:'Complete',dagger_stopped:'Stopped',dagger_incomplete:'Incomplete',dagger_round:'Round',dagger_reference:'Reference servo',dagger_ik:'Weighted IK',dagger_interventions:'Teacher steps',dagger_success:'Success rate',dagger_timeouts:'Timeouts',dagger_distance:'Mean final distance',dagger_collect_reference:'Collecting · reference',dagger_collect_ik:'Collecting · IK',dagger_train_reference:'Training · reference',dagger_train_ik:'Training · IK',dagger_validation:'Fixed validation',learning_dagger_config:'Check the schedule and IK joint weights',learning_dagger_report:'Saved experiment failed verification'},
+ ja: {dagger_title:'自動DAgger',dagger_help:'1行に1スケジュールを入力し、各反復の教師介入率を%でカンマ区切りにします。反復数が同じ異なるスケジュールを最大4行比較できます。両系統は同じ初期方策と各stepの乱数を使います。IKには関節のオブジェクトID、0始まりの軸、0.01〜1の重みを配列で指定します。省略した軸は保持します。停止は処理の区切りで反映します。',
+ dagger_policy:'初期方策',dagger_schedule:'スケジュール',learning_dagger_schedules:'反復数が等しい異なるスケジュールを入力してください',dagger_rates:'教師率 (%) · 1行ずつ',dagger_seed:'介入seed',dagger_episodes:'反復ごとの軌跡数',dagger_fit_seed:'学習seed',dagger_batch:'バッチサイズ',dagger_lr:'学習率',dagger_weights:'IK関節の重み · JSON',dagger_start:'DAggerを開始',dagger_stop:'DAggerを停止',dagger_saved:'保存した実験',dagger_refresh:'実験一覧を更新',dagger_load:'実験を検証して読込',dagger_idle:'準備完了',dagger_done:'完了',dagger_stopped:'停止',dagger_incomplete:'未完了',dagger_round:'反復',dagger_reference:'参照サーボ',dagger_ik:'重み付きIK',dagger_interventions:'教師介入',dagger_success:'成功率',dagger_timeouts:'Timeout',dagger_distance:'平均最終距離',dagger_collect_reference:'収集 · 参照',dagger_collect_ik:'収集 · IK',dagger_train_reference:'学習 · 参照',dagger_train_ik:'学習 · IK',dagger_validation:'固定validation',learning_dagger_config:'介入率とIK関節の重みを確認してください',learning_dagger_report:'保存実験を検証できません'},
+ 'zh-CN': {dagger_title:'自动DAgger',dagger_help:'每行输入一个调度，逐轮教师介入百分比用逗号分隔。最多比较四个轮数相同的不同调度。两条分支使用相同初始策略和逐步随机数。IK权重数组包含关节对象ID、从0开始的轴和0.01–1的权重。省略的轴保持原位。停止在处理边界生效。',
+ dagger_policy:'初始策略',dagger_schedule:'调度',learning_dagger_schedules:'请输入不同且轮数相同的调度',dagger_rates:'教师比例 % · 每行一个调度',dagger_seed:'介入种子',dagger_episodes:'每轮轨迹数',dagger_fit_seed:'训练种子',dagger_batch:'批大小',dagger_lr:'学习率',dagger_weights:'IK关节权重 · JSON',dagger_start:'启动DAgger',dagger_stop:'停止DAgger',dagger_saved:'已保存实验',dagger_refresh:'刷新实验',dagger_load:'验证并加载实验',dagger_idle:'就绪',dagger_done:'完成',dagger_stopped:'已停止',dagger_incomplete:'未完成',dagger_round:'轮次',dagger_reference:'参考伺服',dagger_ik:'加权IK',dagger_interventions:'教师介入次数',dagger_success:'成功率',dagger_timeouts:'超时',dagger_distance:'平均最终距离',dagger_collect_reference:'采集 · 参考',dagger_collect_ik:'采集 · IK',dagger_train_reference:'训练 · 参考',dagger_train_ik:'训练 · IK',dagger_validation:'固定验证集',learning_dagger_config:'请检查干预比例与IK权重',learning_dagger_report:'无法验证已保存实验'}
 })) Object.assign(translations[language], labels);
 
 const daggerFields = {
@@ -927,10 +928,10 @@ const daggerTrainingFields = {
   daggerFitSeed:'seed', daggerSteps:'max_steps', daggerSeconds:'max_seconds',
   daggerBatch:'batch_size', daggerLr:'learning_rate'
 };
-let daggerPolicyDraft = '';
-function fillDagger(config) {
+let daggerPolicyDraft = '', daggerReload = false;
+function fillDagger(config, schedules) {
   daggerPolicyDraft = config.initial_policy;
-  $('daggerRates').value = config.teacher_bps.map(rate => rate / 100).join(',');
+  $('daggerRates').value = (schedules || [config.teacher_bps]).map(schedule => schedule.map(rate => rate / 100).join(',')).join('\n');
   for (const [id,key] of Object.entries(daggerFields)) $(id).value = config[key];
   for (const [id,key] of Object.entries(daggerTrainingFields)) $(id).value = config.training[key];
   $('daggerWeights').value = JSON.stringify(config.joint_weights);
@@ -952,13 +953,13 @@ function renderDagger() {
   const report = snapshot?.dagger;
   const progress = snapshot?.dagger_progress;
   $('daggerStatus').textContent = snapshot?.dagger_running
-    ? snapshot.cancel_requested ? t('rollout_stopping') : progress ? `${t('dagger_round')} ${progress.round} · ${t('dagger_'+progress.stage)}` : t('batch_working')
+    ? snapshot.cancel_requested ? t('rollout_stopping') : progress ? `${progress.schedule ? t('dagger_schedule')+' '+progress.schedule+' · ' : ''}${t('dagger_round')} ${progress.round} · ${t('dagger_'+progress.stage)}` : t('batch_working')
     : report ? t(report.complete ? 'dagger_done' : report.cancelled ? 'dagger_stopped' : 'dagger_incomplete') : t('dagger_idle');
   $('daggerStatus').title = report?.error || '';
   $('daggerResults').replaceChildren(...(report?.rounds || progress?.rounds || []).map(round => {
     const table = document.createElement('table');
     const caption = table.createCaption();
-    caption.textContent = `${t('dagger_round')} ${round.round} · ${round.teacher_bps/100}% · ${t(round.complete ? 'dagger_validation' : 'dagger_incomplete')}`;
+    caption.textContent = `${round.schedule ? t('dagger_schedule')+' '+round.schedule+' · ' : ''}${t('dagger_round')} ${round.round} · ${round.teacher_bps/100}% · ${t(round.complete ? 'dagger_validation' : 'dagger_incomplete')}`;
     const heading = table.createTHead().insertRow();
     for (const label of ['',t('dagger_reference'),t('dagger_ik')]) {
       const cell = document.createElement('th');
@@ -995,22 +996,27 @@ async function refreshDaggerFiles(preferred) {
 $('daggerPolicy').onchange = () => {daggerPolicyDraft = $('daggerPolicy').value; daggerControls();};
 $('daggerFile').onchange = daggerControls;
 $('daggerRefresh').onclick = () => refreshDaggerFiles().catch(error => {batchLocalError=error.code||'error';renderBatch();});
-$('daggerLoad').onclick = () => batchCommand({op:'load_dagger',id:$('daggerFile').value});
+$('daggerLoad').onclick = () => {daggerReload = true; batchCommand({op:'load_dagger',id:$('daggerFile').value});};
 $('daggerStop').onclick = $('trainingCancel').onclick;
 $('daggerStart').onclick = () => {
   const rates = $('daggerRates');
   const weights = $('daggerWeights');
   rates.setCustomValidity('');
   weights.setCustomValidity('');
-  const parts = rates.value.split(',').map(value => value.trim());
-  if (!/^(\s*\d+(\.\d{1,2})?\s*)(,\s*\d+(\.\d{1,2})?\s*){0,3}$/.test(rates.value) || parts.some(value => Number(value)>100)) rates.setCustomValidity(t('learning_dagger_config'));
+  const lines = rates.value.trim().split(/\r?\n/).map(line => line.trim());
+  const schedules = lines.map(line => line.split(',').map(value => Math.round(Number(value)*100)));
+  const valid = lines.length <= 4
+    && lines.every(line => /^\d+(\.\d{1,2})?(\s*,\s*\d+(\.\d{1,2})?){0,3}$/.test(line))
+    && schedules.every(schedule => schedule.length === schedules[0].length && schedule.every(rate => rate <= 10000))
+    && new Set(schedules.map(schedule => schedule.join(','))).size === schedules.length;
+  if (!valid) rates.setCustomValidity(t('learning_dagger_schedules'));
   let joint_weights;
   try {joint_weights = JSON.parse(weights.value);} catch {weights.setCustomValidity(t('learning_dagger_config'));}
   if (!Array.isArray(joint_weights) || !joint_weights.length) weights.setCustomValidity(t('learning_dagger_config'));
   if (![rates,weights,...Object.keys(daggerFields).map($),...Object.keys(daggerTrainingFields).map($)].every(input => input.reportValidity())) return;
-  batchCommand({op:'dagger',config:{
+  batchCommand({op:'dagger',schedules:schedules.length>1?schedules:[],config:{
     initial_policy:$('daggerPolicy').value,
-    teacher_bps:parts.map(value => Math.round(Number(value)*100)),
+    teacher_bps:schedules[0],
     joint_weights,
     ...Object.fromEntries(Object.entries(daggerFields).map(([id,key]) => [key,Number($(id).value)])),
     training:Object.fromEntries(Object.entries(daggerTrainingFields).map(([id,key]) => [key,Number($(id).value)]))

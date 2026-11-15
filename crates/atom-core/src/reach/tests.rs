@@ -2741,6 +2741,51 @@ fn real_train_mining_prioritizes_only_new_train_tasks_and_preserves_holdouts() {
     )
     .unwrap();
     assert_eq!(dagger["complete"], true, "{dagger}");
+    let config: learning::dagger::Config =
+        serde_json::from_value(dagger["config"].clone()).unwrap();
+    let config = learning::dagger::Config {
+        teacher_bps: vec![0],
+        ..config
+    };
+    let comparison = learning::dagger::compare_schedules(
+        dir.path(),
+        &project,
+        &config,
+        &[vec![0], vec![10_000]],
+        &cancel,
+        |_| {},
+    )
+    .unwrap();
+    assert_eq!(comparison["complete"], true, "{comparison}");
+    let rounds = comparison["rounds"].as_array().unwrap();
+    assert_eq!(rounds.len(), 2);
+    for (index, round) in rounds.iter().enumerate() {
+        assert_eq!(round["schedule"], index + 1);
+        for branch in round["branches"].as_array().unwrap() {
+            assert_eq!(branch["parent_policy"], config.initial_policy);
+            assert_eq!(branch["validation"]["tasks"], 4);
+            if index == 0 {
+                assert_eq!(branch["teacher_steps"], 0);
+            } else {
+                assert_eq!(branch["teacher_steps"], branch["total_steps"]);
+            }
+        }
+    }
+    assert_eq!(
+        learning::dagger::inspect(dir.path(), comparison["id"].as_str().unwrap()).unwrap(),
+        comparison
+    );
+    let experiment_id = dagger["id"].as_str().unwrap();
+    assert!(
+        learning::dagger::catalog(dir.path())
+            .unwrap()
+            .contains(&experiment_id.to_owned())
+    );
+    assert_eq!(
+        learning::dagger::inspect(dir.path(), experiment_id).unwrap(),
+        dagger
+    );
+    assert!(learning::dagger::inspect(dir.path(), "../exports").is_err());
     let rounds = dagger["rounds"].as_array().unwrap();
     assert_eq!(rounds.len(), 2);
     for (index, round) in rounds.iter().enumerate() {

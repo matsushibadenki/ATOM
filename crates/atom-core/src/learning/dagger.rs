@@ -87,6 +87,7 @@ pub fn run(
 #[derive(Clone, Debug, Serialize)]
 pub struct Progress {
     pub round: usize,
+    pub schedule: Option<usize>,
     pub stage: &'static str,
     pub rounds: Vec<serde_json::Value>,
 }
@@ -148,6 +149,7 @@ pub fn run_with_progress(
                 };
                 progress(Progress {
                     round: round + 1,
+                    schedule: None,
                     stage: if ik {
                         "collect_ik"
                     } else {
@@ -214,6 +216,7 @@ pub fn run_with_progress(
                 let job = format!("bc-dagger-{id}-{round}-{branch}");
                 progress(Progress {
                     round: round + 1,
+                    schedule: None,
                     stage: if ik { "train_ik" } else { "train_reference" },
                     rounds: rounds.clone(),
                 });
@@ -242,6 +245,7 @@ pub fn run_with_progress(
             }
             progress(Progress {
                 round: round + 1,
+                schedule: None,
                 stage: "validation",
                 rounds: rounds.clone(),
             });
@@ -280,9 +284,106 @@ pub fn run_with_progress(
     })();
     let report = json!({
         "format":"atom-dagger-v1","id":id,"config":config,"validation_spec":validation,
-        "complete":result.is_ok(),"cancelled":cancel.load(Ordering::Relaxed),"error":result.err().map(|e|e.code),"rounds":rounds
+        "comparison_key":comparison_key,"complete":result.is_ok(),"cancelled":cancel.load(Ordering::Relaxed),"error":result.err().map(|e|e.code),"rounds":rounds
     });
     collection::write_atomic(&directory.join("report.json"), &report)?;
+    Ok(report)
+}
+
+pub fn validate_schedules(config: &Config, schedules: &[Vec<u16>]) -> Result<()> {
+    config.validate()?;
+    if schedules.len() > 4
+        || (!schedules.is_empty()
+            && (schedules.len() < 2
+                || schedules[0] != config.teacher_bps
+                || schedules
+                    .iter()
+                    .any(|s| s.len() != config.teacher_bps.len() || s.iter().any(|p| *p > 10_000))
+                || schedules.iter().collect::<BTreeSet<_>>().len() != schedules.len()))
+    {
+        return Err(err("learning_dagger_schedules"));
+    }
+    Ok(())
+}
+
+fn append_schedule(
+    rounds: &mut Vec<serde_json::Value>,
+    source: &[serde_json::Value],
+    index: usize,
+) {
+    rounds.extend(source.iter().cloned().map(|mut round| {
+        round["schedule"] = json!(index + 1);
+        round
+    }));
+}
+
+pub fn compare_schedules(
+    root: &Path,
+    project: &Project,
+    config: &Config,
+    schedules: &[Vec<u16>],
+    cancel: &AtomicBool,
+    mut progress: impl FnMut(Progress),
+) -> Result<serde_json::Value> {
+    validate_schedules(config, schedules)?;
+    if schedules.is_empty() {
+        return run_with_progress(root, project, config, cancel, progress);
+    }
+    let mut rounds = Vec::new();
+    let mut runs = Vec::new();
+    let mut identity = None;
+    let mut failure = None;
+    for (index, schedule) in schedules.iter().enumerate() {
+        if cancel.load(Ordering::Relaxed) {
+            break;
+        }
+        let candidate = Config {
+            teacher_bps: schedule.clone(),
+            ..config.clone()
+        };
+        let result = run_with_progress(root, project, &candidate, cancel, |mut update| {
+            let mut visible = rounds.clone();
+            append_schedule(&mut visible, &update.rounds, index);
+            update.rounds = visible;
+            update.schedule = Some(index + 1);
+            progress(update);
+        });
+        let report = match result {
+            Ok(report) => report,
+            Err(error) if runs.is_empty() => return Err(error),
+            Err(error) => {
+                failure = Some(error.code);
+                break;
+            }
+        };
+        let key = (
+            report["validation_spec"].clone(),
+            report["comparison_key"].clone(),
+        );
+        let comparable =
+            report["complete"] == true && identity.as_ref().is_none_or(|previous| previous == &key);
+        runs.push(json!({"id":report["id"],"comparable":comparable}));
+        if comparable {
+            identity = Some(key);
+        }
+        if comparable || report["complete"] != true {
+            append_schedule(&mut rounds, report["rounds"].as_array().unwrap(), index);
+        }
+        if !comparable {
+            failure = report["error"].as_str().map(str::to_owned);
+            if report["complete"] == true {
+                failure = Some("learning_dagger_holdout".into());
+            }
+            break;
+        }
+    }
+    let id = crate::Uuid::new_v4().to_string();
+    let complete =
+        runs.len() == schedules.len() && runs.iter().all(|run| run["comparable"] == true);
+    let report = json!({"format":"atom-dagger-schedules-v1","id":id,"config":config,
+        "schedules":schedules,"runs":runs,"rounds":rounds,"complete":complete,"error":failure,
+        "cancelled":cancel.load(Ordering::Relaxed)});
+    collection::write_atomic(&root.join("dagger").join(&id).join("report.json"), &report)?;
     Ok(report)
 }
 
@@ -292,12 +393,18 @@ pub fn inspect(root: &Path, id: &str) -> Result<serde_json::Value> {
         return Err(err("learning_dagger_report"));
     }
     let dir = root.join("dagger").join(id);
-    let bytes = training::read(&dir.join("report.json"), 65536)?;
+    let bytes = training::read(&dir.join("report.json"), 4 * 65536)?;
     let report: serde_json::Value =
         serde_json::from_slice(&bytes).map_err(|_| err("learning_dagger_report"))?;
     let config: Config = serde_json::from_value(report["config"].clone())
         .map_err(|_| err("learning_dagger_report"))?;
     config.validate()?;
+    if report["format"] == "atom-dagger-schedules-v1" {
+        if report["id"] != id {
+            return Err(err("learning_dagger_report"));
+        }
+        return inspect_schedules(root, report, &config);
+    }
     let rounds = report["rounds"]
         .as_array()
         .ok_or_else(|| err("learning_dagger_report"))?;
@@ -324,6 +431,13 @@ pub fn inspect(root: &Path, id: &str) -> Result<serde_json::Value> {
                 .as_str()
                 .ok_or_else(|| err("learning_dagger_report"))?,
         )?;
+        if verified.report.task_spec_sha256 != report["validation_spec"]
+            || (round["complete"] == true
+                && !report["comparison_key"].is_null()
+                && json!(verified.report.comparison_key) != report["comparison_key"])
+        {
+            return Err(err("learning_dagger_report"));
+        }
         let branches = round["branches"]
             .as_array()
             .ok_or_else(|| err("learning_dagger_report"))?;
@@ -337,6 +451,64 @@ pub fn inspect(root: &Path, id: &str) -> Result<serde_json::Value> {
                 return Err(err("learning_dagger_report"));
             }
         }
+    }
+    Ok(report)
+}
+
+fn inspect_schedules(
+    root: &Path,
+    report: serde_json::Value,
+    config: &Config,
+) -> Result<serde_json::Value> {
+    let invalid = || err("learning_dagger_report");
+    let schedules: Vec<Vec<u16>> =
+        serde_json::from_value(report["schedules"].clone()).map_err(|_| invalid())?;
+    validate_schedules(config, &schedules)?;
+    let runs = report["runs"]
+        .as_array()
+        .filter(|runs| !schedules.is_empty() && runs.len() <= schedules.len())
+        .ok_or_else(invalid)?;
+    let mut rounds = Vec::new();
+    let mut identity = None;
+    for (index, run) in runs.iter().enumerate() {
+        let id = run["id"].as_str().ok_or_else(invalid)?;
+        let uuid = crate::Uuid::parse_str(id).map_err(|_| invalid())?;
+        if uuid.to_string() != id {
+            return Err(invalid());
+        }
+        let bytes = training::read(&root.join("dagger").join(id).join("report.json"), 65536)?;
+        let header: serde_json::Value = serde_json::from_slice(&bytes).map_err(|_| invalid())?;
+        if header["format"] != "atom-dagger-v1" {
+            return Err(invalid());
+        }
+        let child = inspect(root, id)?;
+        let expected = Config {
+            teacher_bps: schedules[index].clone(),
+            ..config.clone()
+        };
+        let key = (
+            child["validation_spec"].clone(),
+            child["comparison_key"].clone(),
+        );
+        let comparable =
+            child["complete"] == true && identity.as_ref().is_none_or(|previous| previous == &key);
+        if child["config"] != json!(expected)
+            || run["comparable"] != comparable
+            || (!comparable && index + 1 != runs.len())
+        {
+            return Err(invalid());
+        }
+        if comparable {
+            identity = Some(key);
+        }
+        if comparable || child["complete"] != true {
+            append_schedule(&mut rounds, child["rounds"].as_array().unwrap(), index);
+        }
+    }
+    let complete =
+        runs.len() == schedules.len() && runs.iter().all(|run| run["comparable"] == true);
+    if report["rounds"] != json!(rounds) || report["complete"] != complete {
+        return Err(invalid());
     }
     Ok(report)
 }

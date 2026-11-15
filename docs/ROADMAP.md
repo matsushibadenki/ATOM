@@ -35,7 +35,9 @@ ThreeX／UNGEの採用ソースはhashとコピー元revisionを記録した。
 - 🟢 [Done] 元のholdoutを保持したtrain専用参照記録の追加収集。固定seed走査・holdout／既存課題の実行前除外・予算／停止・品質選別・保存／再検証・明示的な追加batch選択と新規学習を実装。同じ単一validation課題でtimeout→成功を実測し、汎化改善とは分離。[仕様と検証](TRAIN_COLLECTION.md)。
 - 🟢 [Done] 凍結BCによる新規train課題の難易度探索・失敗課題の優先収集。holdout／既存groupを事前除外し、全pool完了時のみtimeout・距離・seedで順位化。共有GUIの開始／停止・再検証・BC再生、優先seedからの別系統の参照収集とholdout維持に接続。[仕様と検証](TRAIN_MINING.md)。
 - 🟢 [Done] BCが訪れたtrain状態への参照教師ラベルとオフライン集約。実適用指令／物理記録と教師ターゲットを分離し、previous_actionを維持、終端除外・間隔抽出・holdout不変・trainのみ正規化、保存／再検証と新規BC学習へのGUI／CLI接続を実装。[仕様と検証](TEACHER_SUPERVISION.md)。
-- 🟠 [Next] 状態依存IK教師・課題関節のマスク／重み付けと復帰検証、自動DAgger反復・教師／方策の介入混合、train分布診断を使う収集、より広い固定validation群での比較。固定testは選択へ転用しない。計画候補の原子的適用・単一Undoは別段階。
+- 🟢 [Done] 観測関節角を初期値にした位置IK教師、同一BC指令列を再実行した地点からの参照サーボとの復帰比較、再学習後の固定validation比較。[仕様と結果](IK_TEACHER.md)。
+- 🟢 [Done] IK教師の課題関節マスク・重み付け、同一訪問状態からの複数地点の復帰比較、固定validation 4課題での再学習比較。[仕様と結果](IK_TEACHER.md)。
+- 🟠 [Next] 自動DAgger反復・教師／方策の介入混合、train分布診断を使う収集、より広い固定validation群での比較。固定testは選択へ転用しない。計画候補の原子的適用・単一Undoは別段階。
 - ⭕️ [Pending] 実モデル推論。vLLM-appleは現在のMLX／Transformers版がreview済みgate外で拒否、Strataはserver未起動。gateや依存を変更せず保留。
 - 🔴 [Later] 位置IKの3D目標ハンドル・ライブプレビュー、向きの制約、衝突・バランスを考慮する姿勢計画。素材表示・操作補助の拡張と並行し、依存が成立した項目から着手。
 

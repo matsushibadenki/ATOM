@@ -1,15 +1,19 @@
 //! Offline reference-servo labels on recorded BC-visited train states; applied actions stay intact.
+use super::ik_teacher::{JointWeight, validate_weights};
 use super::*;
 use crate::reach;
 use std::{
     sync::atomic::{AtomicBool, Ordering},
     time::{Duration, Instant},
 };
+const IK: &str = "visited_position_ik_v1";
 const TEACHER: &str = "reference_goal_servo_v1";
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Labels {
     pub teacher: String,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub joint_weights: Vec<JointWeight>,
     pub mining: String,
     pub policy: String,
     pub checkpoint_sha256: String,
@@ -19,6 +23,19 @@ pub struct Labels {
     pub episode: reach::Episode,
 }
 impl Labels {
+    pub(super) fn target(&self, index: usize) -> Vec<f64> {
+        if self.teacher == IK {
+            super::ik_teacher::action(
+                &self.episode.manifest,
+                &self.episode.frames[index].observation,
+                &self.joint_weights,
+            )
+            .0
+        } else {
+            self.episode.manifest.reference_action.clone()
+        }
+    }
+
     pub(super) fn group(&self) -> String {
         let m = &self.episode.manifest;
         hash(&serde_json::to_vec(&json!({"version":1,"profile":m.profile,"model":m.model_sha256,"seed":m.config.seed,"robot":m.config.robot,"endpoint":m.endpoint,"target":m.target})).unwrap())
@@ -56,7 +73,7 @@ pub(super) fn validate_labels(
         .collect::<BTreeSet<_>>();
     let mut total = 0;
     for label in &package.labels {
-        if label.teacher != TEACHER
+        if !matches!(label.teacher.as_str(), TEACHER | IK)
             || !mining::valid_name(&label.mining)
             || !label
                 .policy
@@ -74,6 +91,10 @@ pub(super) fn validate_labels(
             .quality()
             .map_err(|_| err("learning_supervision_invalid"))?;
         let m = &label.episode.manifest;
+        validate_weights(&label.joint_weights, Some(m))?;
+        if label.teacher != IK && !label.joint_weights.is_empty() {
+            return Err(err("learning_ik_weights"));
+        }
         if q.episode_sha256 != label.episode_sha256
             || !q.complete
             || q.transitions == 0
@@ -111,10 +132,22 @@ pub struct Config {
     pub count: u32,
     pub stride: u32,
     pub max_seconds: u32,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub ik: bool,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub joint_weights: Vec<JointWeight>,
+}
+fn is_false(value: &bool) -> bool {
+    !*value
 }
 impl Config {
+    fn teacher(&self) -> &'static str {
+        if self.ik { IK } else { TEACHER }
+    }
     pub fn validate(&self) -> Result<()> {
-        if !mining::valid_name(&self.mining)
+        validate_weights(&self.joint_weights, None)?;
+        if (!self.ik && !self.joint_weights.is_empty())
+            || !mining::valid_name(&self.mining)
             || !(1..=16).contains(&self.count)
             || !(1..=50).contains(&self.stride)
             || !(1..=300).contains(&self.max_seconds)
@@ -205,7 +238,7 @@ pub fn run(
     let mut report = Report {
         schema_version: 1,
         format: "atom-teacher-supervision-v1".into(),
-        teacher: TEACHER.into(),
+        teacher: config.teacher().into(),
         config: config.clone(),
         source: mined.source.clone(),
         source_sha256: mined.source_sha256.clone(),
@@ -237,8 +270,10 @@ pub fn run(
         if q.episode_sha256 != probe.episode_sha256 {
             return Err(err("learning_supervision_invalid"));
         }
+        validate_weights(&config.joint_weights, Some(&episode.manifest))?;
         let labels = Labels {
-            teacher: TEACHER.into(),
+            joint_weights: config.joint_weights.clone(),
+            teacher: config.teacher().into(),
             mining: config.mining.clone(),
             policy: mined.config.policy.clone(),
             checkpoint_sha256: mined.checkpoint_sha256.clone(),
@@ -310,7 +345,7 @@ pub fn inspect(root: &Path, file: &str) -> Result<Saved> {
     let mined = mining::inspect(root, &report.config.mining)?.report;
     if report.schema_version != 1
         || report.format != "atom-teacher-supervision-v1"
-        || report.teacher != TEACHER
+        || report.teacher != report.config.teacher()
         || mined.status != mining::Status::Completed
         || mined.priorities.len() < report.config.count as usize
         || report.source != mined.source
@@ -370,6 +405,8 @@ pub fn inspect(root: &Path, file: &str) -> Result<Saved> {
                 .quality()
                 .map_err(|_| err("learning_supervision_invalid"))?;
             if q.episode_sha256 != entry.episode_sha256
+                || label.teacher != report.teacher
+                || label.joint_weights != report.config.joint_weights
                 || label.mining != report.config.mining
                 || label.stride != report.config.stride
                 || label.policy != report.policy

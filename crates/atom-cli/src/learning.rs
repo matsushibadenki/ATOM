@@ -4,6 +4,45 @@ pub fn run(args: &[String]) -> Result<bool, Box<dyn std::error::Error>> {
     let Some(cmd) = args.first().map(String::as_str) else {
         return Ok(false);
     };
+    if cmd == "teacher-recovery-many" {
+        if args.len() != 6 {
+            return Err("teacher-recovery-many <episodes-dir> <mining-file> <frames CSV> <count> <weights.json>".into());
+        }
+        let frames = args[3]
+            .split(',')
+            .map(str::parse)
+            .collect::<Result<Vec<u32>, _>>()?;
+        let mut bytes = Vec::new();
+        std::fs::File::open(&args[5])?
+            .take(4097)
+            .read_to_end(&mut bytes)?;
+        if bytes.len() > 4096 {
+            return Err("weights config size".into());
+        }
+        let weights: Vec<learning::ik_teacher::JointWeight> = serde_json::from_slice(&bytes)?;
+        let report = learning::ik_teacher::recovery_many(
+            Path::new(&args[1]),
+            &args[2],
+            &frames,
+            args[4].parse()?,
+            &weights,
+        )?;
+        println!("{}", serde_json::to_string_pretty(&report)?);
+        return Ok(true);
+    }
+    if cmd == "teacher-recovery" {
+        if args.len() != 5 {
+            return Err("teacher-recovery <episodes-dir> <mining-file> <frame> <count>".into());
+        }
+        let report = learning::ik_teacher::recovery(
+            Path::new(&args[1]),
+            &args[2],
+            args[3].parse()?,
+            args[4].parse()?,
+        )?;
+        println!("{}", serde_json::to_string_pretty(&report)?);
+        return Ok(true);
+    }
     if cmd == "teacher-label" {
         if args.len() != 3 {
             return Err("teacher-label <episodes-dir> <config.json>".into());

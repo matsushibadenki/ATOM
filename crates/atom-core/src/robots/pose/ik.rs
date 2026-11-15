@@ -35,7 +35,7 @@ fn cross(a: [f64; 3], b: [f64; 3]) -> [f64; 3] {
 fn refine(
     work: &mut Project,
     robot: usize,
-    chain: &[(usize, usize)],
+    chain: &[(usize, usize, f64)],
     id: u32,
     rest: [f32; 3],
     target: [f32; 3],
@@ -45,7 +45,7 @@ fn refine(
     let error = sub(target.map(f64::from), end.map(f64::from));
     let columns: Vec<_> = chain
         .iter()
-        .map(|&(index, axis_index)| {
+        .map(|&(index, axis_index, weight)| {
             let link = &work.robots[robot].links[index];
             let parent = fs[&link.parent.unwrap()];
             let mut basis = parent.r;
@@ -60,6 +60,7 @@ fn refine(
                 axis,
                 sub(end.map(f64::from), parent.point(link.anchor).map(f64::from)),
             )
+            .map(|v| v * weight.sqrt())
         })
         .collect();
     let mut augmented: [[f64; 4]; 3] = std::array::from_fn(|r| {
@@ -101,10 +102,10 @@ fn refine(
     for attempt in 0..6 {
         work.robots[robot] = before.clone();
         let scale = scale * 0.5f64.powi(attempt);
-        for (&(index, axis), delta) in chain.iter().zip(&deltas) {
+        for (&(index, axis, weight), delta) in chain.iter().zip(&deltas) {
             let link = &mut work.robots[robot].links[index];
             let range = link.axes().nth(axis).unwrap().range;
-            let value = (f64::from(link.angle(axis)) + scale * delta)
+            let value = (f64::from(link.angle(axis)) + scale * delta * weight.sqrt())
                 .clamp(f64::from(range[0]), f64::from(range[1])) as f32;
             assign(link, axis, value);
         }
@@ -117,6 +118,16 @@ fn refine(
 impl Project {
     /// Solve on a private candidate; an unsuccessful search cannot change the document.
     pub(crate) fn solve_ik(&mut self, id: u32, base: u32, target: [f32; 3]) -> Result<bool> {
+        self.solve_ik_weighted(id, base, target, |_, _| 1.)
+    }
+
+    pub(crate) fn solve_ik_weighted(
+        &mut self,
+        id: u32,
+        base: u32,
+        target: [f32; 3],
+        weight: impl Fn(u32, usize) -> f64,
+    ) -> Result<bool> {
         if target.iter().any(|v| !v.is_finite() || v.abs() > 10_000.) {
             return Err(Error::Invalid("IK target".into()));
         }
@@ -140,7 +151,10 @@ impl Project {
                 .parent
                 .ok_or_else(|| Error::Invalid("IK base must be a strict ancestor".into()))?;
             for axis in (0..link.axes().count()).rev() {
-                chain.push((index, axis));
+                let mobility = weight(link.object_id, axis);
+                if mobility > 0. {
+                    chain.push((index, axis, mobility));
+                }
             }
         }
         if chain.is_empty() {
@@ -163,10 +177,11 @@ impl Project {
         for seed in [0., 0.16, -0.16] {
             work.robots[robot_index] = original.clone();
             if seed != 0. {
-                for (n, &(index, axis)) in chain.iter().enumerate() {
+                for (n, &(index, axis, weight)) in chain.iter().enumerate() {
                     let link = &mut work.robots[robot_index].links[index];
                     let range = link.axes().nth(axis).unwrap().range;
-                    let angle = (link.angle(axis) + if n % 2 == 0 { seed } else { -seed })
+                    let angle = (link.angle(axis)
+                        + (if n % 2 == 0 { seed } else { -seed }) * weight as f32)
                         .clamp(range[0], range[1]);
                     assign(link, axis, angle);
                 }
@@ -174,7 +189,7 @@ impl Project {
             let mut previous = f64::INFINITY;
             let mut stagnant = 0;
             for _ in 0..(MAX_UPDATES / 3 / (chain.len() + 8)).min(240) {
-                for &(index, axis_index) in &chain {
+                for &(index, axis_index, weight) in &chain {
                     updates += 1;
                     if updates > MAX_UPDATES {
                         return Err(Error::IkUnreachable);
@@ -197,7 +212,7 @@ impl Project {
                         continue;
                     }
                     let delta = dot(axis, cross(a, b)).atan2(dot(a, b)).clamp(-0.45, 0.45);
-                    let next = (f64::from(link.angle(axis_index)) + delta)
+                    let next = (f64::from(link.angle(axis_index)) + delta * weight)
                         .clamp(f64::from(spec.range[0]), f64::from(spec.range[1]))
                         as f32;
                     assign(&mut work.robots[robot_index].links[index], axis_index, next);

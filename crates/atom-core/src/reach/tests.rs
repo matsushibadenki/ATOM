@@ -2306,21 +2306,42 @@ fn real_train_mining_prioritizes_only_new_train_tasks_and_preserves_holdouts() {
     let before_project = serde_json::to_value(&project).unwrap();
     let mut request = Request::default();
     let mut found = std::collections::BTreeSet::new();
+    let mut validation_seeds = Vec::new();
     for seed in 0..100 {
         let episode = fixture_seed(seed);
         let split = request
             .split
             .assign(&episode.quality().unwrap().split_group)
             .unwrap();
-        if found.insert(split) {
+        if found.insert(split) || (split == Split::Validation && validation_seeds.len() < 4) {
             let path = dir.path().join(format!("seed-{seed}.episode.json"));
-            episode.save(&path).unwrap();
+            if split == Split::Validation {
+                let mut reference = Runner::reset(
+                    &project,
+                    Config {
+                        seed,
+                        robot: 1,
+                        horizon: 300,
+                    },
+                )
+                .unwrap();
+                reference.run().unwrap();
+                if reference.episode.frames.last().unwrap().outcome != Outcome::Success {
+                    continue;
+                }
+                reference.episode.save(&path).unwrap();
+                validation_seeds.push(seed);
+            } else {
+                episode.save(&path).unwrap();
+            }
             request.sources.push(path);
         }
-        if found.len() == 3 {
+        if found.len() == 3 && validation_seeds.len() == 4 {
             break;
         }
     }
+    assert_eq!(validation_seeds.len(), 4);
+    eprintln!("Validation seeds: {validation_seeds:?}");
     let path = dir.path().join("exports/base.batch.json");
     request.analyze().unwrap().save_package(&path).unwrap();
     let before = std::fs::read(&path).unwrap();
@@ -2516,6 +2537,8 @@ fn real_train_mining_prioritizes_only_new_train_tasks_and_preserves_holdouts() {
     // Relabel BC-visited observations without rewriting their applied-action transitions.
     use learning::supervision;
     let label_config = supervision::Config {
+        ik: false,
+        joint_weights: vec![],
         mining: saved.file.clone(),
         count: 2,
         stride: 10,
@@ -2577,6 +2600,126 @@ fn real_train_mining_prioritizes_only_new_train_tasks_and_preserves_holdouts() {
     )
     .unwrap();
     assert_eq!(trained.result["checkpoint_reload_verified"], true);
+    let m = &recorded.manifest;
+    let robot = m
+        .project
+        .robots
+        .iter()
+        .find(|r| r.root == m.config.robot)
+        .unwrap();
+    let mut chain = vec![];
+    let mut id = m.endpoint;
+    while id != robot.root {
+        chain.push(id);
+        id = robot
+            .links
+            .iter()
+            .find(|l| l.object_id == id)
+            .unwrap()
+            .parent
+            .unwrap();
+    }
+    let joint_weights = m
+        .channels
+        .iter()
+        .filter(|c| chain.contains(&c.id))
+        .map(|c| learning::ik_teacher::JointWeight {
+            id: c.id,
+            axis: c.axis,
+            weight: if c.id == m.endpoint { 0.5 } else { 1. },
+        })
+        .collect::<Vec<_>>();
+    let recovery =
+        learning::ik_teacher::recovery_many(dir.path(), &saved.file, &[10, 30], 2, &joint_weights)
+            .unwrap();
+    assert_eq!(recovery["pairs"].as_array().unwrap().len(), 4);
+    eprintln!("IK recovery: {recovery}");
+    let ik = supervision::run(
+        dir.path(),
+        &supervision::Config {
+            ik: true,
+            joint_weights: joint_weights.clone(),
+            ..label_config.clone()
+        },
+        None,
+        &cancel,
+        |_| {},
+    )
+    .unwrap();
+    supervision::inspect(dir.path(), &ik.file).unwrap();
+    let ik_data = learning::Validated::load(
+        &dir.path()
+            .join("exports")
+            .join(ik.report.exported.as_ref().unwrap()),
+    )
+    .unwrap();
+    let ik_samples = serde_json::to_value(ik_data.prepare().unwrap()).unwrap();
+    assert_eq!(
+        ik_samples["splits"]["validation"],
+        prepared["splits"]["validation"]
+    );
+    assert_eq!(ik_samples["splits"]["test"], prepared["splits"]["test"]);
+    assert_eq!(
+        ik_samples["splits"]["train"][offset]["features"],
+        prepared["splits"]["train"][offset]["features"]
+    );
+    assert_ne!(
+        ik_samples["splits"]["train"][offset]["action"],
+        prepared["splits"]["train"][offset]["action"]
+    );
+    for (index, channel) in m.channels.iter().enumerate() {
+        let row = &ik_samples["splits"]["train"][offset + 1];
+        let measured = recorded.frames[10].observation.qpos[channel.qpos_index]
+            .clamp(f64::from(channel.range[0]), f64::from(channel.range[1]));
+        let target = row["action"][index].as_f64().unwrap();
+        let weight = joint_weights
+            .iter()
+            .find(|w| w.id == channel.id && w.axis == channel.axis)
+            .map_or(0., |w| w.weight);
+        assert!((target - measured).abs() <= 0.25 * weight + 1e-12);
+        if weight == 0. {
+            assert_eq!(target, measured);
+        }
+    }
+    training::train(
+        &ik_data,
+        &training::Config {
+            max_steps: 20,
+            ..Default::default()
+        },
+        &dir.path().join("training/bc-ik"),
+        None,
+        &cancel,
+    )
+    .unwrap();
+    let reference_policy = registry::register(
+        dir.path(),
+        "bc-teacher",
+        labelled.report.exported.as_ref().unwrap(),
+    )
+    .unwrap();
+    let ik_policy =
+        registry::register(dir.path(), "bc-ik", ik.report.exported.as_ref().unwrap()).unwrap();
+    let validation = learning::campaign::run(
+        dir.path(),
+        &project,
+        &learning::campaign::Config {
+            policies: vec![reference_policy.id, ik_policy.id],
+            max_seconds: 60,
+        },
+        &cancel,
+        |_| {},
+    )
+    .unwrap();
+    assert_eq!(
+        validation.report.status,
+        learning::campaign::Status::Completed
+    );
+    for candidate in validation.report.candidates {
+        let score = candidate.score.unwrap();
+        assert_eq!(score.tasks, 4);
+        eprintln!("Fixed validation: {score:?}");
+    }
     let next_policy = registry::register(
         dir.path(),
         "bc-teacher",
@@ -2608,6 +2751,8 @@ fn real_train_mining_prioritizes_only_new_train_tasks_and_preserves_holdouts() {
     let next_labels = supervision::run(
         dir.path(),
         &supervision::Config {
+            ik: false,
+            joint_weights: vec![],
             mining: next_pool.file,
             count: 1,
             stride: 10,
@@ -2763,6 +2908,7 @@ fn teacher_labels_keep_applied_actions_separate_and_reject_holdout_or_tampered_s
     episode.validate().unwrap();
     let q = episode.quality().unwrap();
     let label = learning::supervision::Labels {
+        joint_weights: vec![],
         teacher: "reference_goal_servo_v1".into(),
         mining: format!("mining-{}.json", "a".repeat(64)),
         policy: format!("policy-{}.json", "b".repeat(64)),

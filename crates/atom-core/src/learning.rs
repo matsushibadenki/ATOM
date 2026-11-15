@@ -17,6 +17,7 @@ use std::{
 pub mod campaign;
 pub mod collection;
 pub mod diagnostics;
+pub mod ik_teacher;
 pub mod mining;
 pub mod registry;
 pub mod rollout;
@@ -540,7 +541,7 @@ impl Validated {
                     group: group.clone(),
                     index,
                     features: rollout::features_at(&labels.episode, index),
-                    action: labels.episode.manifest.reference_action.clone(),
+                    action: labels.target(index),
                 });
             }
         }

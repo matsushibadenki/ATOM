@@ -1206,6 +1206,8 @@ mod tests {
         let mut session = state.session.lock().unwrap();
         let command = Command::Supervise {
             config: atom_core::learning::supervision::Config {
+                ik: false,
+                joint_weights: vec![],
                 mining: format!("mining-{}.json", "a".repeat(64)),
                 count: 2,
                 stride: 10,

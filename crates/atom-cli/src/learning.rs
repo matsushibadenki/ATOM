@@ -4,6 +4,33 @@ pub fn run(args: &[String]) -> Result<bool, Box<dyn std::error::Error>> {
     let Some(cmd) = args.first().map(String::as_str) else {
         return Ok(false);
     };
+    if cmd == "dagger-run" {
+        if args.len() != 4 {
+            return Err("dagger-run <episodes-dir> <project.atom.json> <config.json>".into());
+        }
+        let mut bytes = Vec::new();
+        std::fs::File::open(&args[3])?
+            .take(16385)
+            .read_to_end(&mut bytes)?;
+        if bytes.len() > 16384 {
+            return Err("DAgger config size".into());
+        }
+        let config = serde_json::from_slice(&bytes)?;
+        let project = atom_core::ProjectStore::open(&args[2])?
+            .load()?
+            .ok_or("project missing")?;
+        let report = learning::dagger::run(
+            Path::new(&args[1]),
+            &project,
+            &config,
+            &std::sync::atomic::AtomicBool::new(false),
+        )?;
+        println!("{}", serde_json::to_string_pretty(&report)?);
+        if report["complete"] != true {
+            return Err("DAgger ended before completing all paired rounds; see report".into());
+        }
+        return Ok(true);
+    }
     if cmd == "teacher-recovery-many" {
         if args.len() != 6 {
             return Err("teacher-recovery-many <episodes-dir> <mining-file> <frames CSV> <count> <weights.json>".into());

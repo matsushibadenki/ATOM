@@ -40,7 +40,7 @@ def run():
     p = adapter["load"](data_path, cfg["artifact_sha256"])
     c = cfg["config"]
     source = p["summary"]["source_sha256"]
-    if not p["summary"]["fit_data_ready"] or not p["summary"]["test_data_ready"]:
+    if not p["summary"]["fit_data_ready"] or (cfg["op"] != "train_validation" and not p["summary"]["test_data_ready"]):
         raise ValueError("all three partitions required")
     start = time.monotonic()
     end = start+c["max_seconds"]
@@ -145,8 +145,11 @@ def run():
     if abs(verified_val["mse_rad2"]-best_val)>1e-12:
         raise ValueError("checkpoint reload")
     # Test tensors are constructed only after validation selection and checkpoint freezing.
-    test_x,test_y=tensors(p["splits"]["test"])
-    result={"schema_version":1,"kind":"training","status":status,"source_sha256":source,"artifact_sha256":cfg["artifact_sha256"],"config":c,"start_step":start_step,"step":step,"best_step":best_step,"weights_updated":updated,"tensor_batch_verified":True,"checkpoint_reload_verified":True,"initial_validation":initial_val,"best_validation":verified_val,"test":metrics(test_x,test_y),"history":history,"elapsed_seconds":time.monotonic()-start,"rows":p["summary"]["rows"],"parent_manifest_sha256":parent,"torch":str(torch.__version__),"python":sys.version.split()[0],"device":"cpu","threads":1,"evaluation_semantics":"offline_recorded_action_prediction_not_physics_success"}
+    test = None
+    if cfg["op"] != "train_validation":
+        test_x,test_y=tensors(p["splits"]["test"])
+        test = metrics(test_x,test_y)
+    result={"schema_version":1,"kind":"training","status":status,"source_sha256":source,"artifact_sha256":cfg["artifact_sha256"],"config":c,"start_step":start_step,"step":step,"best_step":best_step,"weights_updated":updated,"tensor_batch_verified":True,"checkpoint_reload_verified":True,"initial_validation":initial_val,"best_validation":verified_val,"test":test,"history":history,"elapsed_seconds":time.monotonic()-start,"rows":p["summary"]["rows"],"parent_manifest_sha256":parent,"torch":str(torch.__version__),"python":sys.version.split()[0],"device":"cpu","threads":1,"evaluation_semantics":"offline_recorded_action_prediction_not_physics_success"}
     write_json(stage/"report.json",result)
     files={name:digest(stage/name) for name in ("last.pt","best.pt","report.json")}
     write_json(stage/"manifest.json",{"schema_version":1,"format":"atom-bc-job-v1","source_sha256":source,"artifact_sha256":cfg["artifact_sha256"],"files":files})

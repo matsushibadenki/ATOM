@@ -45,6 +45,9 @@ pub struct Snapshot {
     training_running: bool,
     rollout_running: bool,
     campaign_running: bool,
+    dagger_running: bool,
+    dagger_progress: Option<atom_core::learning::dagger::Progress>,
+    dagger: Option<serde_json::Value>,
     supervision_running: bool,
     supervision_progress: Option<atom_core::learning::supervision::Progress>,
     supervision_config: Option<atom_core::learning::supervision::Config>,
@@ -94,6 +97,7 @@ struct RegistryUpdate {
     collection: Option<atom_core::learning::collection::Saved>,
     mining: Option<atom_core::learning::mining::Saved>,
     supervision: Option<atom_core::learning::supervision::Saved>,
+    dagger: Option<serde_json::Value>,
     dataset_settings: Option<Settings>,
 }
 #[derive(Clone, Serialize)]
@@ -130,6 +134,9 @@ impl State {
                     training: None,
                     training_running: false,
                     rollout_running: false,
+                    dagger_running: false,
+                    dagger_progress: None,
+                    dagger: None,
                     supervision_running: false,
                     supervision_progress: None,
                     supervision_config: None,
@@ -193,6 +200,12 @@ pub enum Command {
     RegistryRefresh,
     Campaign {
         config: atom_core::learning::campaign::Config,
+    },
+    Dagger {
+        config: atom_core::learning::dagger::Config,
+    },
+    LoadDagger {
+        id: String,
     },
     Supervise {
         config: atom_core::learning::supervision::Config,
@@ -337,6 +350,12 @@ impl Session {
             self.snapshot.supervision = None;
             self.snapshot.supervision_progress = None;
         }
+        if let Command::Dagger { config } = command {
+            config.validate().map_err(|e| error(&e.code))?;
+            self.snapshot.dagger = None;
+            self.snapshot.dagger_progress = None;
+        }
+        self.snapshot.dagger_running = matches!(command, Command::Dagger { .. });
         self.snapshot.supervision_running = matches!(command, Command::Supervise { .. });
         if let Command::Mine { config } = command {
             config.validate().map_err(|e| error(&e.code))?;
@@ -427,6 +446,7 @@ pub fn batch_command(
             | Command::Campaign { .. }
             | Command::Collect { .. }
             | Command::Mine { .. }
+            | Command::Dagger { .. }
     ) {
         Some(
             app.state::<super::Shared>()
@@ -450,6 +470,7 @@ pub fn batch_command(
         || snapshot.collection_running
         || snapshot.mining_running
         || snapshot.supervision_running
+        || snapshot.dagger_running
     {
         *state.cancel.lock().map_err(|_| error("internal_error"))? = Some(cancel.clone());
     }
@@ -638,6 +659,7 @@ pub fn batch_command(
                             collection: None,
                             mining: None,
                             supervision: None,
+                            dagger: None,
                             dataset_settings: None,
                         }),
                     ))
@@ -659,6 +681,55 @@ pub fn batch_command(
                             result,
                         }),
                         None,
+                    ))
+                }
+                Command::Dagger { .. } | Command::LoadDagger { .. } => {
+                    let report = match command {
+                        Command::Dagger { config } => {
+                            atom_core::learning::dagger::run_with_progress(
+                                &dir,
+                                &project.unwrap(),
+                                &config,
+                                &cancel,
+                                |progress| {
+                                    let state = app.state::<State>();
+                                    if let Ok(mut session) = state.session.lock()
+                                        && session.snapshot.revision == token
+                                        && session.snapshot.dagger_running
+                                    {
+                                        session.snapshot.dagger_progress = Some(progress);
+                                        notify(&app, &session.snapshot);
+                                    }
+                                },
+                            )
+                        }
+                        Command::LoadDagger { id } => {
+                            atom_core::learning::dagger::inspect(&dir, &id)
+                        }
+                        _ => unreachable!(),
+                    }
+                    .map_err(|e| error(&e.code))?;
+                    let listing =
+                        atom_core::learning::registry::listing(&dir).map_err(|e| error(&e.code))?;
+                    Ok((
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        Some(RegistryUpdate {
+                            listing,
+                            selected: None,
+                            context: None,
+                            comparison: None,
+                            diagnostics: None,
+                            campaign: None,
+                            collection: None,
+                            mining: None,
+                            supervision: None,
+                            dagger: Some(report),
+                            dataset_settings: None,
+                        }),
                     ))
                 }
                 Command::Supervise { config } => {
@@ -696,6 +767,7 @@ pub fn batch_command(
                             collection: None,
                             mining: None,
                             supervision: Some(saved),
+                            dagger: None,
                             dataset_settings: None,
                         }),
                     ))
@@ -739,6 +811,7 @@ pub fn batch_command(
                             collection: None,
                             mining: None,
                             supervision: Some(saved),
+                            dagger: None,
                             dataset_settings: settings,
                         }),
                     ))
@@ -779,6 +852,7 @@ pub fn batch_command(
                             collection: None,
                             mining: Some(saved),
                             supervision: None,
+                            dagger: None,
                             dataset_settings: None,
                         }),
                     ))
@@ -803,6 +877,7 @@ pub fn batch_command(
                             collection: None,
                             mining: Some(saved),
                             supervision: None,
+                            dagger: None,
                             dataset_settings: None,
                         }),
                     ))
@@ -845,6 +920,7 @@ pub fn batch_command(
                             collection: Some(saved),
                             mining: None,
                             supervision: None,
+                            dagger: None,
                             dataset_settings: None,
                         }),
                     ))
@@ -889,6 +965,7 @@ pub fn batch_command(
                             collection: Some(saved),
                             mining: None,
                             supervision: None,
+                            dagger: None,
                             dataset_settings: settings,
                         }),
                     ))
@@ -929,6 +1006,7 @@ pub fn batch_command(
                             collection: None,
                             mining: None,
                             supervision: None,
+                            dagger: None,
                             dataset_settings: None,
                         }),
                     ))
@@ -954,6 +1032,7 @@ pub fn batch_command(
                             collection: None,
                             mining: None,
                             supervision: None,
+                            dagger: None,
                             dataset_settings: None,
                         }),
                     ))
@@ -1058,6 +1137,7 @@ pub fn batch_command(
                             collection: None,
                             mining: None,
                             supervision: None,
+                            dagger: None,
                             dataset_settings: None,
                         }),
                     ))
@@ -1104,6 +1184,8 @@ pub fn batch_command(
         session.snapshot.collection_running = false;
         session.snapshot.mining_running = false;
         session.snapshot.supervision_running = false;
+        session.snapshot.dagger_running = false;
+        session.snapshot.dagger_progress = None;
         session.snapshot.diagnostics_running = false;
         *state.cancel.lock().unwrap() = None;
         session.snapshot.revision += 1;
@@ -1111,6 +1193,9 @@ pub fn batch_command(
             Ok((report, name, learning, training, rollout, registry)) => {
                 if let Some(update) = registry {
                     session.snapshot.registry = update.listing;
+                    if let Some(saved) = update.dagger {
+                        session.snapshot.dagger = Some(saved);
+                    }
                     if let Some(saved) = update.supervision {
                         session.snapshot.supervision = Some(saved);
                     }
@@ -1625,6 +1710,7 @@ pub fn batch_cancel(webview: tauri::Webview, expected_revision: u64) -> Result<(
         && !session.snapshot.collection_running
         && !session.snapshot.mining_running
         && !session.snapshot.supervision_running
+        && !session.snapshot.dagger_running
     {
         return Err(error("learning_job_not_running"));
     }
@@ -1747,6 +1833,17 @@ pub async fn supervision_files(webview: tauri::Webview) -> Result<Vec<String>, U
     let root = webview.state::<State>().dir.clone();
     tauri::async_runtime::spawn_blocking(move || {
         atom_core::learning::supervision::catalog(&root).map_err(|e| error(&e.code))
+    })
+    .await
+    .map_err(|_| error("internal_error"))?
+}
+
+#[tauri::command]
+pub async fn dagger_files(webview: tauri::Webview) -> Result<Vec<String>, UiError> {
+    authorize(&webview)?;
+    let root = webview.state::<State>().dir.clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        atom_core::learning::dagger::catalog(&root).map_err(|e| error(&e.code))
     })
     .await
     .map_err(|_| error("internal_error"))?

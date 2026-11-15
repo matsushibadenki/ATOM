@@ -121,13 +121,21 @@ pub fn train(
     resume: Option<&Path>,
     cancel: &AtomicBool,
 ) -> Result<Job> {
-    execute(data, cfg, out, resume, cancel, false)
+    execute(data, cfg, out, resume, cancel, "train")
 }
 pub fn evaluate(data: &Validated, job: &Path, out: &Path, cancel: &AtomicBool) -> Result<Job> {
     let (report, _) = checked_job(job)?;
     let cfg: Config = serde_json::from_value(report["config"].clone())
         .map_err(|_| err("learning_checkpoint_invalid"))?;
-    execute(data, &cfg, out, Some(job), cancel, true)
+    execute(data, &cfg, out, Some(job), cancel, "evaluate")
+}
+pub(super) fn train_validation(
+    data: &Validated,
+    cfg: &Config,
+    out: &Path,
+    cancel: &AtomicBool,
+) -> Result<Job> {
+    execute(data, cfg, out, None, cancel, "train_validation")
 }
 fn execute(
     data: &Validated,
@@ -135,10 +143,11 @@ fn execute(
     out: &Path,
     resume: Option<&Path>,
     cancel: &AtomicBool,
-    evaluate: bool,
+    op: &str,
 ) -> Result<Job> {
     cfg.validate()?;
-    if !data.summary.fit_data_ready || !data.summary.test_data_ready {
+    let evaluate = op == "evaluate";
+    if !data.summary.fit_data_ready || (op != "train_validation" && !data.summary.test_data_ready) {
         return Err(err("learning_job_requires_splits"));
     }
     if out.exists() {
@@ -176,7 +185,11 @@ fn execute(
         }
     }
     let config = scripts.join("request.json");
-    std::fs::write(&config,serde_json::to_vec(&json!({"op":if evaluate {"evaluate"} else {"train"},"artifact_sha256":artifact_hash,"config":cfg})).unwrap()).map_err(|_|err("learning_io"))?;
+    std::fs::write(
+        &config,
+        serde_json::to_vec(&json!({"op":op,"artifact_sha256":artifact_hash,"config":cfg})).unwrap(),
+    )
+    .map_err(|_| err("learning_io"))?;
     let cancel_path = scripts.join("cancel");
     let mut child = Process(
         Command::new(python_executable())

@@ -177,3 +177,9 @@ body[data-split="true"] #splitter{display:block;width:100vw;height:100vh;backgro
 #teacherSummary{display:block;margin:6px 0;color:var(--color-muted);font-size:11px;line-height:1.5;overflow-wrap:anywhere}
 #teacherResults{max-height:160px;overflow:auto}
 #teacherPanel>summary .info{margin-left:5px}
+
+#daggerPolicy,#daggerFile,#daggerWeights{width:100%;max-width:none;min-width:0;box-sizing:border-box}
+#daggerStatus{flex:1;min-width:0;overflow-wrap:anywhere}
+#daggerResults table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:11px;margin:8px 0}
+#daggerResults caption{text-align:left;padding:5px 0;color:var(--color-muted)}
+#daggerResults th,#daggerResults td{padding:4px 2px;border-bottom:1px solid var(--color-border);text-align:left;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}

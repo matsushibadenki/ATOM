@@ -61,6 +61,8 @@ pub struct Probe {
     pub final_distance_m: f64,
     pub steps: u32,
     pub clamped_components: usize,
+    #[serde(default, skip_serializing_if = "super::is_zero")]
+    pub teacher_steps: usize,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -72,6 +74,8 @@ pub struct Report {
     pub source_sha256: String,
     pub checkpoint_sha256: String,
     pub job_manifest_sha256: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub intervention: Option<super::dagger::Intervention>,
     pub inference_runtime: Option<serde_json::Value>,
     pub status: Status,
     pub code: Option<String>,
@@ -136,7 +140,27 @@ pub fn run(
     config: &Config,
     expected_source: Option<&str>,
     cancel: &AtomicBool,
+    progress: impl FnMut(Progress),
+) -> Result<Saved> {
+    run_intervened(
+        root,
+        project,
+        config,
+        expected_source,
+        cancel,
+        progress,
+        None,
+    )
+}
+
+pub(super) fn run_intervened(
+    root: &Path,
+    project: &Project,
+    config: &Config,
+    expected_source: Option<&str>,
+    cancel: &AtomicBool,
     mut progress: impl FnMut(Progress),
+    intervention: Option<&super::dagger::Intervention>,
 ) -> Result<Saved> {
     config.validate()?;
     let deadline = Instant::now() + Duration::from_secs(config.max_seconds.into());
@@ -151,6 +175,7 @@ pub fn run(
         source_sha256: policy.source_sha256.clone(),
         checkpoint_sha256: policy.checkpoint_sha256.clone(),
         job_manifest_sha256: policy.job_manifest_sha256.clone(),
+        intervention: intervention.cloned(),
         inference_runtime: None,
         status: Status::Exhausted,
         code: None,
@@ -221,6 +246,10 @@ pub fn run(
                 return Err(err("learning_rollout_engine"));
             }
             engine = Some(identity);
+            if let Some(mix) = intervention {
+                mix.validate(Some(&runner.episode.manifest))?;
+            }
+            let mut teacher_steps = 0;
             let mut clamped = 0;
             while runner.episode.frames.last().unwrap().outcome == Outcome::Running {
                 if boundary(cancel, deadline).is_some() {
@@ -229,8 +258,17 @@ pub fn run(
                 if Instant::now() >= per_run {
                     return Err(err("learning_mining_run_budget"));
                 }
-                let (action, n) = inference.as_mut().unwrap().action(&runner, cancel)?;
-                clamped += n;
+                let frame = runner.episode.frames.last().unwrap();
+                let action = if let Some(mix) =
+                    intervention.filter(|mix| mix.teacher_at(seed, frame.index))
+                {
+                    teacher_steps += 1;
+                    mix.action(&runner.episode.manifest, &frame.observation)
+                } else {
+                    let (action, n) = inference.as_mut().unwrap().action(&runner, cancel)?;
+                    clamped += n;
+                    action
+                };
                 if boundary(cancel, deadline).is_some() {
                     return Err(err("learning_mining_interrupted"));
                 }
@@ -259,6 +297,7 @@ pub fn run(
                 final_distance_m: q.final_distance_m,
                 steps: q.transitions as u32,
                 clamped_components: clamped,
+                teacher_steps,
             })
         })();
         match result {
@@ -371,6 +410,26 @@ pub fn inspect(root: &Path, file: &str) -> Result<Saved> {
             &report.config.collection(),
             p.seed,
         )?;
+        let expected_teacher_steps = if let Some(mix) = &report.intervention {
+            mix.validate(Some(&episode.manifest))?;
+            let mut count = 0;
+            for pair in episode.frames.windows(2) {
+                if mix.teacher_at(p.seed, pair[0].index) {
+                    count += 1;
+                    if pair[1].action.as_ref()
+                        != Some(&mix.action(&episode.manifest, &pair[0].observation))
+                    {
+                        return Err(err("learning_mining_invalid"));
+                    }
+                }
+            }
+            count
+        } else {
+            0
+        };
+        if p.teacher_steps != expected_teacher_steps {
+            return Err(err("learning_mining_invalid"));
+        }
         let q = episode
             .quality()
             .map_err(|_| err("learning_mining_invalid"))?;
@@ -450,6 +509,7 @@ mod tests {
             final_distance_m: distance,
             steps: 5,
             clamped_components: 0,
+            teacher_steps: 0,
         };
         let probes = vec![
             p(1, Outcome::Success, 0.02),

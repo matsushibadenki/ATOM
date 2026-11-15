@@ -2720,6 +2720,61 @@ fn real_train_mining_prioritizes_only_new_train_tasks_and_preserves_holdouts() {
         assert_eq!(score.tasks, 4);
         eprintln!("Fixed validation: {score:?}");
     }
+    let dagger = learning::dagger::run(
+        dir.path(),
+        &project,
+        &learning::dagger::Config {
+            initial_policy: policy.id.clone(),
+            teacher_bps: vec![10_000, 5000],
+            seed: 17,
+            start_seed: 0,
+            episodes_per_round: 2,
+            horizon: 60,
+            stride: 10,
+            joint_weights,
+            training: training::Config {
+                max_steps: 20,
+                ..Default::default()
+            },
+        },
+        &cancel,
+    )
+    .unwrap();
+    assert_eq!(dagger["complete"], true, "{dagger}");
+    let rounds = dagger["rounds"].as_array().unwrap();
+    assert_eq!(rounds.len(), 2);
+    for (index, round) in rounds.iter().enumerate() {
+        for (branch_index, branch) in round["branches"].as_array().unwrap().iter().enumerate() {
+            assert_eq!(branch["validation"]["tasks"], 4);
+            let job = registry::select(dir.path(), branch["policy"].as_str().unwrap())
+                .unwrap()
+                .job;
+            assert!(
+                training::inspect(&dir.path().join("training").join(job))
+                    .unwrap()
+                    .result["test"]
+                    .is_null()
+            );
+            if index == 0 {
+                assert_eq!(branch["teacher_steps"], branch["total_steps"]);
+            } else {
+                assert_eq!(
+                    branch["parent_policy"],
+                    rounds[0]["branches"][branch_index]["policy"]
+                );
+                let teacher = branch["teacher_steps"].as_u64().unwrap();
+                assert!(teacher > 0 && teacher < branch["total_steps"].as_u64().unwrap());
+            }
+            eprintln!(
+                "DAgger round {} {} validation {} interventions {}/{}",
+                index + 1,
+                branch["teacher"],
+                branch["validation"],
+                branch["teacher_steps"],
+                branch["total_steps"]
+            );
+        }
+    }
     let next_policy = registry::register(
         dir.path(),
         "bc-teacher",

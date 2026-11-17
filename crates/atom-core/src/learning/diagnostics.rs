@@ -61,14 +61,14 @@ pub struct Saved {
     pub file: String,
     pub report: Report,
 }
-struct Support {
+pub(super) struct Support {
     min: Vec<f64>,
     max: Vec<f64>,
     mean: Vec<f64>,
     std: Vec<f64>,
 }
 impl Support {
-    fn fit(prepared: &Prepared) -> Self {
+    pub(super) fn fit(prepared: &Prepared) -> Self {
         let dim = prepared.summary.feature_dim;
         let mut min = vec![f64::INFINITY; dim];
         let mut max = vec![f64::NEG_INFINITY; dim];
@@ -85,13 +85,34 @@ impl Support {
             std: prepared.normalization.std.clone(),
         }
     }
+    fn outside(&self, index: usize, value: f64) -> bool {
+        let epsilon = 1e-6 * (1. + self.min[index].abs().max(self.max[index].abs()));
+        value < self.min[index] - epsilon || value > self.max[index] + epsilon
+    }
+
+    pub(super) fn outside_rows(&self, episode: &crate::reach::Episode) -> Result<usize> {
+        let mut outside = 0;
+        for index in 0..episode.frames.len().saturating_sub(1) {
+            let features = rollout::features_at(episode, index);
+            if features.len() != self.min.len() {
+                return Err(err("learning_diagnostics_contract"));
+            }
+            outside += usize::from(
+                features
+                    .iter()
+                    .enumerate()
+                    .any(|(i, v)| self.outside(i, *v)),
+            );
+        }
+        Ok(outside)
+    }
+
     fn observation(&self, features: &[f64], metrics: &mut [Feature]) -> (bool, bool) {
         let mut outside = false;
         let mut z3 = false;
         for (i, v) in features.iter().enumerate() {
             // Scale-aware numerical tolerance; this is an empirical envelope, not a safety boundary.
-            let epsilon = 1e-6 * (1. + self.min[i].abs().max(self.max[i].abs()));
-            let out = *v < self.min[i] - epsilon || *v > self.max[i] + epsilon;
+            let out = self.outside(i, *v);
             let z = ((*v - self.mean[i]) / self.std[i]).abs();
             outside |= out;
             z3 |= z > 3.;

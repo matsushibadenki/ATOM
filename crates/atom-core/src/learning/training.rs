@@ -137,6 +137,22 @@ pub(super) fn train_validation(
 ) -> Result<Job> {
     execute(data, cfg, out, None, cancel, "train_validation")
 }
+pub(super) fn warm_start_validation(
+    data: &Validated,
+    cfg: &Config,
+    out: &Path,
+    parent: &Path,
+    cancel: &AtomicBool,
+) -> Result<Job> {
+    execute(
+        data,
+        cfg,
+        out,
+        Some(parent),
+        cancel,
+        "warm_start_validation",
+    )
+}
 fn execute(
     data: &Validated,
     cfg: &Config,
@@ -147,7 +163,8 @@ fn execute(
 ) -> Result<Job> {
     cfg.validate()?;
     let evaluate = op == "evaluate";
-    if !data.summary.fit_data_ready || (op != "train_validation" && !data.summary.test_data_ready) {
+    let validation_only = matches!(op, "train_validation" | "warm_start_validation");
+    if !data.summary.fit_data_ready || (!validation_only && !data.summary.test_data_ready) {
         return Err(err("learning_job_requires_splits"));
     }
     if out.exists() {
@@ -173,8 +190,9 @@ fn execute(
     let mut resume_arg = PathBuf::from("-");
     if let Some(path) = resume {
         let (report, files) = checked_job(path)?;
-        if report["artifact_sha256"] != artifact_hash
-            || report["source_sha256"] != data.summary.source_sha256
+        if op != "warm_start_validation"
+            && (report["artifact_sha256"] != artifact_hash
+                || report["source_sha256"] != data.summary.source_sha256)
         {
             return Err(err("learning_checkpoint_data_mismatch"));
         }

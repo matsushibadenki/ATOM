@@ -21,7 +21,15 @@ states, perform DAgger, optimize weights or certify task difficulty or safety.
    with train-only normalization. Teacher reference joint goals are not policy
    inputs. Inference uses the checked best checkpoint without an optimizer.
 4. When every requested probe completes, order tasks by **timeout first**, then
-   **final distance descending**, then **seed ascending** for deterministic ties.
+   the **share of decision observations outside the train feature ranges** in
+   descending order, then **final distance descending** and **seed ascending**.
+   A decision observation counts once if any feature falls outside its empirical
+   train range, with the same floating-point tolerance as policy diagnostics.
+   The GUI shows this count and the number of decisions. Reload recomputes the
+   count from the saved Episode and the policy's exact source batch. Earlier
+   reports retain their original distance-based order. A feature that stays
+   outside the train range throughout a rollout (such as a constant target
+   coordinate) can make the share 100%. Equal shares fall through to distance.
    If all tasks succeed, the order is still a relative heuristic, not proof that
    any task needs more data. No partial pool receives priorities.
 5. Stop, budget expiry, worker failure or seed-scan exhaustion keeps completed BC
@@ -200,3 +208,64 @@ and passed, including invalid counter/ranking rejection and priority collection.
 Clippy with warnings denied, formatting, JavaScript syntax, diff checks and the
 final macOS development app build passed. The final CLI binary reverified both
 saved mining and priority collection artifacts.
+
+## Compare collection rankings
+
+Run `atom-cli train-collection-compare <episodes-dir> <project> <config.json>`
+with a completed train-distribution mining report. The source batch needs at
+least eight fixed validation groups. The comparison uses the batch's entire
+validation partition and excludes test scores from fitting and evaluation.
+
+```json
+{
+  "mining": "mining-<sha256>.json",
+  "attempts": 4,
+  "collection_seconds": 120,
+  "validation_seconds": 300,
+  "training": {
+    "max_steps": 40,
+    "max_seconds": 60,
+    "seed": 7,
+    "batch_size": 32,
+    "learning_rate": 0.001
+  }
+}
+```
+
+The completed pool must contain more candidates than the number of collection
+attempts. Each arm collects and quality-checks the same number of attempted
+reference demonstrations, starting with the original source batch. One arm
+ranks timeouts and final distance. The other ranks timeouts, train range
+coverage, and final distance. Both start from the frozen policy's best
+checkpoint with a fresh optimizer. The first layer is adjusted to preserve
+predictions in raw observation coordinates under each updated normalization.
+
+The JSON report is printed and saved under
+`<episodes-dir>/collection-comparisons/`. It records the shared checkpoint,
+pool, saturation count and denominator, both sets of selected seeds,
+accepted demonstrations, and closed-loop validation scores. The linked
+validation campaign records the exact task specification and evaluation
+artifacts. Equal seed selections mean that the two ranking rules produced
+identical collection inputs for this run.
+
+### Fixed 12-task experiment
+
+The integration test uses validation seeds
+`2, 5, 31, 59, 62, 67, 72, 79, 84, 86, 101, 115`.
+Both arms start from the same 20-step BC checkpoint and use 40 optimizer steps.
+The initial fixture has one train demonstration.
+
+| Collection ranking | Accepted demonstrations | Success | Timeouts | Mean final distance |
+|---|---:|---:|---:|---:|
+| Final distance | 4 | 1/12 (8.3%) | 11 | 0.9778 m |
+| Train distribution | 4 | 1/12 (8.3%) | 11 | 0.9778 m |
+
+All 12 new train probes had an outside-train observation share of 100%.
+Both rankings selected seeds `1, 11, 3, 12` in the same order. This run
+measured saturation and produced identical collection inputs.
+
+Reproduce with the PyTorch and MuJoCo runtimes configured:
+
+```sh
+cargo test -p atom-core --lib real_compare_collection_rankings_on_expanded_validation -- --ignored --nocapture
+```

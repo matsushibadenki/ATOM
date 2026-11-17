@@ -105,6 +105,30 @@ pub fn run(args: &[String]) -> Result<bool, Box<dyn std::error::Error>> {
         );
         return Ok(true);
     }
+    if cmd == "train-collection-compare" {
+        if args.len() != 4 {
+            return Err("train-collection-compare <episodes-dir> <project> <config.json>".into());
+        }
+        let mut bytes = vec![];
+        std::fs::File::open(&args[3])?
+            .take(4097)
+            .read_to_end(&mut bytes)?;
+        if bytes.len() > 4096 {
+            return Err("comparison config size".into());
+        }
+        let config = serde_json::from_slice(&bytes)?;
+        let project = atom_core::ProjectStore::open(&args[2])?
+            .load()?
+            .ok_or("project missing")?;
+        let report = learning::collection_comparison::run(
+            Path::new(&args[1]),
+            &project,
+            &config,
+            &std::sync::atomic::AtomicBool::new(false),
+        )?;
+        println!("{}", serde_json::to_string_pretty(&report)?);
+        return Ok(true);
+    }
     if cmd == "train-mine" {
         if args.len() != 4 {
             return Err("train-mine <episodes-dir> <project> <config.json>".into());

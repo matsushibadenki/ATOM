@@ -39,7 +39,8 @@ ThreeX／UNGEの採用ソースはhashとコピー元revisionを記録した。
 - 🟢 [Done] IK教師の課題関節マスク・重み付け、同一訪問状態からの複数地点の復帰比較、固定validation 4課題での再学習比較。[仕様と結果](IK_TEACHER.md)。
 - 🟢 [Done] 教師介入確率を反復ごとに指定する自動DAggerと、参照サーボ／重み付きIK系統の固定validation比較。[操作手順](DAGGER.md)。
 - 🟢 [Done] 自動DAggerの共有GUIジョブ、反復別の介入率設定、開始／停止、両教師の実介入回数と固定validation指標、保存実験の検証・再読込。[操作手順](DAGGER.md)。
-- 🟠 [Next] train分布診断を使う収集、より広い固定validation群での比較。固定testは選択へ転用しない。計画候補の原子的適用・単一Undoは別段階。
+- 🟢 [Done] 同一初期チェックポイントから最終距離順とtrain分布診断順で収集・再学習し、固定validation 12課題で比較。範囲外率100%の候補は12／12件で、両方式の選択は一致。[条件と結果](TRAIN_MINING.md)。
+- 🟠 [Next] 観測行単位の範囲外率が飽和する場合に、候補の違いを捉える指標を検証。計画候補の原子的適用・単一Undoは別段階。
 - ⭕️ [Pending] 実モデル推論。vLLM-appleは現在のMLX／Transformers版がreview済みgate外で拒否、Strataはserver未起動。gateや依存を変更せず保留。
 - 🔴 [Later] 位置IKの3D目標ハンドル・ライブプレビュー、向きの制約、衝突・バランスを考慮する姿勢計画。素材表示・操作補助の拡張と並行し、依存が成立した項目から着手。
 
@@ -57,9 +58,10 @@ ThreeX／UNGEの採用ソースはhashとコピー元revisionを記録した。
 - 🟢 [Done] 登録済み凍結方策2〜4件の予算付きvalidation候補比較。実行前の課題一致検証、共有GUI開始／停止・進捗、全候補完了時だけの順位、hash付き保存／再検証・個別評価再生を実装。test採点・自動方策切替なし。[契約と検証](VALIDATION_CAMPAIGN.md)。
 - 🟢 [Done] train専用の参照記録追加収集・品質選別・追加batchとholdout維持・新規BC学習へのGUI／CLI接続。[契約](TRAIN_COLLECTION.md)。
 - 🟢 [Done] 新規train課題を凍結BCで実走し、失敗課題を優先して参照記録を収集するGUI／CLI。途中poolに順位を付けず、BC指令を教師データへ自動混入しない。[契約](TRAIN_MINING.md)。
+- 🟢 [Done] 新規train候補の凍結方策試行で、timeoutに続いてtrain観測範囲外率を使って参照記録の収集を優先。GUIの件数表示と再読込時の再計算に対応。[契約](TRAIN_MINING.md)。
 - 🟢 [Done] 訪問状態のオフライン参照教師ラベル集約と新規学習への接続。教師は既存goal servoで、BC実適用指令や成功記録への偽装をしない。[契約](TEACHER_SUPERVISION.md)。
 - 🟢 [Done] 共通初期方策・固定validationで複数の教師介入スケジュールを実行し、GUIで両教師の反復別指標を比較。保存・検証・再読込に対応。[操作手順](DAGGER.md)。
-- 🟠 [Next] 教師復帰と重み付けの検証、分布診断に基づく収集、広いvalidation群での改善測定。固定testは学習設定やモデルの選択に転用しない。
+- 🟠 [Next] 教師復帰と重み付けの検証、広いvalidation群での改善測定。固定testは学習設定やモデルの選択に転用しない。
 - ⭕️ [Pending] 大規模holdoutでの物理課題成功率・汎化改善、MPS／CUDA、他OS／clean machine・native浮動パネル。記録指令RMSEを課題成功率と扱わない。LLM LoRAは別段階。
 
 ## 学習data adapter v1（2026-11-05）

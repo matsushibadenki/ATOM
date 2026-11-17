@@ -16,6 +16,7 @@ use std::{
 };
 pub mod campaign;
 pub mod collection;
+pub mod collection_comparison;
 pub mod dagger;
 pub mod diagnostics;
 pub mod ik_teacher;

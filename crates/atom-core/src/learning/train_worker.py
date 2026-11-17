@@ -40,7 +40,7 @@ def run():
     p = adapter["load"](data_path, cfg["artifact_sha256"])
     c = cfg["config"]
     source = p["summary"]["source_sha256"]
-    if not p["summary"]["fit_data_ready"] or (cfg["op"] != "train_validation" and not p["summary"]["test_data_ready"]):
+    if not p["summary"]["fit_data_ready"] or (cfg["op"] not in ("train_validation", "warm_start_validation") and not p["summary"]["test_data_ready"]):
         raise ValueError("all three partitions required")
     start = time.monotonic()
     end = start+c["max_seconds"]
@@ -82,7 +82,30 @@ def run():
     best_val = initial_val["mse_rad2"]
     best_weights = copy.deepcopy(model.state_dict())
     parent = None
-    if resume != "-":
+    if cfg["op"] == "warm_start_validation":
+        resume = Path(resume)
+        manifest = json.loads((resume/"manifest.json").read_text())
+        if digest(resume/"best.pt") != manifest["files"]["best.pt"]:
+            raise ValueError("resume hash")
+        best = torch.load(resume/"best.pt", map_location="cpu", weights_only=True)
+        old = best["signature"]
+        for key in ("contract", "architecture", "preprocessing"):
+            if old[key] != signature[key]:
+                raise ValueError("resume contract")
+        model.load_state_dict(best["model"], strict=True)
+        # Rebase the first layer so the same raw observation gives the same prediction.
+        old_mean = torch.tensor(old["normalization"]["mean"], dtype=torch.float32)
+        old_scale = torch.tensor(old["normalization"]["std"], dtype=torch.float32)
+        new_mean = torch.tensor(p["normalization"]["mean"], dtype=torch.float32)
+        new_scale = torch.tensor(p["normalization"]["std"], dtype=torch.float32)
+        with torch.no_grad():
+            model[0].bias.add_(model[0].weight @ ((new_mean-old_mean)/old_scale))
+            model[0].weight.mul_(new_scale/old_scale)
+        parent = digest(resume/"manifest.json")
+        initial_val = metrics(val_x,val_y)
+        best_val = initial_val["mse_rad2"]
+        best_weights = copy.deepcopy(model.state_dict())
+    elif resume != "-":
         resume = Path(resume)
         manifest = json.loads((resume/"manifest.json").read_text())
         for name in ("last.pt","best.pt","report.json"):
@@ -146,7 +169,7 @@ def run():
         raise ValueError("checkpoint reload")
     # Test tensors are constructed only after validation selection and checkpoint freezing.
     test = None
-    if cfg["op"] != "train_validation":
+    if cfg["op"] not in ("train_validation", "warm_start_validation"):
         test_x,test_y=tensors(p["splits"]["test"])
         test = metrics(test_x,test_y)
     result={"schema_version":1,"kind":"training","status":status,"source_sha256":source,"artifact_sha256":cfg["artifact_sha256"],"config":c,"start_step":start_step,"step":step,"best_step":best_step,"weights_updated":updated,"tensor_batch_verified":True,"checkpoint_reload_verified":True,"initial_validation":initial_val,"best_validation":verified_val,"test":test,"history":history,"elapsed_seconds":time.monotonic()-start,"rows":p["summary"]["rows"],"parent_manifest_sha256":parent,"torch":str(torch.__version__),"python":sys.version.split()[0],"device":"cpu","threads":1,"evaluation_semantics":"offline_recorded_action_prediction_not_physics_success"}

@@ -60,6 +60,8 @@ pub struct Probe {
     pub outcome: reach::Outcome,
     pub final_distance_m: f64,
     pub steps: u32,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub outside_train_rows: Option<usize>,
     pub clamped_components: usize,
     #[serde(default, skip_serializing_if = "super::is_zero")]
     pub teacher_steps: usize,
@@ -104,6 +106,11 @@ fn priorities(probes: &[Probe], status: Status, count: u32) -> Vec<u32> {
     sorted.sort_by(|a, b| {
         (b.outcome == reach::Outcome::Timeout)
             .cmp(&(a.outcome == reach::Outcome::Timeout))
+            .then_with(|| {
+                let a_outside = a.outside_train_rows.unwrap_or_default() as u64;
+                let b_outside = b.outside_train_rows.unwrap_or_default() as u64;
+                (b_outside * u64::from(a.steps)).cmp(&(a_outside * u64::from(b.steps)))
+            })
             .then_with(|| b.final_distance_m.total_cmp(&a.final_distance_m))
             .then_with(|| a.seed.cmp(&b.seed))
     });
@@ -165,11 +172,21 @@ pub(super) fn run_intervened(
     config.validate()?;
     let deadline = Instant::now() + Duration::from_secs(config.max_seconds.into());
     let (policy, data) = checked_policy(root, config, expected_source)?;
+    let support = if intervention.is_none() {
+        Some(diagnostics::Support::fit(&data.prepare()?))
+    } else {
+        None
+    };
     let shape = config.collection();
     collection::eligible(&data, project, &shape, config.start_seed)?;
     let mut report = Report {
         schema_version: 1,
-        format: "atom-train-mining-v1".into(),
+        format: if support.is_some() {
+            "atom-train-mining-v2"
+        } else {
+            "atom-train-mining-v1"
+        }
+        .into(),
         config: config.clone(),
         source: policy.batch.clone(),
         source_sha256: policy.source_sha256.clone(),
@@ -283,6 +300,10 @@ pub(super) fn run_intervened(
             if q.split_group != group {
                 return Err(err("learning_mining_invalid"));
             }
+            let outside_train_rows = support
+                .as_ref()
+                .map(|support| support.outside_rows(&runner.episode))
+                .transpose()?;
             let episode = format!("reach-mining-{id}-{seed}.episode.json");
             runner
                 .episode
@@ -296,6 +317,7 @@ pub(super) fn run_intervened(
                 outcome: q.outcome,
                 final_distance_m: q.final_distance_m,
                 steps: q.transitions as u32,
+                outside_train_rows,
                 clamped_components: clamped,
                 teacher_steps,
             })
@@ -325,6 +347,24 @@ pub(super) fn run_intervened(
     }
     drop(inference);
     report.priorities = priorities(&report.probes, report.status, config.count);
+    save_report(root, report)
+}
+
+/// Re-rank the same observed candidates using the original distance ordering.
+pub fn distance_baseline(root: &Path, file: &str) -> Result<Saved> {
+    let mut report = inspect(root, file)?.report;
+    if report.format != "atom-train-mining-v2" || report.status != Status::Completed {
+        return Err(err("learning_mining_invalid"));
+    }
+    report.format = "atom-train-mining-v1".into();
+    for probe in &mut report.probes {
+        probe.outside_train_rows = None;
+    }
+    report.priorities = priorities(&report.probes, report.status, report.config.count);
+    save_report(root, report)
+}
+
+fn save_report(root: &Path, report: Report) -> Result<Saved> {
     let bytes = serde_json::to_vec(&report).map_err(|_| err("learning_mining_invalid"))?;
     let file = format!("mining-{}.json", hash(&bytes));
     let dir = root.join("mining");
@@ -360,8 +400,14 @@ pub fn inspect(root: &Path, file: &str) -> Result<Saved> {
     let report: Report =
         serde_json::from_slice(&bytes).map_err(|_| err("learning_mining_invalid"))?;
     let (policy, data) = checked_policy(root, &report.config, Some(&report.source_sha256))?;
+    let support = match report.format.as_str() {
+        "atom-train-mining-v1" => None,
+        "atom-train-mining-v2" if report.intervention.is_none() => {
+            Some(diagnostics::Support::fit(&data.prepare()?))
+        }
+        _ => return Err(err("learning_mining_invalid")),
+    };
     if report.schema_version != 1
-        || report.format != "atom-train-mining-v1"
         || report.source != policy.batch
         || report.checkpoint_sha256 != policy.checkpoint_sha256
         || report.job_manifest_sha256 != policy.job_manifest_sha256
@@ -371,6 +417,10 @@ pub fn inspect(root: &Path, file: &str) -> Result<Saved> {
             + u64::from(report.skipped_existing)
             + report.probes.len() as u64
             > u64::from(report.scanned)
+        || report.probes.iter().any(|p| {
+            p.outside_train_rows
+                .is_some_and(|rows| rows > p.steps as usize)
+        })
         || report.priorities != priorities(&report.probes, report.status, report.config.count)
         || (report.status == Status::Completed)
             != (report.probes.len() == report.config.count as usize)
@@ -427,7 +477,11 @@ pub fn inspect(root: &Path, file: &str) -> Result<Saved> {
         } else {
             0
         };
-        if p.teacher_steps != expected_teacher_steps {
+        let outside_train_rows = support
+            .as_ref()
+            .map(|support| support.outside_rows(&episode))
+            .transpose()?;
+        if p.teacher_steps != expected_teacher_steps || p.outside_train_rows != outside_train_rows {
             return Err(err("learning_mining_invalid"));
         }
         let q = episode
@@ -509,9 +563,10 @@ mod tests {
             final_distance_m: distance,
             steps: 5,
             clamped_components: 0,
+            outside_train_rows: None,
             teacher_steps: 0,
         };
-        let probes = vec![
+        let mut probes = vec![
             p(1, Outcome::Success, 0.02),
             p(2, Outcome::Timeout, 0.01),
             p(3, Outcome::Timeout, 1.0),
@@ -520,5 +575,11 @@ mod tests {
         assert_eq!(priorities(&probes, Status::Completed, 4), [3, 4, 2, 1]);
         assert!(priorities(&probes, Status::Budget, 4).is_empty());
         assert!(priorities(&probes, Status::Completed, 5).is_empty());
+        probes[0].outside_train_rows = Some(5);
+        probes[1].outside_train_rows = Some(2);
+        probes[2].outside_train_rows = Some(3);
+        probes[2].steps = 10;
+        probes[3].outside_train_rows = Some(0);
+        assert_eq!(priorities(&probes, Status::Completed, 4), [2, 3, 4, 1]);
     }
 }

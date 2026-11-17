@@ -2297,6 +2297,17 @@ fn mining_config_and_collection_metadata_preserve_legacy_contracts() {
 #[test]
 #[ignore = "Requires PyTorch and MuJoCo; frozen train difficulty probes and priority reference collection"]
 fn real_train_mining_prioritizes_only_new_train_tasks_and_preserves_holdouts() {
+    train_mining_fixture(false);
+}
+
+#[test]
+#[ignore = "Requires PyTorch and MuJoCo; paired collection comparison on twelve fixed validation tasks"]
+fn real_compare_collection_rankings_on_expanded_validation() {
+    train_mining_fixture(true);
+}
+
+fn train_mining_fixture(compare_rankings: bool) {
+    let validation_count = if compare_rankings { 12 } else { 4 };
     use crate::learning::{self, collection, mining, registry, training};
     use dataset::batch::{Request, Split};
     let dir = tempfile::tempdir().unwrap();
@@ -2307,13 +2318,15 @@ fn real_train_mining_prioritizes_only_new_train_tasks_and_preserves_holdouts() {
     let mut request = Request::default();
     let mut found = std::collections::BTreeSet::new();
     let mut validation_seeds = Vec::new();
-    for seed in 0..100 {
+    for seed in 0..400 {
         let episode = fixture_seed(seed);
         let split = request
             .split
             .assign(&episode.quality().unwrap().split_group)
             .unwrap();
-        if found.insert(split) || (split == Split::Validation && validation_seeds.len() < 4) {
+        if found.insert(split)
+            || (split == Split::Validation && validation_seeds.len() < validation_count)
+        {
             let path = dir.path().join(format!("seed-{seed}.episode.json"));
             if split == Split::Validation {
                 let mut reference = Runner::reset(
@@ -2336,11 +2349,11 @@ fn real_train_mining_prioritizes_only_new_train_tasks_and_preserves_holdouts() {
             }
             request.sources.push(path);
         }
-        if found.len() == 3 && validation_seeds.len() == 4 {
+        if found.len() == 3 && validation_seeds.len() == validation_count {
             break;
         }
     }
-    assert_eq!(validation_seeds.len(), 4);
+    assert_eq!(validation_seeds.len(), validation_count);
     eprintln!("Validation seeds: {validation_seeds:?}");
     let path = dir.path().join("exports/base.batch.json");
     request.analyze().unwrap().save_package(&path).unwrap();
@@ -2371,6 +2384,57 @@ fn real_train_mining_prioritizes_only_new_train_tasks_and_preserves_holdouts() {
         horizon: 300,
         max_seconds: 60,
     };
+    if compare_rankings {
+        let pool = mining::run(
+            dir.path(),
+            &project,
+            &mining::Config {
+                count: 12,
+                max_seconds: 240,
+                ..config
+            },
+            None,
+            &cancel,
+            |_| {},
+        )
+        .unwrap();
+        let result = learning::collection_comparison::run(
+            dir.path(),
+            &project,
+            &learning::collection_comparison::Config {
+                mining: pool.file,
+                attempts: 4,
+                collection_seconds: 120,
+                validation_seconds: 300,
+                training: training::Config {
+                    max_steps: 40,
+                    ..Default::default()
+                },
+            },
+            &cancel,
+        )
+        .unwrap();
+        eprintln!("Collection comparison: {result}");
+        assert_eq!(result["status"], "completed");
+        assert_eq!(
+            result["initial_checkpoint_sha256"],
+            policy.record.checkpoint_sha256
+        );
+        assert_eq!(result["validation_tasks"], validation_count);
+        assert_eq!(result["total_probes"], 12);
+        for arm in result["arms"].as_array().unwrap() {
+            assert_eq!(arm["validation"]["tasks"], validation_count);
+            let candidate = registry::select(dir.path(), arm["policy"].as_str().unwrap()).unwrap();
+            let trained =
+                training::inspect(&dir.path().join("training").join(candidate.job)).unwrap();
+            assert_eq!(
+                trained.result["parent_manifest_sha256"],
+                policy.record.job_manifest_sha256
+            );
+            assert!(trained.result["test"].is_null());
+        }
+        return;
+    }
     assert_eq!(
         mining::run(
             dir.path(),
@@ -2423,6 +2487,10 @@ fn real_train_mining_prioritizes_only_new_train_tasks_and_preserves_holdouts() {
     assert!(saved.report.skipped_holdout > 0 && saved.report.skipped_existing > 0);
     mining::inspect(dir.path(), &saved.file).unwrap();
     for p in &saved.report.probes {
+        assert!(
+            p.outside_train_rows
+                .is_some_and(|rows| rows <= p.steps as usize)
+        );
         assert_eq!(request.split.assign(&p.group).unwrap(), Split::Train);
         let e = Episode::load(&dir.path().join(&p.episode)).unwrap();
         assert_eq!(e.manifest.config.seed, p.seed);

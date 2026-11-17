@@ -107,11 +107,25 @@ pub fn run(
         .iter()
         .filter(|probe| probe.steps > 0 && probe.outside_train_rows == Some(probe.steps as usize))
         .count();
+    let probe_coverage: Vec<_> = report
+        .probes
+        .iter()
+        .map(|probe| {
+            let component_fraction = probe
+                .outside_train_components
+                .filter(|_| probe.steps > 0)
+                .map(|count| {
+                    count as f64 / (f64::from(probe.steps) * source.summary.feature_dim as f64)
+                });
+            json!({"seed":probe.seed,"outside_rows":probe.outside_train_rows,
+            "steps":probe.steps,"outside_component_fraction":component_fraction})
+        })
+        .collect();
     let result = json!({"format":"atom-collection-comparison-v1","id":id,"config":config,
         "initial_policy":report.config.policy,"initial_checkpoint_sha256":initial.checkpoint_sha256,
         "validation_tasks":validation_tasks,"campaign":evaluation.file,"status":evaluation.report.status,
         "saturated_probes":saturated,"total_probes":report.probes.len(),
-        "saturated_fraction":saturated as f64 / report.probes.len() as f64,"arms":arms});
+        "saturated_fraction":saturated as f64 / report.probes.len() as f64,"probe_coverage":probe_coverage,"arms":arms});
     collection::write_atomic(
         &root
             .join("collection-comparisons")

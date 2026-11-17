@@ -2297,16 +2297,31 @@ fn mining_config_and_collection_metadata_preserve_legacy_contracts() {
 #[test]
 #[ignore = "Requires PyTorch and MuJoCo; frozen train difficulty probes and priority reference collection"]
 fn real_train_mining_prioritizes_only_new_train_tasks_and_preserves_holdouts() {
-    train_mining_fixture(false);
+    train_mining_fixture(false, 1, 7, 0);
 }
 
 #[test]
 #[ignore = "Requires PyTorch and MuJoCo; paired collection comparison on twelve fixed validation tasks"]
 fn real_compare_collection_rankings_on_expanded_validation() {
-    train_mining_fixture(true);
+    train_mining_fixture(true, 1, 7, 0);
 }
 
-fn train_mining_fixture(compare_rankings: bool) {
+#[test]
+#[ignore = "Requires PyTorch and MuJoCo; paired comparisons across two initial data sizes and seeds"]
+fn real_collection_ranking_reproducibility_matrix() {
+    for demonstrations in [1, 4] {
+        for training_seed in [7, 19] {
+            train_mining_fixture(true, demonstrations, training_seed, 200);
+        }
+    }
+}
+
+fn train_mining_fixture(
+    compare_rankings: bool,
+    demonstrations: usize,
+    training_seed: u32,
+    pool_start_seed: u32,
+) {
     let validation_count = if compare_rankings { 12 } else { 4 };
     use crate::learning::{self, collection, mining, registry, training};
     use dataset::batch::{Request, Split};
@@ -2318,6 +2333,7 @@ fn train_mining_fixture(compare_rankings: bool) {
     let mut request = Request::default();
     let mut found = std::collections::BTreeSet::new();
     let mut validation_seeds = Vec::new();
+    let mut train_count = 0;
     for seed in 0..400 {
         let episode = fixture_seed(seed);
         let split = request
@@ -2326,9 +2342,10 @@ fn train_mining_fixture(compare_rankings: bool) {
             .unwrap();
         if found.insert(split)
             || (split == Split::Validation && validation_seeds.len() < validation_count)
+            || (split == Split::Train && train_count < demonstrations)
         {
             let path = dir.path().join(format!("seed-{seed}.episode.json"));
-            if split == Split::Validation {
+            if split == Split::Validation || (split == Split::Train && train_count > 0) {
                 let mut reference = Runner::reset(
                     &project,
                     Config {
@@ -2343,17 +2360,24 @@ fn train_mining_fixture(compare_rankings: bool) {
                     continue;
                 }
                 reference.episode.save(&path).unwrap();
-                validation_seeds.push(seed);
+                if split == Split::Validation {
+                    validation_seeds.push(seed);
+                }
             } else {
                 episode.save(&path).unwrap();
             }
+            train_count += usize::from(split == Split::Train);
             request.sources.push(path);
         }
-        if found.len() == 3 && validation_seeds.len() == validation_count {
+        if found.len() == 3
+            && validation_seeds.len() == validation_count
+            && train_count == demonstrations
+        {
             break;
         }
     }
     assert_eq!(validation_seeds.len(), validation_count);
+    assert_eq!(train_count, demonstrations);
     eprintln!("Validation seeds: {validation_seeds:?}");
     let path = dir.path().join("exports/base.batch.json");
     request.analyze().unwrap().save_package(&path).unwrap();
@@ -2364,6 +2388,7 @@ fn train_mining_fixture(compare_rankings: bool) {
     training::train(
         &data,
         &training::Config {
+            seed: training_seed,
             max_steps: 20,
             ..Default::default()
         },
@@ -2389,6 +2414,7 @@ fn train_mining_fixture(compare_rankings: bool) {
             dir.path(),
             &project,
             &mining::Config {
+                start_seed: pool_start_seed,
                 count: 12,
                 max_seconds: 240,
                 ..config
@@ -2414,7 +2440,9 @@ fn train_mining_fixture(compare_rankings: bool) {
             &cancel,
         )
         .unwrap();
-        eprintln!("Collection comparison: {result}");
+        eprintln!(
+            "Collection comparison ({demonstrations} demos, BC seed {training_seed}): {result}"
+        );
         assert_eq!(result["status"], "completed");
         assert_eq!(
             result["initial_checkpoint_sha256"],

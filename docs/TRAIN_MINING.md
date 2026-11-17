@@ -22,14 +22,15 @@ states, perform DAgger, optimize weights or certify task difficulty or safety.
    inputs. Inference uses the checked best checkpoint without an optimizer.
 4. When every requested probe completes, order tasks by **timeout first**, then
    the **share of decision observations outside the train feature ranges** in
-   descending order, then **final distance descending** and **seed ascending**.
+   descending order, then the **share of individual feature values outside
+   their train ranges**, **final distance descending**, and **seed ascending**.
    A decision observation counts once if any feature falls outside its empirical
    train range, with the same floating-point tolerance as policy diagnostics.
    The GUI shows this count and the number of decisions. Reload recomputes the
    count from the saved Episode and the policy's exact source batch. Earlier
-   reports retain their original distance-based order. A feature that stays
+   reports retain the ordering from their saved format. A feature that stays
    outside the train range throughout a rollout (such as a constant target
-   coordinate) can make the share 100%. Equal shares fall through to distance.
+   coordinate) can make the share 100%. The feature-level share distinguishes candidates with equal observation shares.
    If all tasks succeed, the order is still a relative heuristic, not proof that
    any task needs more data. No partial pool receives priorities.
 5. Stop, budget expiry, worker failure or seed-scan exhaustion keeps completed BC
@@ -235,8 +236,8 @@ validation partition and excludes test scores from fitting and evaluation.
 The completed pool must contain more candidates than the number of collection
 attempts. Each arm collects and quality-checks the same number of attempted
 reference demonstrations, starting with the original source batch. One arm
-ranks timeouts and final distance. The other ranks timeouts, train range
-coverage, and final distance. Both start from the frozen policy's best
+ranks timeouts and final distance. The other ranks timeouts, outside-train observation share, outside-train feature share,
+and final distance. Both start from the frozen policy's best
 checkpoint with a fresh optimizer. The first layer is adjusted to preserve
 predictions in raw observation coordinates under each updated normalization.
 
@@ -248,7 +249,7 @@ validation campaign records the exact task specification and evaluation
 artifacts. Equal seed selections mean that the two ranking rules produced
 identical collection inputs for this run.
 
-### Fixed 12-task experiment
+### Fixed 12-task experiment using observation share
 
 The integration test uses validation seeds
 `2, 5, 31, 59, 62, 67, 72, 79, 84, 86, 101, 115`.
@@ -264,8 +265,58 @@ All 12 new train probes had an outside-train observation share of 100%.
 Both rankings selected seeds `1, 11, 3, 12` in the same order. This run
 measured saturation and produced identical collection inputs.
 
-Reproduce with the PyTorch and MuJoCo runtimes configured:
+Run the same fixture with the current ranking using the PyTorch and MuJoCo runtimes:
 
 ```sh
 cargo test -p atom-core --lib real_compare_collection_rankings_on_expanded_validation -- --ignored --nocapture
 ```
+
+### Feature-level tie-breaker in the same fixture
+
+All 12 probes still reached 100% at the observation-row level. The share of
+individual feature values outside their train ranges varied from 80.61% to
+91.64%. The comparison JSON includes both counts and feature-level shares
+under `probe_coverage`.
+
+| Collection ranking | Selected seeds | Success | Timeouts | Mean final distance |
+|---|---|---:|---:|---:|
+| Final distance | 1, 11, 3, 12 | 1/12 | 11 | 0.978 m |
+| Train distribution with feature tie-breaker | 11, 7, 14, 9 | 1/12 | 11 | 0.852 m |
+
+Each arm accepted all four attempted demonstrations and trained for 40 steps
+from the shared checkpoint. This experiment uses one initial train
+demonstration and one fixed validation cohort.
+
+### Reproducibility across initial dataset sizes and policies
+
+The experiment crosses one and four initial train demonstrations with BC
+training seeds 7 and 19. The four-demo condition adds three successful MuJoCo
+reference episodes to the original one-demo fixture. Each initial policy trains
+for 20 steps. Each pair shares its frozen checkpoint and a 12-candidate train
+pool scanned from seed 200. That start seed keeps new candidates separate from
+the initial demonstrations added in this experiment.
+
+Both collection methods attempt four demonstrations per condition and warm-start
+40 training steps with seed 7. All conditions use the same 12 validation seeds
+listed above. Run with PyTorch and MuJoCo configured.
+
+```sh
+cargo test -p atom-core --lib real_collection_ranking_reproducibility_matrix -- --ignored --nocapture
+```
+
+| Initial demos | BC seed | Ranking | Accepted demos | Success | Timeouts | Mean final distance | Saturated probes |
+|---:|---:|---|---:|---:|---:|---:|---:|
+| 1 | 7 | Final distance | 4 | 1/12 | 11 | 0.2274 m | 12/12 |
+| 1 | 7 | Train distribution | 4 | 2/12 | 10 | 0.8268 m | 12/12 |
+| 1 | 19 | Final distance | 4 | 0/12 | 12 | 0.6592 m | 12/12 |
+| 1 | 19 | Train distribution | 4 | 4/12 | 8 | 0.8106 m | 12/12 |
+| 4 | 7 | Final distance | 3 | 4/12 | 8 | 0.3511 m | 11/12 |
+| 4 | 7 | Train distribution | 4 | 4/12 | 8 | 0.2928 m | 11/12 |
+| 4 | 19 | Final distance | 4 | 1/12 | 11 | 0.3140 m | 11/12 |
+| 4 | 19 | Train distribution | 4 | 1/12 | 11 | 0.4563 m | 11/12 |
+
+Train distribution ranking increased successes in both one-demo conditions.
+Mean final distance fell in one of four conditions. In that condition the
+methods had equal collection attempt budgets and different accepted demo
+counts, so the measured comparison includes the effect of dataset size after
+collection. These results apply to the shared 12-task validation cohort.

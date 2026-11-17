@@ -90,21 +90,23 @@ impl Support {
         value < self.min[index] - epsilon || value > self.max[index] + epsilon
     }
 
-    pub(super) fn outside_rows(&self, episode: &crate::reach::Episode) -> Result<usize> {
-        let mut outside = 0;
+    pub(super) fn outside_counts(&self, episode: &crate::reach::Episode) -> Result<(usize, usize)> {
+        let mut rows = 0;
+        let mut components = 0;
         for index in 0..episode.frames.len().saturating_sub(1) {
             let features = rollout::features_at(episode, index);
             if features.len() != self.min.len() {
                 return Err(err("learning_diagnostics_contract"));
             }
-            outside += usize::from(
-                features
-                    .iter()
-                    .enumerate()
-                    .any(|(i, v)| self.outside(i, *v)),
-            );
+            let count = features
+                .iter()
+                .enumerate()
+                .filter(|(i, v)| self.outside(*i, **v))
+                .count();
+            rows += usize::from(count > 0);
+            components += count;
         }
-        Ok(outside)
+        Ok((rows, components))
     }
 
     fn observation(&self, features: &[f64], metrics: &mut [Feature]) -> (bool, bool) {

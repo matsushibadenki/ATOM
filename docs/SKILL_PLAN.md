@@ -77,3 +77,13 @@ Nine new tests cover bounded/private summaries, live posed state, focused scope,
 Native macOS Tauri QA used an explicitly named contract fixture to generate from two unsaved objects while the saved file contained one. The request omitted project names, and IPC comparison confirmed unchanged shared state/history/sequence/file after generation and manual validation. A deliberate edit during delayed generation produced the stale report; manual revalidation made no HTTP request. Invalid-ID errors, edited-draft result suppression, three languages and approximately 220 px Workflow width were also checked. Fixture responses are not real-model inference or planning-quality evidence. The HTTP fixture was also corrected to avoid responding to incomplete/cancelled requests; its regression check and 30 repeated parallel contract runs passed.
 
 Real vLLM-apple/Strata model qualification remains pending under the existing environment constraints. Linux/Windows/floating-window QA, plan persistence/audit export, atomic approved application, physical execution and fixed-holdout candidate-quality evaluation remain separate milestones.
+
+### Apply a validated plan
+
+Use the apply button in the desktop SkillPlan panel after reviewing the
+predicted diff. The application checks that the candidate text matches the
+shared validation report and that the project, revision, and sequence still
+match the reviewed scene. It revalidates the steps in order and commits the
+result as one editor revision. Undo and Redo each travel across the entire
+plan in one operation. A stale basis or a failed step leaves the document and
+history intact.

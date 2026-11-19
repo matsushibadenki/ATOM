@@ -153,6 +153,7 @@ pub fn build(template: RobotTemplate, start: u32) -> Result<(Robot, Vec<SceneObj
             fixed: false,
             mesh_ref: None,
             mass_override: None,
+            inertia_override: None,
         });
         links.push(RobotLink {
             object_id: id,

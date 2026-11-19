@@ -13,12 +13,17 @@ mod window_placement;
 mod workspace;
 use atom_core::{AppCore, EditRequest, Project, ProjectStore, Snapshot};
 use serde::Serialize;
-use std::sync::{Arc, Mutex};
+use std::sync::{
+    Arc, Mutex,
+    atomic::{AtomicBool, Ordering},
+};
 use tauri::{Emitter, Manager};
 
 struct Session {
     core: AppCore,
     store: ProjectStore,
+    simulation_cancel: Option<Arc<AtomicBool>>,
+    simulation_pause: Arc<AtomicBool>,
 }
 struct Shared(Arc<Mutex<Session>>);
 #[derive(Debug, Serialize)]
@@ -87,7 +92,7 @@ async fn save(webview: tauri::Webview) -> Result<Snapshot, UiError> {
     tauri::async_runtime::spawn_blocking(move || {
         let state = app.state::<Shared>();
         let mut session = state.0.lock().map_err(|_| error("internal_error"))?;
-        let Session { core, store } = &mut *session;
+        let Session { core, store, .. } = &mut *session;
         if core.has_preview() {
             return Err(error("edit_busy"));
         }
@@ -169,29 +174,87 @@ async fn simulate(
     expected_revision: u64,
     project_id: atom_core::Uuid,
     steps: u32,
+    continuous: Option<bool>,
 ) -> Result<Snapshot, UiError> {
     authorize(&webview)?;
+    let continuous = continuous.unwrap_or(false);
     if !matches!(steps, 1 | 500 | 1000) {
         return Err(error("invalid_project"));
     }
     let app = webview.app_handle().clone();
-    let (project, token) = {
+    let (project, token, cancel, pause) = {
         let state = app.state::<Shared>();
         let mut session = state.0.lock().map_err(|_| error("internal_error"))?;
-        let token = session
-            .core
-            .begin_simulation(expected_revision, project_id)?;
+        let token = if continuous {
+            session
+                .core
+                .begin_continuous_simulation(expected_revision, project_id)?
+        } else {
+            session
+                .core
+                .begin_simulation(expected_revision, project_id)?
+        };
         let _ = app.emit("atom://changed", session.core.snapshot());
-        (session.core.project().clone(), token)
+        let cancel = Arc::new(AtomicBool::new(false));
+        session.simulation_cancel = Some(cancel.clone());
+        session.simulation_pause.store(false, Ordering::Relaxed);
+        (
+            session.core.project().clone(),
+            token,
+            cancel,
+            session.simulation_pause.clone(),
+        )
     };
-    let result =
-        tauri::async_runtime::spawn_blocking(move || atom_core::mujoco::run(&project, steps))
-            .await
-            .unwrap_or(Err(atom_core::Error::PhysicsFailed));
+    let signal = cancel.clone();
+    let worker_app = app.clone();
+    let result = tauri::async_runtime::spawn_blocking(move || {
+        if !continuous {
+            return atom_core::mujoco::run_cancellable(&project, steps, &signal).map(Some);
+        }
+        atom_core::mujoco::run_continuous(&project, &signal, &pause, |frame, steps| {
+            let (sequence, time) = {
+                let shared = worker_app.state::<Shared>();
+                let mut session = shared
+                    .0
+                    .lock()
+                    .map_err(|_| atom_core::Error::PhysicsFailed)?;
+                if signal.load(Ordering::Relaxed) || pause.load(Ordering::Relaxed) {
+                    return Ok(());
+                }
+                let time = frame.time;
+                session
+                    .core
+                    .update_continuous_simulation(token, frame, steps)?;
+                (session.core.sequence(), time)
+            };
+            let _ = worker_app.emit("atom://simulation-tick", (sequence, time));
+            let redraw = worker_app.clone();
+            let _ = worker_app.run_on_main_thread(move || viewport::draw(&redraw));
+            Ok(())
+        })
+        .map(|()| None)
+    })
+    .await
+    .unwrap_or(Err(atom_core::Error::PhysicsFailed));
     let (result, snapshot) = {
         let state = app.state::<Shared>();
         let mut session = state.0.lock().map_err(|_| error("internal_error"))?;
-        let result = session.core.finish_simulation(token, result, steps);
+        session.simulation_cancel = None;
+        let cancelled = cancel.load(Ordering::Relaxed);
+        let result = if continuous || cancelled {
+            let snapshot = session.core.reset_simulation();
+            if cancelled {
+                Ok(snapshot)
+            } else {
+                result.map(|_| snapshot)
+            }
+        } else {
+            session.core.finish_simulation(
+                token,
+                result.and_then(|frame| frame.ok_or(atom_core::Error::PhysicsFailed)),
+                steps,
+            )
+        };
         (result, session.core.snapshot())
     };
     transform::publish(&app, &snapshot);
@@ -200,13 +263,24 @@ async fn simulate(
     Ok(result?)
 }
 #[tauri::command]
+fn pause_simulation(webview: tauri::Webview, paused: bool) -> Result<Snapshot, UiError> {
+    authorize(&webview)?;
+    let shared = webview.state::<Shared>();
+    let mut session = shared.0.lock().map_err(|_| error("internal_error"))?;
+    let snapshot = session.core.set_simulation_paused(paused)?;
+    session.simulation_pause.store(paused, Ordering::Relaxed);
+    drop(session);
+    let _ = webview.app_handle().emit("atom://changed", &snapshot);
+    Ok(snapshot)
+}
+#[tauri::command]
 fn reset_simulation(webview: tauri::Webview) -> Result<Snapshot, UiError> {
     authorize(&webview)?;
     let state = webview.state::<Shared>();
     let mut session = state.0.lock().map_err(|_| error("internal_error"))?;
-    // The worker is bounded; reset is available after it completes, never an unbounded cancel claim.
-    if session.core.snapshot().simulation_running {
-        return Err(error("edit_busy"));
+    if let Some(cancel) = &session.simulation_cancel {
+        cancel.store(true, Ordering::Relaxed);
+        return Ok(session.core.snapshot());
     }
     let snapshot = session.core.reset_simulation();
     drop(session);
@@ -246,6 +320,8 @@ fn main() {
             app.manage(Shared(Arc::new(Mutex::new(Session {
                 core: AppCore::new(project)?,
                 store,
+                simulation_cancel: None,
+                simulation_pause: Arc::new(AtomicBool::new(false)),
             }))));
             app.manage(batch::State::new(
                 control_path.parent().unwrap().join("episodes"),
@@ -272,6 +348,7 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             runtime::planning_scene,
+            runtime::apply_plan,
             runtime::runtime_state,
             runtime::runtime_command,
             control::control_request,
@@ -301,6 +378,7 @@ fn main() {
             physics_catalog,
             simulate,
             reset_simulation,
+            pause_simulation,
             edit,
             save,
             reload,

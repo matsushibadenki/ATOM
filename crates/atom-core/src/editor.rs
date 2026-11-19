@@ -40,6 +40,8 @@ pub struct AppCore {
     joint_preview: Option<JointPreview>,
     simulation: Option<(Project, threex_core::Scene, mujoco::SimulationResult)>,
     simulation_token: Option<u64>,
+    simulation_continuous: bool,
+    simulation_paused: bool,
     import_token: Option<u64>,
 }
 impl AppCore {
@@ -71,6 +73,8 @@ impl AppCore {
             joint_preview: None,
             simulation: None,
             simulation_token: None,
+            simulation_continuous: false,
+            simulation_paused: false,
             import_token: None,
         })
     }
@@ -128,6 +132,8 @@ impl AppCore {
             },
             joint_preview: self.joint_preview.as_ref().map(|p| p.info.clone()),
             simulation_running: self.simulation_token.is_some(),
+            simulation_continuous: self.simulation_continuous,
+            simulation_paused: self.simulation_paused,
             simulation: self.simulation.as_ref().map(|s| s.2.clone()),
             workflow_nodes: self.project.workflow.graph().nodes().len(),
             workflow_edges: self.project.workflow.graph().edges().len(),
@@ -243,6 +249,7 @@ impl AppCore {
                     fixed: false,
                     mesh_ref: None,
                     mass_override: None,
+                    inertia_override: None,
                 });
             }
             Command::RemoveBox { id } => {
@@ -265,6 +272,11 @@ impl AppCore {
                 } else {
                     candidate.objects.retain(|o| o.id != id);
                 }
+                candidate.physics.contact_pairs.retain(|pair| {
+                    pair.objects
+                        .iter()
+                        .all(|id| candidate.objects.iter().any(|object| object.id == *id))
+                });
             }
             Command::Transform { id, transform } => {
                 let transform = candidate.rest_transform(id, &transform);
@@ -278,7 +290,10 @@ impl AppCore {
             Command::SetGravity { gravity } => candidate.physics.gravity = gravity,
             Command::SetMaterial { id, material } => {
                 if let Some(id) = id
-                    && let Some(o) = candidate.objects.iter_mut().find(|o| o.id == id)
+                    && let Some(o) = candidate
+                        .objects
+                        .iter_mut()
+                        .find(|o| o.id == id && o.mesh_ref.is_some())
                 {
                     o.mass_override = None;
                 }
@@ -292,6 +307,22 @@ impl AppCore {
                 } else {
                     candidate.physics.floor = material;
                 }
+            }
+            Command::SetMass { id, mass } => {
+                let object = candidate
+                    .objects
+                    .iter_mut()
+                    .find(|object| object.id == id && object.mesh_ref.is_none())
+                    .ok_or_else(|| Error::Invalid("mass requires a box object".into()))?;
+                object.mass_override = mass;
+            }
+            Command::SetInertia { id, inertia } => {
+                let object = candidate
+                    .objects
+                    .iter_mut()
+                    .find(|object| object.id == id && object.mesh_ref.is_none())
+                    .ok_or_else(|| Error::Invalid("inertia requires a box object".into()))?;
+                object.inertia_override = inertia;
             }
             Command::SetFixed { id, fixed } => {
                 if candidate
@@ -309,6 +340,22 @@ impl AppCore {
                     .find(|o| o.id == id)
                     .ok_or_else(|| Error::Invalid("missing object".into()))?
                     .fixed = fixed;
+            }
+            Command::SetContactFriction {
+                mut objects,
+                friction,
+            } => {
+                objects.sort_unstable();
+                let pairs = &mut candidate.physics.contact_pairs;
+                if let Some(index) = pairs.iter().position(|pair| pair.objects == objects) {
+                    if let Some(friction) = friction {
+                        pairs[index].friction = friction;
+                    } else {
+                        pairs.remove(index);
+                    }
+                } else if let Some(friction) = friction {
+                    pairs.push(ContactPair { objects, friction });
+                }
             }
             Command::SetFloor { enabled } => candidate.physics.floor_enabled = enabled,
             Command::SetJointRange { id, axis, range } => {
@@ -382,6 +429,7 @@ impl AppCore {
                     fixed: true,
                     mesh_ref: Some(id),
                     mass_override: mass,
+                    inertia_override: None,
                 });
                 candidate.assets.push(*asset);
             }
@@ -390,6 +438,9 @@ impl AppCore {
         candidate
             .assets
             .retain(|a| candidate.objects.iter().any(|o| o.mesh_ref == Some(a.id)));
+        self.commit_authoring(candidate, next)
+    }
+    pub(crate) fn commit_authoring(&mut self, candidate: Project, next: u32) -> Result<Snapshot> {
         candidate.validate()?;
         if candidate.name == self.project.name
             && candidate.objects == self.project.objects
@@ -606,6 +657,41 @@ impl AppCore {
         self.simulation_token = Some(self.sequence);
         Ok(self.sequence)
     }
+    pub fn begin_continuous_simulation(&mut self, expected: u64, project_id: Uuid) -> Result<u64> {
+        let token = self.begin_simulation(expected, project_id)?;
+        self.simulation_continuous = true;
+        Ok(token)
+    }
+
+    pub fn set_simulation_paused(&mut self, paused: bool) -> Result<Snapshot> {
+        if !self.simulation_continuous {
+            return Err(Error::EditBusy);
+        }
+        if self.simulation_paused != paused {
+            self.simulation_paused = paused;
+            self.sequence = self.sequence.saturating_add(1);
+        }
+        Ok(self.snapshot())
+    }
+
+    pub fn update_continuous_simulation(
+        &mut self,
+        token: u64,
+        result: mujoco::SimulationResult,
+        steps: u32,
+    ) -> Result<()> {
+        if self.simulation_token != Some(token) || !self.simulation_continuous {
+            return Err(Error::EditBusy);
+        }
+        self.set_simulation_frame(result, steps)?;
+        self.sequence = self.sequence.saturating_add(1);
+        Ok(())
+    }
+
+    pub fn sequence(&self) -> u64 {
+        self.sequence
+    }
+
     pub fn finish_simulation(
         &mut self,
         token: u64,
@@ -617,7 +703,11 @@ impl AppCore {
         }
         self.simulation_token = None;
         self.sequence = self.sequence.saturating_add(1);
-        let result = result?;
+        self.set_simulation_frame(result?, steps)?;
+        Ok(self.snapshot())
+    }
+
+    fn set_simulation_frame(&mut self, result: mujoco::SimulationResult, steps: u32) -> Result<()> {
         mujoco::validate_result(&self.project, &result, steps)?;
         let mut project = self.project.clone();
         for pose in &result.poses {
@@ -633,7 +723,7 @@ impl AppCore {
         project.robots.clear();
         let scene = project.render_scene()?;
         self.simulation = Some((project, scene, result));
-        Ok(self.snapshot())
+        Ok(())
     }
     pub fn reset_simulation(&mut self) -> Snapshot {
         if self.reach.is_some() {
@@ -641,6 +731,8 @@ impl AppCore {
         }
         self.simulation = None;
         self.simulation_token = None;
+        self.simulation_continuous = false;
+        self.simulation_paused = false;
         self.sequence = self.sequence.saturating_add(1);
         self.snapshot()
     }

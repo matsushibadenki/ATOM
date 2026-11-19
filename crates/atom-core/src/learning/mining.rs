@@ -38,6 +38,7 @@ impl Config {
             horizon: self.horizon,
             max_seconds: self.max_seconds,
             mining: None,
+            accepted_target: None,
         }
     }
 }

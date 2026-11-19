@@ -9,7 +9,9 @@ pub mod reach;
 pub mod robots;
 mod storage;
 pub use editor::{AppCore, Change, DryRun};
-pub use physics::{Gravity, GravityPreset, MaterialPreset, PhysicalMaterial, PhysicsSpec};
+pub use physics::{
+    ContactPair, Gravity, GravityPreset, MaterialPreset, PhysicalMaterial, PhysicsSpec,
+};
 pub use robots::RobotTemplate;
 pub mod workflow;
 use serde::{Deserialize, Serialize};
@@ -96,6 +98,8 @@ pub struct SceneObject {
     pub mesh_ref: Option<Uuid>,
     #[serde(default)]
     pub mass_override: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub inertia_override: Option<[f64; 3]>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -130,6 +134,7 @@ impl Project {
                 fixed: false,
                 mesh_ref: None,
                 mass_override: None,
+                inertia_override: None,
             }],
             workflow: workflow::initial_document()?,
             physics: PhysicsSpec::default(),
@@ -189,6 +194,15 @@ impl Project {
             {
                 return Err(Error::Invalid("object asset/mass".into()));
             }
+            if let Some(mut moments) = o.inertia_override {
+                moments.sort_by(f64::total_cmp);
+                if o.mesh_ref.is_some()
+                    || moments.iter().any(|m| !m.is_finite() || *m < 1e-15)
+                    || moments[2] - moments[1] > moments[0]
+                {
+                    return Err(Error::Invalid("box inertia moments".into()));
+                }
+            }
             if o.label.len() > 64 || o.label.chars().any(char::is_control) {
                 return Err(Error::Invalid("object label".into()));
             }
@@ -211,6 +225,23 @@ impl Project {
                 return Err(Error::Invalid("object bounds or identity".into()));
             }
         }
+        for pair in &self.physics.contact_pairs {
+            let [a, b] = pair.objects;
+            if !ids.contains(&a)
+                || !ids.contains(&b)
+                || self
+                    .robots
+                    .iter()
+                    .flat_map(|robot| &robot.links)
+                    .any(|link| {
+                        (link.object_id == a && link.parent == Some(b))
+                            || (link.object_id == b && link.parent == Some(a))
+                    })
+            {
+                return Err(Error::Invalid("contact pair objects".into()));
+            }
+        }
+
         if self.workflow.graph().nodes().len() > 32 || self.workflow.graph().edges().len() > 64 {
             return Err(Error::Invalid("workflow capacity".into()));
         }
@@ -301,9 +332,21 @@ pub enum Command {
         id: Option<u32>,
         material: PhysicalMaterial,
     },
+    SetMass {
+        id: u32,
+        mass: Option<f64>,
+    },
+    SetInertia {
+        id: u32,
+        inertia: Option<[f64; 3]>,
+    },
     SetFixed {
         id: u32,
         fixed: bool,
+    },
+    SetContactFriction {
+        objects: [u32; 2],
+        friction: Option<[f64; 3]>,
     },
     SetFloor {
         enabled: bool,
@@ -366,6 +409,8 @@ pub struct Snapshot {
     pub joint_preview: Option<JointPreviewInfo>,
     pub reach: Option<reach::Summary>,
     pub simulation_running: bool,
+    pub simulation_continuous: bool,
+    pub simulation_paused: bool,
     pub simulation: Option<mujoco::SimulationResult>,
     pub asset_importing: bool,
     pub assets: Vec<assets::AssetSummary>,

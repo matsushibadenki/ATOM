@@ -45,6 +45,8 @@ pub struct Drag {
     original: Transform,
     view: View,
     region: [u32; 4],
+    ring: Option<Ring>,
+    scale_axis: Option<[f32; 2]>,
 }
 fn dot(a: [f32; 3], b: [f32; 3]) -> f32 {
     (0..3).map(|i| a[i] * b[i]).sum()
@@ -60,7 +62,102 @@ pub fn project(view: &View, region: [u32; 4], position: [f32; 3]) -> Option<[f32
         ]
     })
 }
+fn cross(a: [f32; 3], b: [f32; 3]) -> [f32; 3] {
+    [
+        a[1] * b[2] - a[2] * b[1],
+        a[2] * b[0] - a[0] * b[2],
+        a[0] * b[1] - a[1] * b[0],
+    ]
+}
+
+struct Ring {
+    normal: [f32; 3],
+    u: [f32; 3],
+    v: [f32; 3],
+}
+
+impl Ring {
+    fn new(normal: [f32; 3]) -> Self {
+        let reference = if normal[1].abs() > 0.9 {
+            [1., 0., 0.]
+        } else {
+            [0., 1., 0.]
+        };
+        let u = cross(reference, normal);
+        let u = u.map(|value| value / dot(u, u).sqrt());
+        Self {
+            normal,
+            u,
+            v: cross(normal, u),
+        }
+    }
+
+    fn nearest(
+        &self,
+        view: &View,
+        region: [u32; 4],
+        center: [f32; 3],
+        radius: f32,
+        point: [f32; 2],
+    ) -> Option<(f32, [f32; 2])> {
+        let sample = |i| {
+            let angle = i as f32 * std::f32::consts::TAU / 64.;
+            let (sin, cos) = angle.sin_cos();
+            project(
+                view,
+                region,
+                std::array::from_fn(|k| center[k] + radius * (self.u[k] * cos + self.v[k] * sin)),
+            )
+        };
+        (0..64)
+            .filter_map(|i| {
+                let a = sample(i)?;
+                let b = sample(i + 1)?;
+                let d = [b[0] - a[0], b[1] - a[1]];
+                let length2 = d[0] * d[0] + d[1] * d[1];
+                if length2 < 1e-6 {
+                    return None;
+                }
+                let offset = [point[0] - a[0], point[1] - a[1]];
+                let t = ((offset[0] * d[0] + offset[1] * d[1]) / length2).clamp(0., 1.);
+                Some(((offset[0] - t * d[0]).hypot(offset[1] - t * d[1]), d))
+            })
+            .min_by(|a, b| a.0.total_cmp(&b.0))
+    }
+
+    fn phase(
+        &self,
+        view: &View,
+        region: [u32; 4],
+        center: [f32; 3],
+        point: [f64; 2],
+    ) -> Option<f32> {
+        let [right, up, back] = view.basis();
+        let x = (2. * (point[0] as f32 - region[0] as f32) / region[2] as f32 - 1.)
+            * region[2] as f32
+            / region[3] as f32;
+        let y = 1. - 2. * (point[1] as f32 - region[1] as f32) / region[3] as f32;
+        let slope = 25_f32.to_radians().tan();
+        let ray = std::array::from_fn(|i| (right[i] * x + up[i] * y) * slope - back[i]);
+        let denom = dot(ray, self.normal);
+        if denom.abs() < 0.08 {
+            return None;
+        }
+        let eye = view.eye();
+        let t = dot(std::array::from_fn(|i| center[i] - eye[i]), self.normal) / denom;
+        let offset = std::array::from_fn(|i| eye[i] + t * ray[i] - center[i]);
+        let u = dot(offset, self.u);
+        let v = dot(offset, self.v);
+        (t > 0. && u.hypot(v) > 1e-6).then(|| v.atan2(u))
+    }
+}
 pub fn axes(object: &SceneObject, tool: Tool) -> [[f32; 3]; 3] {
+    if tool == Tool::Rotate {
+        // For Rx * Ry * Rz, each axis includes the preceding Euler rotations.
+        let (sx, cx) = object.rotation[0].sin_cos();
+        let (sy, cy) = object.rotation[1].sin_cos();
+        return [[1., 0., 0.], [0., cx, sx], [sy, -sx * cy, cx * cy]];
+    }
     if tool != Tool::Scale {
         return [[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]];
     }
@@ -87,11 +184,28 @@ pub fn hit_axis(
         .iter()
         .enumerate()
         .filter_map(|(i, d)| {
+            if view.tool == Tool::Rotate {
+                let (distance, _) = Ring::new(*d).nearest(
+                    view,
+                    region,
+                    object.position,
+                    size,
+                    p.map(|v| v as f32),
+                )?;
+                return (distance < 8. * scale as f32).then_some((i, distance));
+            }
             let end = project(
                 view,
                 region,
                 std::array::from_fn(|k| object.position[k] + d[k] * size),
             )?;
+            if view.tool == Tool::Scale {
+                let dx = p[0] as f32 - end[0];
+                let dy = p[1] as f32 - end[1];
+                return (dx.abs().max(dy.abs()) < 8. * scale as f32
+                    && (end[0] - origin[0]).hypot(end[1] - origin[1]) > 4. * scale as f32)
+                    .then_some((i, dx.hypot(dy)));
+            }
             let v = [end[0] - origin[0], end[1] - origin[1]];
             let len = v[0] * v[0] + v[1] * v[1];
             if len < 16. * scale as f32 * scale as f32 {
@@ -109,7 +223,7 @@ impl Drag {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         object: &SceneObject,
-        project: Uuid,
+        project_id: Uuid,
         revision: u64,
         layout: u64,
         view: View,
@@ -118,9 +232,39 @@ impl Drag {
         origin: [f64; 2],
         axis: Axis,
     ) -> Self {
+        let radius = handle_size(&view, object, region[3] as f32 / scale as f32);
+        let direction = axis.index().map(|i| axes(object, view.tool)[i]);
+        let ring = direction
+            .filter(|_| view.tool == Tool::Rotate)
+            .map(Ring::new)
+            .filter(|ring| {
+                ring.nearest(
+                    &view,
+                    region,
+                    object.position,
+                    radius,
+                    origin.map(|v| v as f32),
+                )
+                .is_some_and(|(distance, _)| distance < 8. * scale as f32)
+            });
+        let scale_axis = direction
+            .filter(|_| view.tool == Tool::Scale)
+            .and_then(|axis| {
+                let start = project(&view, region, object.position)?;
+                let tip = project(
+                    &view,
+                    region,
+                    std::array::from_fn(|i| object.position[i] + radius * axis[i]),
+                )?;
+                let vector = [
+                    (tip[0] - start[0]) / scale as f32,
+                    (tip[1] - start[1]) / scale as f32,
+                ];
+                (vector[0].hypot(vector[1]) > 4.).then_some(vector)
+            });
         Self {
             id: object.id,
-            project,
+            project: project_id,
             revision,
             layout,
             tool: view.tool,
@@ -131,9 +275,11 @@ impl Drag {
             original: Transform::from(object),
             view,
             region,
+            ring,
+            scale_axis,
         }
     }
-    pub fn pose(&self, point: [f64; 2]) -> Transform {
+    pub fn pose(&self, point: [f64; 2], snap: bool) -> Transform {
         let delta = [
             ((point[0] - self.origin[0]) / self.scale) as f32,
             ((point[1] - self.origin[1]) / self.scale) as f32,
@@ -164,6 +310,13 @@ impl Drag {
             }
             -delta[1] * world_per_pixel
         };
+        let quantize = |delta: f32, step: f32| {
+            if snap {
+                (delta / step).round() * step
+            } else {
+                delta
+            }
+        };
         match self.tool {
             Tool::Move => {
                 let change = if let Some(axis) = self.axis.index() {
@@ -175,23 +328,62 @@ impl Drag {
                         (right[i] * delta[0] - up[i] * delta[1]) * world_per_pixel
                     })
                 };
-                pose.position =
-                    std::array::from_fn(|i| (pose.position[i] + change[i]).clamp(-10000., 10000.));
+                pose.position = std::array::from_fn(|i| {
+                    (pose.position[i] + quantize(change[i], 0.1)).clamp(-10000., 10000.)
+                });
             }
             Tool::Rotate => {
                 if let Some(i) = self.axis.index() {
-                    pose.rotation[i] += (delta[0] - delta[1]) * 0.01;
+                    let amount = self
+                        .ring
+                        .as_ref()
+                        .and_then(|ring| {
+                            let phase = |point| {
+                                ring.phase(&self.view, self.region, self.original.position, point)
+                            };
+                            if let (Some(start), Some(current)) = (phase(self.origin), phase(point))
+                            {
+                                let angle = current - start;
+                                return Some(angle.sin().atan2(angle.cos()));
+                            }
+                            let radius = world_per_pixel * 72.;
+                            let (_, tangent) = ring.nearest(
+                                &self.view,
+                                self.region,
+                                self.original.position,
+                                radius,
+                                self.origin.map(|v| v as f32),
+                            )?;
+                            Some(
+                                (delta[0] * tangent[0] + delta[1] * tangent[1])
+                                    / tangent[0].hypot(tangent[1])
+                                    / 72.,
+                            )
+                        })
+                        .unwrap_or((delta[0] - delta[1]) * 0.01);
+                    pose.rotation[i] += quantize(amount, 15_f32.to_radians());
                 } else {
-                    pose.rotation[0] += delta[1] * 0.01;
-                    pose.rotation[1] += delta[0] * 0.01;
+                    pose.rotation[0] += quantize(delta[1] * 0.01, 15_f32.to_radians());
+                    pose.rotation[1] += quantize(delta[0] * 0.01, 15_f32.to_radians());
                 }
-                pose.rotation = pose.rotation.map(|v| {
-                    (v + std::f32::consts::PI).rem_euclid(std::f32::consts::TAU)
-                        - std::f32::consts::PI
-                });
+                for (angle, original) in pose.rotation.iter_mut().zip(self.original.rotation) {
+                    if *angle != original {
+                        *angle = (*angle + std::f32::consts::PI).rem_euclid(std::f32::consts::TAU)
+                            - std::f32::consts::PI;
+                    }
+                }
             }
             Tool::Scale => {
-                let factor = ((delta[0] - delta[1]) * 0.01).clamp(-12., 12.).exp();
+                let factor = if let Some([x, y]) = self.scale_axis {
+                    1. + (delta[0] * x + delta[1] * y) / (x * x + y * y)
+                } else {
+                    ((delta[0] - delta[1]) * 0.01).clamp(-12., 12.).exp()
+                };
+                let factor = if snap {
+                    1. + quantize(factor - 1., 0.1)
+                } else {
+                    factor
+                };
                 for (i, value) in pose.scale.iter_mut().enumerate() {
                     if self.axis.index().is_none_or(|axis| axis == i) {
                         *value = (*value * factor).clamp(0.001, 100.);
@@ -370,7 +562,7 @@ mod tests {
                     [500., 350.],
                     axis,
                 );
-                let changed = drag.pose([560., 330.]);
+                let changed = drag.pose([560., 330.], false);
                 assert_ne!(changed, Transform::from(&o));
                 if tool == Tool::Move
                     && let Some(i) = axis.index()
@@ -386,7 +578,18 @@ mod tests {
                         assert!((0.001..=100.).contains(&value));
                     }
                 }
-                let origin = drag.pose([500., 350.]);
+                let snapped = drag.pose([560., 330.], true);
+                for i in 0..3 {
+                    let increments = match tool {
+                        Tool::Move => (snapped.position[i] - o.position[i]) / 0.1,
+                        Tool::Rotate => (snapped.rotation[i] - o.rotation[i]) / 15_f32.to_radians(),
+                        Tool::Scale => (snapped.scale[i] / o.scale[i] - 1.) / 0.1,
+                        Tool::Camera => unreachable!(),
+                    };
+                    assert!((increments - increments.round()).abs() < 1e-4);
+                }
+                assert_eq!(drag.pose([500., 350.], true), Transform::from(&o));
+                let origin = drag.pose([500., 350.], false);
                 for (a, b) in origin
                     .position
                     .iter()
@@ -425,5 +628,74 @@ mod tests {
                 Some(Axis::X)
             );
         }
+    }
+    #[test]
+    fn dedicated_handles_pick_and_drag_in_their_projected_directions() {
+        let mut object = atom_core::Project::new("Handles").unwrap().objects[0].clone();
+        object.rotation = [0.; 3];
+        let region = [20, 40, 1000, 800];
+        let view = View {
+            tool: Tool::Rotate,
+            yaw: 0.,
+            pitch: 0.,
+            target: object.position,
+            ..Default::default()
+        };
+        let radius = handle_size(&view, &object, 400.);
+        let ring_point = |angle: f32| {
+            let (sin, cos) = angle.sin_cos();
+            project(
+                &view,
+                region,
+                [
+                    object.position[0] + radius * cos,
+                    object.position[1] + radius * sin,
+                    object.position[2],
+                ],
+            )
+            .unwrap()
+            .map(f64::from)
+        };
+        let start = ring_point(0.6);
+        assert_eq!(hit_axis(&view, &object, region, 2., start), Some(Axis::Z));
+        let drag = Drag::new(
+            &object,
+            Uuid::new_v4(),
+            0,
+            0,
+            view.clone(),
+            region,
+            2.,
+            start,
+            Axis::Z,
+        );
+        let turned = drag.pose(ring_point(1.0), false);
+        assert!((turned.rotation[2] - object.rotation[2] - 0.4).abs() < 1e-4);
+        let snapped = drag.pose(ring_point(1.0), true);
+        assert!((snapped.rotation[2] - object.rotation[2] - 30_f32.to_radians()).abs() < 1e-4);
+        let tip = ring_point(0.);
+        let view = View {
+            tool: Tool::Scale,
+            ..view
+        };
+        assert_eq!(hit_axis(&view, &object, region, 2., tip), Some(Axis::X));
+        let center = project(&view, region, object.position)
+            .unwrap()
+            .map(f64::from);
+        let drag = Drag::new(
+            &object,
+            Uuid::new_v4(),
+            0,
+            0,
+            view,
+            region,
+            2.,
+            tip,
+            Axis::X,
+        );
+        let extended = std::array::from_fn(|i| tip[i] + 0.24 * (tip[i] - center[i]));
+        let scaled = drag.pose(extended, true);
+        assert!((scaled.scale[0] - object.scale[0] * 1.2).abs() < 1e-4);
+        assert_eq!(scaled.scale[1..], object.scale[1..]);
     }
 }

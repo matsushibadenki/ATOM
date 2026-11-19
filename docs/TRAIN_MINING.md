@@ -233,9 +233,13 @@ validation partition and excludes test scores from fitting and evaluation.
 }
 ```
 
-The completed pool must contain more candidates than the number of collection
-attempts. Each arm collects and quality-checks the same number of attempted
-reference demonstrations, starting with the original source batch. One arm
+By default, each arm attempts the same number of reference demonstrations. To
+match accepted demo counts, set `accepted_target` in the comparison config and
+use `attempts` as the per-arm cap. For example, set `accepted_target` to 4
+and `attempts` to 12 for a 12-candidate pool. Each arm follows its ranking
+until it meets the target or exhausts the attempt or time budget. Both arms
+must meet the target before retraining starts. The report records attempted
+and accepted counts. Each arm starts collection with the original source batch. One arm
 ranks timeouts and final distance. The other ranks timeouts, outside-train observation share, outside-train feature share,
 and final distance. Both start from the frozen policy's best
 checkpoint with a fresh optimizer. The first layer is adjusted to preserve
@@ -296,9 +300,10 @@ for 20 steps. Each pair shares its frozen checkpoint and a 12-candidate train
 pool scanned from seed 200. That start seed keeps new candidates separate from
 the initial demonstrations added in this experiment.
 
-Both collection methods attempt four demonstrations per condition and warm-start
-40 training steps with seed 7. All conditions use the same 12 validation seeds
-listed above. Run with PyTorch and MuJoCo configured.
+In the original experiment, both methods attempted four demonstrations per
+condition and warm-started 40 training steps with seed 7. All conditions use the same 12 validation seeds
+listed above. The test command now repeats the matrix with matched accepted counts. Run
+with PyTorch and MuJoCo configured.
 
 ```sh
 cargo test -p atom-core --lib real_collection_ranking_reproducibility_matrix -- --ignored --nocapture
@@ -320,3 +325,20 @@ Mean final distance fell in one of four conditions. In that condition the
 methods had equal collection attempt budgets and different accepted demo
 counts, so the measured comparison includes the effect of dataset size after
 collection. These results apply to the shared 12-task validation cohort.
+
+### Matched accepted counts
+
+The repeat used an accepted target of four and a cap of 12 attempts per arm.
+All eight arms reached the target. Both arms in each condition used the same
+initial checkpoint and the same fixed validation cohort as above.
+
+| Initial demos | BC seed | Ranking | Attempts | Success | Timeouts | Mean final distance |
+|---:|---:|---|---:|---:|---:|---:|
+| 1 | 7 | Final distance | 4 | 1/12 | 11 | 0.2274 m |
+| 1 | 7 | Train distribution | 4 | 2/12 | 10 | 0.8268 m |
+| 1 | 19 | Final distance | 4 | 0/12 | 12 | 0.6592 m |
+| 1 | 19 | Train distribution | 4 | 4/12 | 8 | 0.8106 m |
+| 4 | 7 | Final distance | 5 | 2/12 | 10 | 0.4616 m |
+| 4 | 7 | Train distribution | 4 | 4/12 | 8 | 0.2928 m |
+| 4 | 19 | Final distance | 4 | 1/12 | 11 | 0.3140 m |
+| 4 | 19 | Train distribution | 4 | 1/12 | 11 | 0.4563 m |

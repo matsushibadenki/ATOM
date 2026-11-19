@@ -103,6 +103,21 @@ impl AppCore {
 }
 
 impl AppCore {
+    pub(crate) fn commit_plan_trial(&mut self, trial: Self) -> Result<Snapshot> {
+        self.commit_authoring(trial.project, self.next_object_id)
+    }
+
+    pub fn apply_plan(
+        &mut self,
+        basis: &Basis,
+        focus: Option<u32>,
+        text: &str,
+    ) -> Result<Snapshot> {
+        let context = self.planning_context_at(basis, focus)?;
+        let trial = context.validated_trial(text)?;
+        self.commit_plan_trial(trial)
+    }
+
     pub fn planning_matches(&self, basis: &Basis) -> bool {
         !self.has_preview()
             && basis.project_id == self.project.id

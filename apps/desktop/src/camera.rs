@@ -335,6 +335,7 @@ mod tests {
             fixed: false,
             mesh_ref: None,
             mass_override: None,
+            inertia_override: None,
         }
     }
     #[test]

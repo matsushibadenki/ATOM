@@ -7,6 +7,8 @@ use std::sync::atomic::{AtomicBool, Ordering};
 pub struct Config {
     pub mining: String,
     pub attempts: u32,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub accepted_target: Option<u32>,
     pub collection_seconds: u32,
     pub validation_seconds: u32,
     pub training: training::Config,
@@ -22,7 +24,12 @@ pub fn run(
     let pool = mining::inspect(root, &config.mining)?;
     let report = &pool.report;
     if report.status != mining::Status::Completed
-        || !(1..report.config.count).contains(&config.attempts)
+        || !(1..=report.config.count).contains(&config.attempts)
+        || config
+            .accepted_target
+            .map_or(config.attempts == report.config.count, |target| {
+                !(1..=config.attempts).contains(&target) || target >= report.config.count
+            })
         || !(1..=300).contains(&config.collection_seconds)
         || !(1..=300).contains(&config.validation_seconds)
     {
@@ -40,6 +47,7 @@ pub fn run(
     let id = crate::Uuid::new_v4();
     let mut arms = Vec::new();
     let mut policies = Vec::new();
+    let mut collections = Vec::new();
     for (method, mining) in [
         ("final_distance", baseline.file),
         ("train_distribution", pool.file.clone()),
@@ -54,6 +62,7 @@ pub fn run(
                 horizon: report.config.horizon,
                 max_seconds: config.collection_seconds,
                 mining: Some(mining),
+                accepted_target: config.accepted_target,
             },
             cancel,
             |_| {},
@@ -61,6 +70,15 @@ pub fn run(
         if collected.report.status != collection::Status::Completed {
             return Err(err("learning_collection_comparison_incomplete"));
         }
+        if config
+            .accepted_target
+            .is_some_and(|target| collected.report.accepted != target as usize)
+        {
+            return Err(err("learning_collection_comparison_target_unmet"));
+        }
+        collections.push((method, collected));
+    }
+    for (method, collected) in collections {
         let batch = collected
             .report
             .exported
@@ -85,7 +103,7 @@ pub fn run(
         arms.push(
             json!({"method":method,"collection":collected.file,"batch":batch,"policy":policy.id,
             "seeds":collected.report.entries.iter().map(|entry| entry.seed).collect::<Vec<_>>(),
-            "accepted":collected.report.accepted,"best_step":trained.result["best_step"]}),
+            "attempted":collected.report.attempted,"accepted":collected.report.accepted,"best_step":trained.result["best_step"]}),
         );
         policies.push(policy.id);
     }

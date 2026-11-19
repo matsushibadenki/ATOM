@@ -120,10 +120,20 @@ impl PhysicalMaterial {
 }
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
+pub struct ContactPair {
+    pub objects: [u32; 2],
+    /// Sliding, torsional and rolling friction in MuJoCo geom order.
+    pub friction: [f64; 3],
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct PhysicsSpec {
     pub gravity: Gravity,
     pub floor: PhysicalMaterial,
     pub floor_enabled: bool,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub contact_pairs: Vec<ContactPair>,
 }
 impl Default for PhysicsSpec {
     fn default() -> Self {
@@ -131,12 +141,25 @@ impl Default for PhysicsSpec {
             gravity: Gravity::default(),
             floor: PhysicalMaterial::preset(MaterialPreset::Concrete),
             floor_enabled: true,
+            contact_pairs: vec![],
         }
     }
 }
 impl PhysicsSpec {
     pub fn validate(&self) -> Result<()> {
         self.gravity.validate()?;
-        self.floor.validate()
+        self.floor.validate()?;
+        let mut seen = std::collections::BTreeSet::new();
+        if self.contact_pairs.iter().any(|pair| {
+            pair.objects[0] >= pair.objects[1]
+                || !seen.insert(pair.objects)
+                || pair
+                    .friction
+                    .iter()
+                    .any(|value| !(0. ..=100.).contains(value))
+        }) {
+            return Err(Error::Invalid("contact pair friction or identity".into()));
+        }
+        Ok(())
     }
 }

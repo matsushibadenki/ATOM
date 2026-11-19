@@ -5,6 +5,7 @@ use std::{
     fmt::Write as _,
     io::Read,
     process::{Command as Process, Stdio},
+    sync::atomic::{AtomicBool, Ordering},
     time::{Duration, Instant},
 };
 const WORKER: &str = include_str!("mujoco_worker.py");
@@ -31,6 +32,28 @@ fn vec3(v: impl IntoIterator<Item = impl std::fmt::Display>) -> String {
 }
 fn geom(out: &mut String, o: &SceneObject, origin: [f32; 3]) {
     let p: [f32; 3] = std::array::from_fn(|i| o.position[i] - origin[i]);
+    if let Some(moments) = o.inertia_override {
+        let mass = o.mass_override.unwrap_or_else(|| {
+            o.material.density * o.scale.into_iter().map(f64::from).product::<f64>()
+        });
+        // MuJoCo's inertial parser honors a quaternion. Match the geom's Rx * Ry * Rz.
+        let [(sx, cx), (sy, cy), (sz, cz)] =
+            o.rotation.map(|angle| (f64::from(angle) / 2.).sin_cos());
+        let orientation = [
+            cx * cy * cz - sx * sy * sz,
+            sx * cy * cz + cx * sy * sz,
+            cx * sy * cz - sx * cy * sz,
+            cx * cy * sz + sx * sy * cz,
+        ];
+        let _ = writeln!(
+            out,
+            "<inertial pos=\"{}\" quat=\"{}\" mass=\"{}\" diaginertia=\"{}\"/>",
+            vec3(p),
+            vec3(orientation),
+            mass,
+            vec3(moments)
+        );
+    }
     // xyz intrinsic rotations match ThreeX's Rx * Ry * Rz. Geometry uses full extents.
     let shape = if o.mesh_ref.is_some() {
         format!(
@@ -210,6 +233,14 @@ pub fn export(project: &Project) -> Result<String> {
             );
         }
     }
+    for pair in &project.physics.contact_pairs {
+        let [a, b] = pair.objects;
+        let [sliding, torsional, rolling] = pair.friction;
+        let _ = writeln!(
+            out,
+            "<pair geom1=\"o{a}\" geom2=\"o{b}\" condim=\"6\" friction=\"{sliding} {sliding} {torsional} {rolling} {rolling}\"/>"
+        );
+    }
     out.push_str("</contact><actuator>\n");
     for robot in &project.robots {
         for l in robot.links.iter().filter(|l| l.parent.is_some()) {
@@ -306,6 +337,17 @@ pub fn export(project: &Project) -> Result<String> {
     Ok(out)
 }
 pub fn run(project: &Project, steps: u32) -> Result<SimulationResult> {
+    run_cancellable(project, steps, &AtomicBool::new(false))
+}
+
+pub fn run_cancellable(
+    project: &Project,
+    steps: u32,
+    cancel: &AtomicBool,
+) -> Result<SimulationResult> {
+    if cancel.load(Ordering::Relaxed) {
+        return Err(Error::PhysicsFailed);
+    }
     if !(1..=1000).contains(&steps) {
         return Err(Error::Invalid("simulation step budget".into()));
     }
@@ -326,20 +368,7 @@ pub fn run(project: &Project, steps: u32) -> Result<SimulationResult> {
         .stderr(Stdio::null())
         .spawn()
         .map_err(|_| Error::PhysicsUnavailable)?;
-    let start = Instant::now();
-    let status = loop {
-        match child.try_wait() {
-            Ok(Some(status)) => break status,
-            Ok(None) if start.elapsed() < Duration::from_secs(15) => {
-                std::thread::sleep(Duration::from_millis(10))
-            }
-            _ => {
-                let _ = child.kill();
-                let _ = child.wait();
-                return Err(Error::PhysicsFailed);
-            }
-        }
-    };
+    let status = wait_for_preview(&mut child, cancel)?;
     if status.code() == Some(42) {
         return Err(Error::PhysicsUnavailable);
     }
@@ -357,13 +386,125 @@ pub fn run(project: &Project, steps: u32) -> Result<SimulationResult> {
     validate_result(project, &result, steps)?;
     Ok(result)
 }
+/// Progress one persistent MuJoCo state at up to 20 updates per second.
+pub fn run_continuous(
+    project: &Project,
+    cancel: &AtomicBool,
+    paused: &AtomicBool,
+    mut publish: impl FnMut(SimulationResult, u32) -> Result<()>,
+) -> Result<()> {
+    use std::io::{BufRead, BufReader, Write};
+    use std::sync::mpsc::{self, RecvTimeoutError};
+
+    let temp = tempfile::tempdir()?;
+    let model = temp.path().join("model.xml");
+    std::fs::write(&model, export(project)?)?;
+    let python = std::env::var_os("ATOM_MUJOCO_PYTHON").unwrap_or_else(|| "python3".into());
+    let mut child = Process::new(python)
+        .args(["-I", "-c", WORKER])
+        .arg(model)
+        .arg("--continuous")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::null())
+        .spawn()
+        .map_err(|_| Error::PhysicsUnavailable)?;
+    let mut input = child.stdin.take().unwrap();
+    let output = child.stdout.take().unwrap();
+    let (send, receive) = mpsc::sync_channel(1);
+    let reader = std::thread::spawn(move || {
+        let mut output = BufReader::new(output);
+        loop {
+            let mut line = Vec::new();
+            match (&mut output)
+                .take(128 * 1024 + 1)
+                .read_until(b'\n', &mut line)
+            {
+                Ok(n) if n > 0 && n <= 128 * 1024 && line.last() == Some(&b'\n') => {
+                    if send.send(line).is_err() {
+                        break;
+                    }
+                }
+                _ => break,
+            }
+        }
+    });
+    let result = (|| {
+        let mut steps = 0_u32;
+        while !cancel.load(Ordering::Relaxed) {
+            if paused.load(Ordering::Relaxed) {
+                if child.try_wait()?.is_some() {
+                    return Err(Error::PhysicsFailed);
+                }
+                std::thread::sleep(Duration::from_millis(10));
+                continue;
+            }
+            let start = Instant::now();
+            input.write_all(b"step\n")?;
+            let reply = loop {
+                if cancel.load(Ordering::Relaxed) {
+                    return Ok(());
+                }
+                match receive.recv_timeout(Duration::from_millis(10)) {
+                    Ok(reply) => break reply,
+                    Err(RecvTimeoutError::Timeout) if start.elapsed() < Duration::from_secs(15) => {
+                    }
+                    Err(_) => return Err(Error::PhysicsFailed),
+                }
+            };
+            // A pause acknowledged during a step retains the last displayed pose
+            // and holds the outstanding frame until playback resumes.
+            while paused.load(Ordering::Relaxed) && !cancel.load(Ordering::Relaxed) {
+                std::thread::sleep(Duration::from_millis(10));
+            }
+            if cancel.load(Ordering::Relaxed) {
+                break;
+            }
+            steps = steps.checked_add(25).ok_or(Error::PhysicsFailed)?;
+            publish(serde_json::from_slice(&reply)?, steps)?;
+            std::thread::sleep(Duration::from_millis(50).saturating_sub(start.elapsed()));
+        }
+        Ok(())
+    })();
+    drop(receive);
+    let _ = child.kill();
+    let status = child.wait();
+    let _ = reader.join();
+    if status.is_ok_and(|status| status.code() == Some(42)) {
+        return Err(Error::PhysicsUnavailable);
+    }
+    result
+}
+
+fn wait_for_preview(
+    child: &mut std::process::Child,
+    cancel: &AtomicBool,
+) -> Result<std::process::ExitStatus> {
+    let start = Instant::now();
+    loop {
+        match child.try_wait() {
+            Ok(Some(status)) => return Ok(status),
+            Ok(None)
+                if !cancel.load(Ordering::Relaxed) && start.elapsed() < Duration::from_secs(15) =>
+            {
+                std::thread::sleep(Duration::from_millis(10))
+            }
+            _ => {
+                let _ = child.kill();
+                let _ = child.wait();
+                return Err(Error::PhysicsFailed);
+            }
+        }
+    }
+}
+
 pub fn validate_result(project: &Project, result: &SimulationResult, steps: u32) -> Result<()> {
     let expected: std::collections::BTreeSet<_> = project.objects.iter().map(|o| o.id).collect();
     let actual: std::collections::BTreeSet<_> = result.poses.iter().map(|p| p.id).collect();
     if expected != actual
         || result.poses.len() != expected.len()
         || !result.time.is_finite()
-        || (result.time - steps as f64 * 0.002).abs() > 1e-7
+        || (result.time - steps as f64 * 0.002).abs() > (steps as f64 * 2e-12).max(1e-7)
         || result.engine.len() > 80
         || result.poses.iter().any(|p| {
             p.position
@@ -375,4 +516,17 @@ pub fn validate_result(project: &Project, result: &SimulationResult, steps: u32)
         return Err(Error::PhysicsFailed);
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod cancellation_tests {
+    use super::*;
+
+    #[cfg(unix)]
+    #[test]
+    fn cancelled_preview_reaps_the_running_child() {
+        let mut child = Process::new("sleep").arg("30").spawn().unwrap();
+        assert!(wait_for_preview(&mut child, &AtomicBool::new(true)).is_err());
+        assert!(child.try_wait().unwrap().is_some());
+    }
 }

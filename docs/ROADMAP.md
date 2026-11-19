@@ -42,7 +42,8 @@ ThreeX／UNGEの採用ソースはhashとコピー元revisionを記録した。
 - 🟢 [Done] 同一初期チェックポイントから最終距離順とtrain分布診断順で収集・再学習し、固定validation 12課題で比較。範囲外率100%の候補は12／12件で、両方式の選択は一致。[条件と結果](TRAIN_MINING.md)。
 - 🟢 [Done] 観測行の範囲外率が同じ候補を特徴量単位の範囲外率で順位付け。固定validation 12課題で平均最終距離は0.978 mから0.852 m、成功率・timeoutは同値。[条件と結果](TRAIN_MINING.md)。
 - 🟢 [Done] 初期trainデモ1／4件とBC seed 7／19で収集方式を比較。特徴量方式で成功数は2条件で増加し、平均最終距離は1条件で短縮。[実験結果](TRAIN_MINING.md)。
-- 🟠 [Next] 採用デモ数を揃え、収集順位の効果を検証。計画候補の原子的適用・単一Undoは別段階。
+- 🟢 [Done] 各方式の採用デモを4件に揃えて再評価。特徴量方式は4条件中3条件で成功数が増え、1条件で平均最終距離が短縮。[結果](TRAIN_MINING.md)。
+- 🟢 [Done] 検証済み計画をデスクトップから明示的に適用し、全編集を1件のUndo／Redoに集約。
 - ⭕️ [Pending] 実モデル推論。vLLM-appleは現在のMLX／Transformers版がreview済みgate外で拒否、Strataはserver未起動。gateや依存を変更せず保留。
 - 🔴 [Later] 位置IKの3D目標ハンドル・ライブプレビュー、向きの制約、衝突・バランスを考慮する姿勢計画。素材表示・操作補助の拡張と並行し、依存が成立した項目から着手。
 
@@ -103,7 +104,7 @@ ThreeX／UNGEの採用ソースはhashとコピー元revisionを記録した。
 - 🟢 [Done] 新規9テスト、全255テスト・Clippy・build。native Tauriの未保存scene→HTTP契約fixture→候補→dry-run、範囲外ID、生成中の編集、ネットワークなし再検証、文書／履歴不変、三言語・約220px幅を確認。[詳細](SKILL_PLAN.md)。fixtureを実モデルの計画品質と扱わない。
 - 🟢 [Done] 計画候補の固定holdout評価・失敗分類v1。[三言語6課題・CLI・検証](PLAN_EVALUATION.md)。
 - 🟢 [Done] Episode batchの品質選別と分離v1。GUIからの一括操作も実装済み。
-- 🔴 [Later] 承認済み候補の原子的適用・単一Undo／監査、実行jobとの接続、衝突・バランス・センサーを使う計画、候補記録の保存・export。
+- 🔴 [Later] 適用履歴の監査、実行jobとの接続、衝突・バランス・センサーを使う計画、候補記録の保存・export。
 - ⭕️ [Pending] 実モデルによる計画品質・物理task達成、他OS／浮動windowのQA。型検証・dry-runを物理安全性や意図達成の保証と数えない。
 
 ## RuntimeGateway v1（2026-11-03）
@@ -199,7 +200,8 @@ ThreeX／UNGEの採用ソースはhashとコピー元revisionを記録した。
 - 🟢 [Done] Rust共有カメラのorbit／pan／zoom、一覧と3Dクリックによる選択、選択オブジェクトへのフォーカス、浮動・再ドッキング後の視点保持。
 - 🟢 [Done] 深度を使った選択シルエット、ズーム追従XZグリッド、色分け座標軸と個別切替。材質・照明・背景・UIを温かいニュートラル色へ調整。
 - 🟢 [Done] 選択オブジェクトの移動・回転・スケール、XYZ入力、軸ハンドル、ドラッグ単位のUndo／Redo。Rustの共有履歴128件・保存時点判定・中止を実装。
-- 🟠 [Next] 変形のスナップ、回転リング／スケール専用ハンドル。
+- 🟢 [Done] 3D変形ドラッグ中のShiftスナップ。開始姿勢から移動0.1 m、回転15°、スケール10%刻み。
+- 🟢 [Done] XYZ回転リングとローカル軸の四角いスケールハンドル。Shiftスナップ、Esc取消、ドラッグ単位のUndo／Redoに対応。
 - 🔴 [Later] カメラの再起動復元、複数選択、全体フィット、ピンチ専用ジェスチャー。
 - 🔴 [Later] パネル複製、浮動グループ内の分割、影の投影・PBR。
 - ⭕️ [Pending] 複数モニターの実DPI移動、狭いウインドウと最小化復帰、他OSのネイティブ検証。
@@ -286,8 +288,13 @@ ThreeX／UNGEの採用ソースはhashとコピー元revisionを記録した。
 - 🟢 [Done] 人型99リンク・98可動接続・182回転自由度（浮動ベースは別途6自由度）／双腕13リンク・各腕6関節。関節範囲・出力制限付き位置サーボ、追加・ルート削除・全体フォーカス、保存済みJSONとMJCFを提供。
 - 🟢 [Done] Rustが管理するMuJoCo headless Worker。固定0.002秒刻みで最大1000step、15秒の実行上限、最終姿勢をwgpuへ反映。previewは文書・履歴へ焼き込まずresetで戻す。
 - 🟢 [Done] MuJoCo 3.1.6で落下・ゼロg・任意方向・摩擦・密度／慣性・両テンプレートを実行。ネイティブUIで保存復元とUndo／Redoを確認。
-- 🟠 [Next] 一般sceneの連続物理／pause、関節支点編集、把持・人型の姿勢安定方策。Reach v1はsingle-step継続・時系列記録・記録再生を実装済み。従来の汎用物理previewは編集状態からの短時間計算と最終姿勢表示。
-- 🟠 [Next] 物体同士の接触ペアoverride、presetの校正・出典管理、明示質量／慣性、一般MJCF import。現在の密度由来の箱モデルから拡張。
+- 🟢 [Done] 一般sceneの短時間MuJoCoプレビューを中断し、ワーカー終了後に編集シーンへ復帰。
+- 🟢 [Done] 一般sceneの連続MuJoCo、同一物理状態での一時停止・再開、3Dへの反映、停止時の編集姿勢復元。
+- 🟠 [Next] 関節支点編集、把持・人型の姿勢安定方策。Reach v1はsingle-step継続・時系列記録・記録再生を実装済み。従来の汎用物理previewは編集状態からの短時間計算と最終姿勢表示。
+- 🟠 [Next] presetの校正・出典管理、一般MJCF import。
+- 🟢 [Done] 箱の明示質量を編集・保存し、素材・スケール変更時に保持。MuJoCoは箱寸法から慣性を算出。
+- 🟢 [Done] 物体ペア単位の滑り・ねじり・転がり摩擦。3欄を空にすると素材由来に復帰。保存・Undo／Redo、MuJoCoの接触ペア出力に対応。直結ロボットリンクのペアは対象外。
+- 🟢 [Done] 箱の中心を通るローカルXYZ軸まわりの慣性モーメント指定。質量と併用でき、3欄の空欄で自動算出へ復帰。保存・Undo／Redoに対応。
 - 🔴 [Later] 液体・浮力・遠隔MCP・各社AIの接続は下記計画を継続。
 - ⭕️ [Pending] MuJoCo未導入環境・別OSでの配布と実行、実ロボット固有モデル・実機精度の検証。
 
@@ -349,7 +356,7 @@ Rustが文書・ジョブ・表示状態を所有し、外部Workerはそのジ�
 | 段階・状態 | 実装するもの | 完了を判定する実験 |
 |---|---|---|
 | M0-A 🟠 [Next] | backend registry／doctor、version付きRPC、能力表、資源上限、asset registry | mock Workerのtimeout・クラッシュ・未対応機能・古い応答を扱える。probe成功と実際のstep成功を別に表示 |
-| M1-A 🟠 [Next] | Reach v1のreset／step・参照controllerとIKはDone。残りはロボット階層、MJCF import、一般sceneの物理pause／中断 | 固定seedのReachをheadlessとUIで実行。関節制限、座標、時間刻みを確認し、停止時にWorkerが残らない。URDF／USDの全面対応は後段 |
+| M1-A 🟠 [Next] | Reach v1のreset／step・参照controllerとIKはDone。一般sceneの連続物理／pauseもDone。残りはロボット階層、MJCF import | 固定seedのReachをheadlessとUIで実行。関節制限、座標、時間刻みを確認し、停止時にWorkerが残らない。URDF／USDの全面対応は後段 |
 | M1-B 🟠 [Next] | Reach recorder／再生と10 seed比較はDone。残りは失敗分類、solver snapshotからの再開・分岐 | 初期検証として10 seedを各2回実行。固定backendで許容誤差を判定し、記録再生と物理再実行を区別。中断artifactは未完了扱い、保存復元未対応backendではaction列の再実行へ明示的に切り替え |
 | M2-A 🔴 [Later] | vLLM-apple／Strata接続、SkillPlan、LLM SFT／LoRA、教師候補の検証 | 既存[RuntimeGateway設計](RUNTIME-INTEGRATION.ja.md)に従い、手書き基準→LLM計画→追加学習モデルを固定holdoutで比較。推論runtimeのautotuneを重み学習と数えない |
 | M2-B 🔴 [Later] | RoboCasa adapter、小規模task browser、公式demo再生、収集・注釈・データ変換 | 一つのatomic課題と一つのcomposite課題でreset／action／成功判定／再生を通す。元demo ID・action schema・時刻・splitを保持し、公式loader／evaluatorで照合 |
@@ -365,7 +372,7 @@ Rustが文書・ジョブ・表示状態を所有し、外部Workerはそのジ�
 
 2026-10-23追加・実装後更新。重力と箱モデルの物理素材は上記の範囲で実装済み。以下には未実装の拡張要件も含む。液体・媒質モデル・外部AI制御は未実装。
 
-🟢 [Done] **Environment Inspectorと重力設定**を実装。プリセットとXYZ数値を編集でき、MuJoCoへ適用する。🟠 [Next] 大きさ・方向の独立入力と地球標準g比の補助表示。仕様IDの`earth_standard / moon_surface / mars_surface / zero_gravity`に対し、保存・APIのenumは`earth / moon / mars / zero`を使用する。
+🟢 [Done] **Environment Inspectorと重力設定**を実装。プリセットとXYZ数値を編集でき、MuJoCoへ適用する。🟢 [Done] 大きさ・方位角・仰角の入力と地球標準g比表示。仕様IDの`earth_standard / moon_surface / mars_surface / zero_gravity`に対し、保存・APIのenumは`earth / moon / mars / zero`を使用する。
 
 | プリセットID | 日本語 / English / 简体中文 | 大きさ m/s² | シミュレーション基準座標Z-upでの既定ベクトル |
 |---|---|---:|---|
@@ -379,7 +386,7 @@ Rustが文書・ジョブ・表示状態を所有し、外部Workerはそのジ�
 
 数値を変更したら`custom`として扱い、元preset ID／版と解決後のベクトルを保存する。Y-upの既存エディターとの軸変換をRustで行い、ゼロベクトルを正規化しない。無重力でも質量・慣性・接触は残し、空気抵抗や水中抵抗を自動で無効化しない。重力presetと`MediumSpec`は独立させ、月の重力＋水なども選択可能にする。
 
-🟢 [Done] **PhysicalMaterialとObject Inspector**：木材、鋼、アルミニウム、ゴム、樹脂、ガラス、コンクリート、氷のpresetとカスタム数値を実装。値は乾燥接触の初期例で、校正済みデータではない。🟠 [Next] 校正データ・試験条件・出典の管理、任意ContactPairの編集。以下のうち共有素材・静止／動摩擦の別指定・明示質量／慣性等は拡張要件。
+🟢 [Done] **PhysicalMaterialとObject Inspector**：木材、鋼、アルミニウム、ゴム、樹脂、ガラス、コンクリート、氷のpresetとカスタム数値を実装。値は乾燥接触の初期例で、校正済みデータではない。🟠 [Next] 校正データ・試験条件・出典の管理。以下のうち共有素材・静止／動摩擦の別指定等は拡張要件。
 
 | 項目 | 設定・保存する情報 |
 |---|---|
@@ -455,7 +462,7 @@ flowchart LR
 | 段階・状態 | 追加する実装 | 完了条件 |
 |---|---|---|
 | M0-C 🟢 [Done] | Control API、schema、ローカルMCPの読み取りとdry-run、接続診断 | native macOS GUIの未保存変更を別processのMCPから取得。dry-run後の文書・履歴・ファイル不変、未対応能力・不正値・古いguard・重複要求・再接続を検証 |
-| M1-C 🟢 [Done] | 重力preset／XYZ、箱の密度由来物理素材・摩擦、床、Inspector、保存・履歴、MuJoCo短時間適用 | 落下・ゼロg・摩擦滑り・質量／慣性更新・保存復元を確認。連続実行・任意接触ペア・明示慣性はNextとして分離 |
+| M1-C 🟢 [Done] | 重力preset／XYZ、箱の密度由来物理素材・摩擦、床、Inspector、保存・履歴、MuJoCo短時間適用 | 落下・ゼロg・摩擦滑り・質量／慣性更新・保存復元を確認。連続実行・物体接触ペア・箱の明示慣性も実装済み |
 | M1-D 🔴 [Later] | MCPから設定変更→reset→run→評価→結果取得 | 一つのAIクライアントで地球／月／火星／ゼロgを同条件比較し、停止・再接続後も結果を追跡できる |
 | M3-C 🔴 [Later] | 水中剛体、浮力・抗力、媒質preset・数値、有限水域 | 浸水率・浮心・浮沈・流れを検証。近似モデルの適用範囲を結果に付記 |
 | M4-C 🔴 [Later] | 遠隔MCP、各社AI接続profile、function calling bridge、予算付き実験batch | MCPとbridgeで同じ実験の結果が一致。認可・切断・重複・予算超過を試験 |

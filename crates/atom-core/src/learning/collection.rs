@@ -14,6 +14,8 @@ pub struct Config {
     pub max_seconds: u32,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub mining: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub accepted_target: Option<u32>,
 }
 impl Default for Config {
     fn default() -> Self {
@@ -23,6 +25,7 @@ impl Default for Config {
             horizon: 300,
             max_seconds: 60,
             mining: None,
+            accepted_target: None,
         }
     }
 }
@@ -31,6 +34,9 @@ impl Config {
         if !(1..=16).contains(&self.count)
             || !(1..=500).contains(&self.horizon)
             || !(1..=300).contains(&self.max_seconds)
+            || self
+                .accepted_target
+                .is_some_and(|target| !(1..=self.count).contains(&target))
             || self.start_seed.checked_add(1023).is_none()
             || self
                 .mining
@@ -224,9 +230,9 @@ pub fn run_checked(
     if expected_sha256.is_some_and(|expected| expected != data.summary.source_sha256) {
         return Err(err("learning_source_changed"));
     }
+    let max_added = config.accepted_target.unwrap_or(config.count) as usize;
     if !data.summary.fit_data_ready
-        || data.package.report.entries.len() + data.package.labels.len() + config.count as usize
-            > 64
+        || data.package.report.entries.len() + data.package.labels.len() + max_added > 64
     {
         return Err(err("learning_collection_capacity"));
     }
@@ -381,7 +387,9 @@ pub fn run_checked(
             report.code = Some(e.code);
             break;
         }
-        if report.attempted == config.count {
+        if report.attempted == config.count
+            || config.accepted_target == Some(report.accepted as u32)
+        {
             report.status = Status::Completed;
             break;
         }
@@ -466,7 +474,13 @@ pub fn inspect(root: &Path, file: &str) -> Result<Saved> {
                 || e.seed > report.config.start_seed + 1023
         })
         || report.entries.iter().filter(|e| !skipped(e)).count() != report.attempted as usize
-        || (report.status == Status::Completed && report.attempted != report.config.count)
+        || report
+            .config
+            .accepted_target
+            .is_some_and(|target| report.accepted > target as usize)
+        || (report.status == Status::Completed
+            && report.attempted != report.config.count
+            && report.config.accepted_target != Some(report.accepted as u32))
         || (report.accepted == 0 && report.groups != original.summary.groups)
     {
         return Err(err("learning_collection_invalid"));

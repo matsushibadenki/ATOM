@@ -68,6 +68,17 @@ struct AxisOut { @builtin(position) position:vec4<f32>, @location(0) color:vec3<
     let extent=select(max(view.options.w*3.,3.),view.gizmo_x.w,is_gizmo);
     var a=view.vp*vec4(origin,1.);
     var b=view.vp*vec4(origin+select(directions[index],basis[index],is_gizmo)*extent,1.);
+    let mode=select(0u,u32(view.gizmo_z.w),is_gizmo);
+    if mode==2u {
+        let normal=basis[index];
+        let reference=select(vec3(0.,1.,0.),vec3(1.,0.,0.),abs(normal.y)>0.9);
+        let u=normalize(cross(reference,normal));
+        let v=cross(normal,u);
+        let angle=f32(vertex/6u)*6.28318530718/64.;
+        let next=angle+6.28318530718/64.;
+        a=view.vp*vec4(origin+extent*(u*cos(angle)+v*sin(angle)),1.);
+        b=view.vp*vec4(origin+extent*(u*cos(next)+v*sin(next)),1.);
+    }
     var out:AxisOut;out.color=colors[index];
     if is_gizmo {out.color=mix(out.color,vec3(1.,0.72,0.25),select(0.,0.75,i32(index)==i32(view.gizmo_y.w)));}
     if (a.z<0. && b.z<0.) || (a.w<=0. && b.w<=0.) {out.position=vec4(2.,2.,1.,1.);return out;}
@@ -76,14 +87,19 @@ struct AxisOut { @builtin(position) position:vec4<f32>, @location(0) color:vec3<
     let start=a.xy/max(a.w,1e-6);let end=b.xy/max(b.w,1e-6);
     let direction=(end-start)*view.region.zw;
     let n=vec2(-direction.y,direction.x)*inverseSqrt(max(dot(direction,direction),1e-10));
-    if vertex>=6u {
+    if mode==3u && vertex>=6u {
+        let corners2=array<vec2<f32>,6>(vec2(-1.,-1.),vec2(1.,-1.),vec2(1.,1.),vec2(-1.,-1.),vec2(1.,1.),vec2(-1.,1.));
+        let offset=corners2[vertex-6u]*10.*view.options.z/view.region.zw;
+        b.x+=offset.x*b.w;b.y+=offset.y*b.w;out.position=b;return out;
+    }
+    if mode!=2u && vertex>=6u {
         let points=array<vec2<f32>,3>(vec2(0.,0.),vec2(-8.,4.),vec2(-8.,-4.));
         let shape=points[vertex-6u]*view.options.z;
         let forward=direction*inverseSqrt(max(dot(direction,direction),1e-10));
         let offset=(forward*shape.x+n*shape.y)*2./view.region.zw;
         b.x+=offset.x*b.w;b.y+=offset.y*b.w;out.position=b;return out;
     }
-    let corner=corners[vertex];var clip=mix(a,b,corner.x);
+    let corner=corners[vertex%6u];var clip=mix(a,b,corner.x);
     clip.x+=n.x*corner.y*select(2.,3.,is_gizmo)*view.options.z/view.region.z*clip.w;
     clip.y+=n.y*corner.y*select(2.,3.,is_gizmo)*view.options.z/view.region.w*clip.w;
     out.position=clip;return out;

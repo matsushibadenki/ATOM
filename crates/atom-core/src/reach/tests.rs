@@ -2429,7 +2429,8 @@ fn train_mining_fixture(
             &project,
             &learning::collection_comparison::Config {
                 mining: pool.file,
-                attempts: 4,
+                attempts: if pool_start_seed == 200 { 12 } else { 4 },
+                accepted_target: (pool_start_seed == 200).then_some(4),
                 collection_seconds: 120,
                 validation_seconds: 300,
                 training: training::Config {

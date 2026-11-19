@@ -53,12 +53,15 @@ fn sequential_dry_run_preserves_document_history_and_applies_dependencies_on_a_f
     let id = core.project().objects[0].id;
     let before = bytes(&core);
     let context = core.planning_context(Some(id)).unwrap();
-    let report=context.validate(&text(json!([{"skill":"move_object","id":id,"position":[1.,2.,3.]},{"skill":"set_material","id":id,"preset":"rubber"},{"skill":"move_object","id":id,"position":[4.,5.,6.]}])));
+    let candidate = text(
+        json!([{"skill":"move_object","id":id,"position":[1.,2.,3.]},{"skill":"set_material","id":id,"preset":"rubber"},{"skill":"move_object","id":id,"position":[4.,5.,6.]}]),
+    );
+    let report = context.validate(&candidate);
     assert!(report.valid);
     assert_eq!(report.steps.len(), 3);
     let d = report.dry_run.unwrap();
-    assert_eq!(d.predicted_revision, core.snapshot().revision + 3);
-    assert_eq!(d.undo_depth_after, core.snapshot().undo_depth + 3);
+    assert_eq!(d.predicted_revision, core.snapshot().revision + 1);
+    assert_eq!(d.undo_depth_after, core.snapshot().undo_depth + 1);
     assert_eq!(d.redo_depth_after, 0);
     let c = d
         .changes
@@ -68,14 +71,31 @@ fn sequential_dry_run_preserves_document_history_and_applies_dependencies_on_a_f
     assert_eq!(c.after["position"], json!([4., 5., 6.]));
     assert_eq!(c.after["material"]["preset"], "rubber");
     assert_eq!(before, bytes(&core));
+    let basis = context.summary.basis;
+    let original = serde_json::to_value(core.project()).unwrap();
+    let applied = core.apply_plan(&basis, Some(id), &candidate).unwrap();
+    assert_eq!(applied.revision, d.predicted_revision);
+    assert_eq!(applied.undo_depth, d.undo_depth_after);
+    let changed = serde_json::to_value(core.project()).unwrap();
+    assert!(core.apply_plan(&basis, Some(id), &candidate).is_err());
+    edit(&mut core, Command::Undo);
+    assert_eq!(serde_json::to_value(core.project()).unwrap(), original);
+    assert!(!core.snapshot().dirty);
+    edit(&mut core, Command::Redo);
+    assert_eq!(serde_json::to_value(core.project()).unwrap(), changed);
 }
 #[test]
 fn invalid_late_step_returns_no_partial_diff_and_strict_schema_rejects_unlisted_commands() {
-    let core = AppCore::new(Project::new("Safe").unwrap()).unwrap();
+    let mut core = AppCore::new(Project::new("Safe").unwrap()).unwrap();
     let id = core.project().objects[0].id;
     let c = core.planning_context(None).unwrap();
     let before = bytes(&core);
-    let r=c.validate(&text(json!([{"skill":"set_gravity","preset":"moon"},{"skill":"move_object","id":99999,"position":[0,0,0]}])));
+    let invalid = text(
+        json!([{"skill":"set_gravity","preset":"moon"},{"skill":"move_object","id":99999,"position":[0,0,0]}]),
+    );
+    let r = c.validate(&invalid);
+    assert!(core.apply_plan(&c.summary.basis, None, &invalid).is_err());
+    assert_eq!(before, bytes(&core));
     assert!(!r.valid);
     assert_eq!(r.issues[0].step, Some(1));
     assert!(r.steps.is_empty() && r.dry_run.is_none());

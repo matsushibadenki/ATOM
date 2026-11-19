@@ -130,6 +130,16 @@ pub struct Context {
 }
 impl Context {
     pub fn validate(&self, text: &str) -> Validation {
+        self.evaluate(text, &mut None)
+    }
+
+    pub(crate) fn validated_trial(&self, text: &str) -> Result<AppCore> {
+        let mut candidate = None;
+        self.evaluate(text, &mut candidate);
+        candidate.ok_or_else(|| Error::Invalid("plan validation failed".into()))
+    }
+
+    fn evaluate(&self, text: &str, candidate: &mut Option<AppCore>) -> Validation {
         if text.len() > MAX_PLAN_BYTES {
             return Validation::rejected("plan_response_budget");
         }
@@ -213,7 +223,15 @@ impl Context {
                 }
             }
         }
-        let mut dry = self.core.authoring_diff(&trial, true);
+        let mut atomic = match self.core.fork_authoring() {
+            Ok(core) => core,
+            Err(_) => return Validation::rejected("plan_scene_busy"),
+        };
+        if let Err(error) = atomic.commit_plan_trial(trial) {
+            return Validation::rejected(error.code());
+        }
+        let mut dry = self.core.authoring_diff(&atomic, true);
+        *candidate = Some(atomic);
         if self.summary.omitted_objects > 0 {
             dry.warnings.push("plan_summary_truncated".into());
         }

@@ -314,13 +314,51 @@ fn live_contact_friction_changes_sliding_and_density_updates_mass_inertia() {
     p.objects[0].material.density = 1000.;
     let temp = tempfile::tempdir().unwrap();
     let path = temp.path().join("mass.xml");
-    std::fs::write(&path, mujoco::export(&p).unwrap()).unwrap();
-    let output=std::process::Command::new(std::env::var_os("ATOM_MUJOCO_PYTHON").unwrap_or_else(||"python3".into())).args(["-I","-c", "import mujoco,sys; m=mujoco.MjModel.from_xml_path(sys.argv[1]); b=m.body('b1'); assert abs(b.mass[0]-24000)<1e-6; assert sorted(b.inertia.tolist())==sorted([24000/12*(9+16),24000/12*(4+16),24000/12*(4+9)])"]).arg(path).output().unwrap();
-    assert!(
-        output.status.success(),
-        "{}",
-        String::from_utf8_lossy(&output.stderr)
-    );
+    p.objects[0].rotation = [0.2, -0.3, 0.4];
+    for (override_mass, inertia, expected) in [
+        (None, None, "24000"),
+        (Some(12.), None, "12"),
+        (Some(12.), Some([3., 4., 5.]), "12"),
+        (None, Some([3., 4., 5.]), "24000"),
+    ] {
+        p.objects[0].inertia_override = inertia;
+        p.objects[0].mass_override = override_mass;
+        std::fs::write(&path, mujoco::export(&p).unwrap()).unwrap();
+        let output = std::process::Command::new(
+            std::env::var_os("ATOM_MUJOCO_PYTHON").unwrap_or_else(|| "python3".into()),
+        )
+        .args([
+            "-I",
+            "-c",
+            r#"
+import math, mujoco, sys
+model = mujoco.MjModel.from_xml_path(sys.argv[1])
+mass = float(sys.argv[2])
+body = model.body('b1')
+assert math.isclose(body.mass[0], mass)
+if sys.argv[3] == "explicit":
+    assert body.inertia.tolist() == [3., 4., 5.]
+    assert abs(body.iquat @ model.geom('o1').quat) > 1 - 1e-10, (body.iquat, model.geom('o1').quat)
+else:
+    expected = sorted(mass / 12 * value for value in (25, 20, 13))
+    assert all(math.isclose(a, b) for a, b in zip(sorted(body.inertia), expected))
+"#,
+        ])
+        .arg(&path)
+        .arg(expected)
+        .arg(if inertia.is_some() {
+            "explicit"
+        } else {
+            "auto"
+        })
+        .output()
+        .unwrap();
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+    }
 }
 
 #[test]
@@ -468,4 +506,261 @@ assert np.max(np.linalg.norm(d.geom_xpos-initial,axis=1))>0.00001
         "{}",
         String::from_utf8_lossy(&output.stderr)
     );
+}
+
+#[test]
+fn explicit_box_mass_survives_resize_material_edit_and_history() {
+    let mut core = AppCore::new(Project::new("Mass").unwrap()).unwrap();
+    let id = core.project().objects[0].id;
+    edit(
+        &mut core,
+        Command::SetMass {
+            id,
+            mass: Some(12.),
+        },
+    )
+    .unwrap();
+    let mut transform = Transform::from(&core.project().objects[0]);
+    transform.scale = [2., 3., 4.];
+    edit(&mut core, Command::Transform { id, transform }).unwrap();
+    edit(
+        &mut core,
+        Command::SetMaterial {
+            id: Some(id),
+            material: PhysicalMaterial::preset(MaterialPreset::Steel),
+        },
+    )
+    .unwrap();
+    let xml = mujoco::export(core.project()).unwrap();
+    let geom = xml
+        .lines()
+        .find(|line| line.contains(&format!("name=\"o{id}\"")))
+        .unwrap();
+    assert!(
+        geom.contains("size=\"1 1.5 2\"") && geom.contains("mass=\"12\""),
+        "{geom}"
+    );
+    assert!(edit(&mut core, Command::SetMass { id, mass: Some(0.) }).is_err());
+    assert_eq!(core.project().objects[0].mass_override, Some(12.));
+    let temp = tempfile::tempdir().unwrap();
+    let mut store = ProjectStore::open(temp.path().join("mass.json")).unwrap();
+    store.save(core.project()).unwrap();
+    assert_eq!(
+        store.load().unwrap().unwrap().objects[0].mass_override,
+        Some(12.)
+    );
+    edit(&mut core, Command::SetMass { id, mass: None }).unwrap();
+    assert_eq!(core.project().objects[0].mass_override, None);
+    edit(&mut core, Command::Undo).unwrap();
+    assert_eq!(core.project().objects[0].mass_override, Some(12.));
+    edit(&mut core, Command::Redo).unwrap();
+    assert_eq!(core.project().objects[0].mass_override, None);
+}
+
+#[test]
+fn box_inertia_override_roundtrips_and_clears_as_one_edit() {
+    let mut core = AppCore::new(Project::new("Inertia").unwrap()).unwrap();
+    let id = core.project().objects[0].id;
+    let moments = Some([3., 4., 5.]);
+    assert!(
+        edit(
+            &mut core,
+            Command::SetInertia {
+                id,
+                inertia: Some([1., 1., 3.])
+            }
+        )
+        .is_err()
+    );
+    edit(
+        &mut core,
+        Command::SetInertia {
+            id,
+            inertia: moments,
+        },
+    )
+    .unwrap();
+    let directory = tempfile::tempdir().unwrap();
+    let mut store = ProjectStore::open(directory.path().join("inertia.json")).unwrap();
+    store.save(core.project()).unwrap();
+    assert_eq!(
+        store.load().unwrap().unwrap().objects[0].inertia_override,
+        moments
+    );
+    edit(&mut core, Command::SetInertia { id, inertia: None }).unwrap();
+    assert!(
+        !mujoco::export(core.project())
+            .unwrap()
+            .contains("<inertial")
+    );
+    edit(&mut core, Command::Undo).unwrap();
+    assert_eq!(core.project().objects[0].inertia_override, moments);
+    edit(&mut core, Command::Redo).unwrap();
+    assert_eq!(core.project().objects[0].inertia_override, None);
+}
+
+#[test]
+fn contact_pair_friction_is_symmetric_persistent_and_removed_with_object() {
+    let mut core = AppCore::new(Project::new("Pair").unwrap()).unwrap();
+    edit(&mut core, Command::AddBox).unwrap();
+    let friction = [0.2, 0.03, 0.004];
+    edit(
+        &mut core,
+        Command::SetContactFriction {
+            objects: [2, 1],
+            friction: Some(friction),
+        },
+    )
+    .unwrap();
+    let pair = ContactPair {
+        objects: [1, 2],
+        friction,
+    };
+    assert_eq!(
+        core.project().physics.contact_pairs,
+        std::slice::from_ref(&pair)
+    );
+    let temp = tempfile::tempdir().unwrap();
+    let mut store = ProjectStore::open(temp.path().join("pairs.json")).unwrap();
+    store.save(core.project()).unwrap();
+    assert_eq!(
+        store.load().unwrap().unwrap().physics.contact_pairs,
+        std::slice::from_ref(&pair)
+    );
+    assert!(
+        edit(
+            &mut core,
+            Command::SetContactFriction {
+                objects: [1, 99999],
+                friction: Some(friction),
+            }
+        )
+        .is_err()
+    );
+    edit(&mut core, Command::RemoveBox { id: 2 }).unwrap();
+    assert!(core.project().physics.contact_pairs.is_empty());
+    edit(&mut core, Command::Undo).unwrap();
+    assert_eq!(core.project().physics.contact_pairs, [pair]);
+    edit(
+        &mut core,
+        Command::SetContactFriction {
+            objects: [1, 2],
+            friction: None,
+        },
+    )
+    .unwrap();
+    assert!(core.project().physics.contact_pairs.is_empty());
+    edit(&mut core, Command::Undo).unwrap();
+    assert_eq!(core.project().physics.contact_pairs[0].friction, friction);
+    edit(&mut core, Command::Redo).unwrap();
+    assert!(core.project().physics.contact_pairs.is_empty());
+}
+
+#[test]
+#[ignore = "requires Python with MuJoCo"]
+fn live_pair_override_changes_only_the_selected_contact() {
+    let mut core = AppCore::new(Project::new("Pair contacts").unwrap()).unwrap();
+    edit(&mut core, Command::AddBox).unwrap();
+    let mut project = core.project().clone();
+    project.physics.floor_enabled = false;
+    project.objects[0].fixed = true;
+    project.objects[0].rotation = [0.; 3];
+    project.objects[1].rotation = [0.; 3];
+    project.objects[1].position = [0.75, 1., 0.];
+    project.objects[1].material = PhysicalMaterial::preset(MaterialPreset::Rubber);
+    let automatic = mujoco::export(&project).unwrap();
+    project.physics.contact_pairs.push(ContactPair {
+        objects: [1, 2],
+        friction: [0.2, 0.03, 0.004],
+    });
+    let explicit = mujoco::export(&project).unwrap();
+    let temp = tempfile::tempdir().unwrap();
+    let auto = temp.path().join("auto.xml");
+    let custom = temp.path().join("custom.xml");
+    std::fs::write(&auto, automatic).unwrap();
+    std::fs::write(&custom, explicit).unwrap();
+    let output = std::process::Command::new(
+        std::env::var_os("ATOM_MUJOCO_PYTHON").unwrap_or_else(|| "python3".into()),
+    ).args(["-I", "-c", r#"
+import mujoco, numpy as np, sys
+for path, expected in zip(sys.argv[1:], ([1.2, 1.2, .005, .0001, .0001], [.2, .2, .03, .004, .004])):
+    model = mujoco.MjModel.from_xml_path(path)
+    data = mujoco.MjData(model)
+    mujoco.mj_forward(model, data)
+    assert data.ncon > 0
+    for contact in data.contact:
+        assert set(contact.geom) == {model.geom('o1').id, model.geom('o2').id}
+        np.testing.assert_allclose(contact.friction, expected)
+"#]).arg(auto).arg(custom).output().unwrap();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+}
+
+#[test]
+#[ignore = "requires Python with MuJoCo"]
+fn live_continuous_preview_pauses_resumes_and_restores_authoring() {
+    use std::sync::{
+        atomic::{AtomicBool, Ordering},
+        mpsc,
+    };
+    use std::time::Duration;
+    let mut core = AppCore::new(Project::new("Continuous").unwrap()).unwrap();
+    edit(&mut core, Command::AddBox).unwrap();
+    edit(&mut core, Command::AddBox).unwrap();
+    edit(&mut core, Command::Undo).unwrap();
+    let initial = core.snapshot();
+    let project = core.project().clone();
+    let token = core
+        .begin_continuous_simulation(initial.revision, initial.project_id)
+        .unwrap();
+    let pause = AtomicBool::new(false);
+    let cancel = AtomicBool::new(false);
+    let (send, receive) = mpsc::channel();
+    std::thread::scope(|scope| {
+        let worker = scope.spawn(|| {
+            mujoco::run_continuous(&project, &cancel, &pause, |result, steps| {
+                pause.store(true, Ordering::Relaxed);
+                send.send((result, steps)).unwrap();
+                Ok(())
+            })
+        });
+        let checked = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            let (first, steps) = receive.recv_timeout(Duration::from_secs(15)).unwrap();
+            assert_eq!(steps, 25);
+            core.update_continuous_simulation(token, first, steps)
+                .unwrap();
+            core.set_simulation_paused(true).unwrap();
+            assert!(matches!(
+                receive.recv_timeout(Duration::from_millis(150)),
+                Err(mpsc::RecvTimeoutError::Timeout)
+            ));
+            assert!(core.snapshot().simulation_paused);
+            core.set_simulation_paused(false).unwrap();
+            pause.store(false, Ordering::Relaxed);
+            let (second, steps) = receive.recv_timeout(Duration::from_secs(3)).unwrap();
+            assert_eq!(steps, 50);
+            let expected = mujoco::run(&project, steps).unwrap();
+            assert_eq!(
+                serde_json::to_value(&second).unwrap(),
+                serde_json::to_value(expected).unwrap()
+            );
+            core.update_continuous_simulation(token, second, steps)
+                .unwrap();
+            assert_ne!(core.snapshot().objects, initial.objects);
+        }));
+        cancel.store(true, Ordering::Relaxed);
+        worker.join().unwrap().unwrap();
+        if let Err(error) = checked {
+            std::panic::resume_unwind(error);
+        }
+    });
+    let restored = core.reset_simulation();
+    assert_eq!(restored.objects, initial.objects);
+    assert_eq!(restored.undo_depth, initial.undo_depth);
+    assert_eq!(restored.redo_depth, initial.redo_depth);
+    assert_eq!(restored.revision, initial.revision);
+    assert!(!restored.previewing);
 }

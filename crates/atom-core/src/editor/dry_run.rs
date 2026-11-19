@@ -33,6 +33,8 @@ impl AppCore {
             &request.command,
             Command::SetGravity { .. }
                 | Command::SetMaterial { .. }
+                | Command::SetMass { .. }
+                | Command::SetInertia { .. }
                 | Command::SetFloor { .. }
                 | Command::SetJointAngle { .. }
                 | Command::SetJointRange { .. }

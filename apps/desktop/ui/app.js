@@ -12,15 +12,15 @@ for(const language of Object.keys(translations)) Object.assign(translations[lang
 const cameraTranslations={en:{show_grid:'XZ grid (Y = 0); spacing follows zoom',show_axes:'World axes: X red, Y green (up), Z blue',pan_mode:'Pan with left drag',selected_object:'Selected object',focus_selection:'Focus selected object (F)',reset_camera:'Reset camera (0)',select_object:'Select object',no_selection:'Select an object first.',camera_help:'Drag a joint arc/axis to pose. Left drag elsewhere: orbit. Right/middle drag or Shift + left drag: pan. Wheel: zoom. Click an object to select. F: focus selection. 0: reset. Esc: cancel drag.'},ja:{show_grid:'XZグリッド（Y＝0）。ズームに応じて間隔を調整',show_axes:'ワールド座標軸：Xは赤、Yは緑（上）、Zは青',pan_mode:'左ドラッグをパンに切り替える',selected_object:'選択中のオブジェクト',focus_selection:'選択オブジェクトにフォーカス（F）',reset_camera:'視点をリセット（0）',select_object:'オブジェクトを選択',no_selection:'オブジェクトを選択してください。',camera_help:'関節の円弧・軸は左ドラッグで角度変更。それ以外は左ドラッグで視点回転。右・中ドラッグ、またはShift＋左ドラッグでパン。ホイールでズーム。クリックで選択。Fでフォーカス、0で視点リセット、Escでドラッグを中止。'},'zh-CN':{show_grid:'XZ网格（Y＝0），间距随缩放调整',show_axes:'世界坐标轴：X红色、Y绿色（向上）、Z蓝色',pan_mode:'左键拖动平移',selected_object:'选中对象',focus_selection:'聚焦选中对象（F）',reset_camera:'重置视角（0）',select_object:'选择对象',no_selection:'请先选择对象。',camera_help:'拖动关节圆弧或轴可调整角度，其他位置左键旋转视角；右键、中键或Shift＋左键拖动平移；滚轮缩放。单击对象选择，F聚焦，0重置，Esc取消拖动。'}};
 for(const language of Object.keys(translations))Object.assign(translations[language],cameraTranslations[language]);
 const transformTranslations={
- en:{undo:'Undo (⌘Z / Ctrl+Z)',redo:'Redo (⌘⇧Z / Ctrl+Shift+Z)',tool_camera:'Camera / select (V)',tool_move:'Move (W)',tool_rotate:'Rotate (E)',tool_scale:'Scale (R)',transform_axis:'Transform axis (X / Y / Z)',axis_free:'Free',position:'Position',rotation:'Rotation (degrees)',scale_value:'Scale',transform_help:'Drag the selected object or an axis handle. W move, E rotate, R scale, V camera. X/Y/Z constrain an axis. Alt + left drag orbits; right/middle drag pans. Esc cancels. A completed drag is one undo step.',numeric_help:'Edit XYZ values; rotation is in degrees. Enter or leaving a field commits one history step. Esc cancels. Undo/Redo affects document edits; camera and layout stay independent.',edit_busy:'Reset the physics preview or finish/cancel the active transform.',history_empty:'No history available.'},
- ja:{undo:'取り消す（⌘Z / Ctrl+Z）',redo:'やり直す（⌘⇧Z / Ctrl+Shift+Z）',tool_camera:'カメラ・選択（V）',tool_move:'移動（W）',tool_rotate:'回転（E）',tool_scale:'スケール（R）',transform_axis:'変形の軸（X / Y / Z）',axis_free:'自由',position:'位置',rotation:'回転（度）',scale_value:'スケール',transform_help:'選択した物体または軸ハンドルをドラッグ。Wで移動、Eで回転、Rでスケール、Vでカメラ。X/Y/Zで軸を制限。Alt＋左で視点回転、右・中ドラッグでパン。Escで中止。1回のドラッグを1件の履歴として確定します。',numeric_help:'XYZを入力。回転は度。Enterまたは入力欄を離れると1件の履歴として確定、Escで中止。Undo／Redoは文書の編集が対象です。',edit_busy:'物理プレビューをリセット、または操作中の変形を確定・中止してください。',history_empty:'操作履歴がありません。'},
- 'zh-CN':{undo:'撤销（⌘Z / Ctrl+Z）',redo:'重做（⌘⇧Z / Ctrl+Shift+Z）',tool_camera:'相机／选择（V）',tool_move:'移动（W）',tool_rotate:'旋转（E）',tool_scale:'缩放（R）',transform_axis:'变换轴（X / Y / Z）',axis_free:'自由',position:'位置',rotation:'旋转（度）',scale_value:'缩放',transform_help:'拖动选中对象或轴手柄。W移动，E旋转，R缩放，V相机。X/Y/Z约束轴。Alt＋左键旋转视角，右键或中键平移。Esc取消，一次拖动记录为一次操作。',numeric_help:'输入XYZ数值，旋转单位为度。Enter或离开输入框提交一次操作，Esc取消。撤销／重做针对文档编辑。',edit_busy:'请重置物理预览，或提交／取消当前变换。',history_empty:'没有可用历史。'}
+ en:{undo:'Undo (⌘Z / Ctrl+Z)',redo:'Redo (⌘⇧Z / Ctrl+Shift+Z)',tool_camera:'Camera / select (V)',tool_move:'Move (W)',tool_rotate:'Rotate (E)',tool_scale:'Scale (R)',transform_axis:'Transform axis (X / Y / Z)',axis_free:'Free',position:'Position',rotation:'Rotation (degrees)',scale_value:'Scale',transform_help:'Drag the selected object, a rotation ring, or a square scale handle. W move, E rotate, R scale, V camera. X/Y/Z constrain an axis. Hold Shift during a transform drag to snap by 0.1 m, 15°, or 10% of the starting scale. Alt + left drag orbits; right/middle drag pans. Esc cancels. A completed drag is one undo step.',numeric_help:'Edit XYZ values; rotation is in degrees. Enter or leaving a field commits one history step. Esc cancels. Undo/Redo affects document edits; camera and layout stay independent.',edit_busy:'Reset the physics preview or finish/cancel the active transform.',history_empty:'No history available.'},
+ ja:{undo:'取り消す（⌘Z / Ctrl+Z）',redo:'やり直す（⌘⇧Z / Ctrl+Shift+Z）',tool_camera:'カメラ・選択（V）',tool_move:'移動（W）',tool_rotate:'回転（E）',tool_scale:'スケール（R）',transform_axis:'変形の軸（X / Y / Z）',axis_free:'自由',position:'位置',rotation:'回転（度）',scale_value:'スケール',transform_help:'選択した物体、回転リング、四角いスケールハンドルをドラッグ。Wで移動、Eで回転、Rでスケール、Vでカメラ。X/Y/Zで軸を制限。変形ドラッグ中にShiftを押すと、0.1 m・15°・開始スケールの10%刻みになります。Alt＋左で視点回転、右・中ドラッグでパン。Escで中止。1回のドラッグを1件の履歴として確定します。',numeric_help:'XYZを入力。回転は度。Enterまたは入力欄を離れると1件の履歴として確定、Escで中止。Undo／Redoは文書の編集が対象です。',edit_busy:'物理プレビューをリセット、または操作中の変形を確定・中止してください。',history_empty:'操作履歴がありません。'},
+ 'zh-CN':{undo:'撤销（⌘Z / Ctrl+Z）',redo:'重做（⌘⇧Z / Ctrl+Shift+Z）',tool_camera:'相机／选择（V）',tool_move:'移动（W）',tool_rotate:'旋转（E）',tool_scale:'缩放（R）',transform_axis:'变换轴（X / Y / Z）',axis_free:'自由',position:'位置',rotation:'旋转（度）',scale_value:'缩放',transform_help:'拖动选中对象、旋转环或方形缩放手柄。W移动，E旋转，R缩放，V相机。X/Y/Z约束轴。变换拖动时按住Shift，按0.1 m、15°或初始缩放的10%吸附。Alt＋左键旋转视角，右键或中键平移。Esc取消，一次拖动记录为一次操作。',numeric_help:'输入XYZ数值，旋转单位为度。Enter或离开输入框提交一次操作，Esc取消。撤销／重做针对文档编辑。',edit_busy:'请重置物理预览，或提交／取消当前变换。',history_empty:'没有可用历史。'}
 };
 for(const language of Object.keys(translations))Object.assign(translations[language],transformTranslations[language]);
 const physicsTranslations = {
- en:{environment:'Environment',gravity:'Gravity',earth:'Earth',moon:'Moon',mars:'Mars',zero:'Zero gravity',custom:'Custom',gravity_help:'Gravity in m/s², physics coordinates: Z up. Converted to the Y-up 3D view in Rust. Numeric edits use Custom. Range: ±1000 per axis.',floor_enabled:'Contact floor · Y = 0',floor:'Floor',robot_template:'Robot template',humanoid:'Humanoid',dual_arm:'Dual arm',add_robot:'Add robot template',robot_help:'Generic box-link robots with joints, limits and bounded position servos. Humanoid: floating base, 98 articulated connections / 182 rotational DoF (plus 6 floating-base DoF); dual arm: fixed base, 6 hinges per arm. Engineering approximation; not a medical anatomical joint count. No balance or grasp policy. Remove the root to remove a robot. Moving geometry does not move its joint pivots.',physical_material:'Physical material',material_target:'Apply to',density:'Density · kg/m³',sliding:'Sliding μ',torsional:'Torsion · m',rolling:'Rolling · m',fixed_body:'Fixed body',material_help:'Illustrative dry-contact presets, not calibrated measurements. MuJoCo sliding, torsional and rolling friction; not separate static/dynamic coefficients. Mass and inertia follow box volume × density. Visual color stays unchanged. Floor pairs use geometric-mean friction; object pairs use MuJoCo mixing.',wood:'Wood',steel:'Steel',aluminum:'Aluminum',rubber:'Rubber',plastic:'Plastic',glass:'Glass',concrete:'Concrete',ice:'Ice',physics_preview:'MuJoCo preview',run_physics:'Run bounded physics preview',reset_physics:'Restore authored scene',duration:'Simulation duration from authored state',simulation_help:'Each run starts from the authored scene, at 0.002 s per step. Shows the final pose; does not bake it into the saved document. Reset before editing. Worker timeout: 15 s. Requires Python with MuJoCo; set ATOM_MUJOCO_PYTHON if needed.',sim_running:'Simulating…',sim_idle:'Authored state',physics_unavailable:'MuJoCo unavailable. Set ATOM_MUJOCO_PYTHON to a Python with mujoco installed.',physics_failed:'Physics failed or timed out. Check geometry and runtime.',base:'Base',pelvis:'Pelvis',torso:'Torso',head:'Head',left:'Left',right:'Right',thigh:'Thigh',shin:'Shin',foot:'Foot',upper_arm:'Upper arm',forearm:'Forearm',gripper:'Gripper',shoulder:'Shoulder',elbow:'Elbow',wrist:'Wrist'},
- ja:{environment:'環境',gravity:'重力',earth:'地球',moon:'月',mars:'火星',zero:'無重力',custom:'カスタム',gravity_help:'単位m/s²、物理座標はZが上。RustでY-upの3D表示へ変換します。数値編集はカスタム設定です。各軸±1000まで。',floor_enabled:'接触する床 · Y＝0',floor:'床',robot_template:'ロボットテンプレート',humanoid:'人型ロボット',dual_arm:'双腕ロボット',add_robot:'ロボットテンプレートを追加',robot_help:'関節・可動範囲・出力制限付き位置サーボを持つ汎用モデル。人型は98可動接続・182回転自由度＋浮動ベース6自由度、双腕は固定ベースと片腕6関節。工学的な近似で、医学的な総関節数ではありません。姿勢安定・把持方策は未搭載。ルートを削除すると一体を削除します。形状の移動では関節支点は動きません。',physical_material:'物理素材',material_target:'適用先',density:'密度 · kg/m³',sliding:'滑り摩擦 μ',torsional:'ねじり · m',rolling:'転がり · m',fixed_body:'固定する',material_help:'プリセットは乾燥接触の初期例で、実測保証値ではありません。MuJoCoの滑り・ねじり・転がり摩擦です。静止／動摩擦の区別はありません。箱の体積×密度で質量と慣性を算出。表示色は維持。床との摩擦は幾何平均、物体間はMuJoCoの組合せ規則を使います。',wood:'木材',steel:'鋼',aluminum:'アルミニウム',rubber:'ゴム',plastic:'樹脂',glass:'ガラス',concrete:'コンクリート',ice:'氷',physics_preview:'MuJoCoプレビュー',run_physics:'短時間の物理プレビューを実行',reset_physics:'編集時のシーンへ戻す',duration:'編集時の状態からの実行時間',simulation_help:'毎回、編集時の状態から0.002秒刻みで計算し、最終姿勢を表示します。保存文書には焼き込みません。編集前にリセットしてください。処理上限15秒。MuJoCo入りPythonが必要です。必要に応じATOM_MUJOCO_PYTHONを指定。',sim_running:'物理計算中…',sim_idle:'編集時の状態',physics_unavailable:'MuJoCoが見つかりません。ATOM_MUJOCO_PYTHONにMuJoCo入りPythonを指定してください。',physics_failed:'物理計算に失敗、または時間上限に達しました。形状と実行環境を確認してください。',base:'基台',pelvis:'骨盤',torso:'胴体',head:'頭',left:'左',right:'右',thigh:'大腿',shin:'下腿',foot:'足',upper_arm:'上腕',forearm:'前腕',gripper:'グリッパー',shoulder:'肩',elbow:'肘',wrist:'手首'},
- 'zh-CN':{environment:'环境',gravity:'重力',earth:'地球',moon:'月球',mars:'火星',zero:'零重力',custom:'自定义',gravity_help:'单位m/s²，物理坐标Z向上。Rust转换至Y向上的3D视图。数值修改使用自定义，每轴范围±1000。',floor_enabled:'接触地面 · Y＝0',floor:'地面',robot_template:'机器人模板',humanoid:'人形机器人',dual_arm:'双臂机器人',add_robot:'添加机器人模板',robot_help:'带关节、限位及限力位置伺服的通用模型。人形：浮动基座、98个可动连接及182个旋转自由度，另有6个基座自由度；双臂：固定基座、每臂6关节。属于工程近似，并非医学关节总数。无平衡或抓取策略。删除根节点可移除整台机器人。移动几何体不会移动关节支点。',physical_material:'物理材质',material_target:'应用于',density:'密度 · kg/m³',sliding:'滑动摩擦 μ',torsional:'扭转 · m',rolling:'滚动 · m',fixed_body:'固定物体',material_help:'预设是干燥接触的起始示例，不是校准数据。使用MuJoCo滑动、扭转和滚动摩擦，不区分静摩擦与动摩擦。质量和惯性随体积与密度更新，保持显示颜色。与地面接触采用几何平均，其余采用MuJoCo混合规则。',wood:'木材',steel:'钢',aluminum:'铝',rubber:'橡胶',plastic:'塑料',glass:'玻璃',concrete:'混凝土',ice:'冰',physics_preview:'MuJoCo预览',run_physics:'运行短时物理预览',reset_physics:'恢复编辑场景',duration:'从编辑状态开始的时长',simulation_help:'每次从编辑状态开始，以0.002秒步长计算并显示最终姿态。不写入保存文档，编辑前请重置。超时15秒。需要安装MuJoCo的Python，可用ATOM_MUJOCO_PYTHON指定。',sim_running:'仿真中…',sim_idle:'编辑状态',physics_unavailable:'找不到MuJoCo，请用ATOM_MUJOCO_PYTHON指定已安装MuJoCo的Python。',physics_failed:'物理计算失败或超时，请检查几何体和运行环境。',base:'基座',pelvis:'骨盆',torso:'躯干',head:'头部',left:'左',right:'右',thigh:'大腿',shin:'小腿',foot:'脚',upper_arm:'上臂',forearm:'前臂',gripper:'夹爪',shoulder:'肩',elbow:'肘',wrist:'腕'}
+ en:{environment:'Environment',gravity:'Gravity',earth:'Earth',moon:'Moon',mars:'Mars',zero:'Zero gravity',custom:'Custom',gravity_help:'Gravity in m/s², physics coordinates: Z up. Converted to the Y-up 3D view in Rust. Numeric edits use Custom. Range: ±1000 per axis.',floor_enabled:'Contact floor · Y = 0',floor:'Floor',robot_template:'Robot template',humanoid:'Humanoid',dual_arm:'Dual arm',add_robot:'Add robot template',robot_help:'Generic box-link robots with joints, limits and bounded position servos. Humanoid: floating base, 98 articulated connections / 182 rotational DoF (plus 6 floating-base DoF); dual arm: fixed base, 6 hinges per arm. Engineering approximation; not a medical anatomical joint count. No balance or grasp policy. Remove the root to remove a robot. Moving geometry does not move its joint pivots.',physical_material:'Physical material',material_target:'Apply to',density:'Density · kg/m³',sliding:'Sliding μ',torsional:'Torsion · m',rolling:'Rolling · m',fixed_body:'Fixed body',material_help:'Illustrative dry-contact presets, not calibrated measurements. MuJoCo sliding, torsional and rolling friction; not separate static/dynamic coefficients. Mass and inertia follow box volume × density. Visual color stays unchanged. Floor pairs use geometric-mean friction; object pairs use MuJoCo mixing.',wood:'Wood',steel:'Steel',aluminum:'Aluminum',rubber:'Rubber',plastic:'Plastic',glass:'Glass',concrete:'Concrete',ice:'Ice',physics_preview:'MuJoCo preview',run_physics:'Run bounded physics preview',reset_physics:'Restore authored scene',duration:'Simulation duration from authored state',simulation_help:'Each run starts from the authored scene, at 0.002 s per step. Shows the final pose; does not bake it into the saved document. Reset before editing. Worker timeout: 15 s. Requires Python with MuJoCo; set ATOM_MUJOCO_PYTHON if needed.',sim_continuous:'Run continuous physics',sim_pause:'Pause physics',sim_resume:'Resume physics',sim_paused:'Paused',sim_stop:'Stop physics',sim_cancel:'Cancel physics preview',sim_running:'Simulating…',sim_idle:'Authored state',physics_unavailable:'MuJoCo unavailable. Set ATOM_MUJOCO_PYTHON to a Python with mujoco installed.',physics_failed:'Physics failed or timed out. Check geometry and runtime.',base:'Base',pelvis:'Pelvis',torso:'Torso',head:'Head',left:'Left',right:'Right',thigh:'Thigh',shin:'Shin',foot:'Foot',upper_arm:'Upper arm',forearm:'Forearm',gripper:'Gripper',shoulder:'Shoulder',elbow:'Elbow',wrist:'Wrist'},
+ ja:{environment:'環境',gravity:'重力',earth:'地球',moon:'月',mars:'火星',zero:'無重力',custom:'カスタム',gravity_help:'単位m/s²、物理座標はZが上。RustでY-upの3D表示へ変換します。数値編集はカスタム設定です。各軸±1000まで。',floor_enabled:'接触する床 · Y＝0',floor:'床',robot_template:'ロボットテンプレート',humanoid:'人型ロボット',dual_arm:'双腕ロボット',add_robot:'ロボットテンプレートを追加',robot_help:'関節・可動範囲・出力制限付き位置サーボを持つ汎用モデル。人型は98可動接続・182回転自由度＋浮動ベース6自由度、双腕は固定ベースと片腕6関節。工学的な近似で、医学的な総関節数ではありません。姿勢安定・把持方策は未搭載。ルートを削除すると一体を削除します。形状の移動では関節支点は動きません。',physical_material:'物理素材',material_target:'適用先',density:'密度 · kg/m³',sliding:'滑り摩擦 μ',torsional:'ねじり · m',rolling:'転がり · m',fixed_body:'固定する',material_help:'プリセットは乾燥接触の初期例で、実測保証値ではありません。MuJoCoの滑り・ねじり・転がり摩擦です。静止／動摩擦の区別はありません。箱の体積×密度で質量と慣性を算出。表示色は維持。床との摩擦は幾何平均、物体間はMuJoCoの組合せ規則を使います。',wood:'木材',steel:'鋼',aluminum:'アルミニウム',rubber:'ゴム',plastic:'樹脂',glass:'ガラス',concrete:'コンクリート',ice:'氷',physics_preview:'MuJoCoプレビュー',run_physics:'短時間の物理プレビューを実行',reset_physics:'編集時のシーンへ戻す',duration:'編集時の状態からの実行時間',simulation_help:'毎回、編集時の状態から0.002秒刻みで計算し、最終姿勢を表示します。保存文書には焼き込みません。編集前にリセットしてください。処理上限15秒。MuJoCo入りPythonが必要です。必要に応じATOM_MUJOCO_PYTHONを指定。',sim_continuous:'連続物理を開始',sim_pause:'物理を一時停止',sim_resume:'物理を再開',sim_paused:'一時停止中',sim_stop:'物理を停止',sim_cancel:'物理プレビューを中断',sim_running:'物理計算中…',sim_idle:'編集時の状態',physics_unavailable:'MuJoCoが見つかりません。ATOM_MUJOCO_PYTHONにMuJoCo入りPythonを指定してください。',physics_failed:'物理計算に失敗、または時間上限に達しました。形状と実行環境を確認してください。',base:'基台',pelvis:'骨盤',torso:'胴体',head:'頭',left:'左',right:'右',thigh:'大腿',shin:'下腿',foot:'足',upper_arm:'上腕',forearm:'前腕',gripper:'グリッパー',shoulder:'肩',elbow:'肘',wrist:'手首'},
+ 'zh-CN':{environment:'环境',gravity:'重力',earth:'地球',moon:'月球',mars:'火星',zero:'零重力',custom:'自定义',gravity_help:'单位m/s²，物理坐标Z向上。Rust转换至Y向上的3D视图。数值修改使用自定义，每轴范围±1000。',floor_enabled:'接触地面 · Y＝0',floor:'地面',robot_template:'机器人模板',humanoid:'人形机器人',dual_arm:'双臂机器人',add_robot:'添加机器人模板',robot_help:'带关节、限位及限力位置伺服的通用模型。人形：浮动基座、98个可动连接及182个旋转自由度，另有6个基座自由度；双臂：固定基座、每臂6关节。属于工程近似，并非医学关节总数。无平衡或抓取策略。删除根节点可移除整台机器人。移动几何体不会移动关节支点。',physical_material:'物理材质',material_target:'应用于',density:'密度 · kg/m³',sliding:'滑动摩擦 μ',torsional:'扭转 · m',rolling:'滚动 · m',fixed_body:'固定物体',material_help:'预设是干燥接触的起始示例，不是校准数据。使用MuJoCo滑动、扭转和滚动摩擦，不区分静摩擦与动摩擦。质量和惯性随体积与密度更新，保持显示颜色。与地面接触采用几何平均，其余采用MuJoCo混合规则。',wood:'木材',steel:'钢',aluminum:'铝',rubber:'橡胶',plastic:'塑料',glass:'玻璃',concrete:'混凝土',ice:'冰',physics_preview:'MuJoCo预览',run_physics:'运行短时物理预览',reset_physics:'恢复编辑场景',duration:'从编辑状态开始的时长',simulation_help:'每次从编辑状态开始，以0.002秒步长计算并显示最终姿态。不写入保存文档，编辑前请重置。超时15秒。需要安装MuJoCo的Python，可用ATOM_MUJOCO_PYTHON指定。',sim_continuous:'开始连续物理模拟',sim_pause:'暂停物理模拟',sim_resume:'继续物理模拟',sim_paused:'已暂停',sim_stop:'停止物理模拟',sim_cancel:'中止物理预览',sim_running:'仿真中…',sim_idle:'编辑状态',physics_unavailable:'找不到MuJoCo，请用ATOM_MUJOCO_PYTHON指定已安装MuJoCo的Python。',physics_failed:'物理计算失败或超时，请检查几何体和运行环境。',base:'基座',pelvis:'骨盆',torso:'躯干',head:'头部',left:'左',right:'右',thigh:'大腿',shin:'小腿',foot:'脚',upper_arm:'上臂',forearm:'前臂',gripper:'夹爪',shoulder:'肩',elbow:'肘',wrist:'腕'}
 };
 for(const language of Object.keys(translations))Object.assign(translations[language],physicsTranslations[language]);
 
@@ -31,7 +31,7 @@ const usdTranslations={
 };
 for(const language of Object.keys(translations))Object.assign(translations[language],usdTranslations[language]);
 
-const paths={export:'M10 2v10 M6 6l4-4 4 4 M3 11v6h14v-6',step:'m4 3 9 7-9 7z M16 3v14',pause:'M6 3v14 M14 3v14',undo:'M7 5 3 9l4 4 M3 9h8a5 5 0 0 1 5 5',redo:'m13 5 4 4-4 4 M17 9H9a5 5 0 0 0-5 5',select:'M4 2l12 9-6 1-3 6z',move:'M10 2v16 M2 10h16 M7 5l3-3 3 3 M15 7l3 3-3 3 M7 15l3 3 3-3 M5 7l-3 3 3 3',rotate:'M16 6a7 7 0 1 0 1 7 M16 2v5h-5',scale:'M3 3h5v5H3z M11 11h6v6h-6z M8 8l4 4 M12 8v4H8',grid:'M3 3h14v14H3z M3 8h14 M3 12h14 M8 3v14 M12 3v14',axes:'M5 15h12 M5 15V3 M5 15l8-8 M14 12l3 3-3 3 M2 6l3-3 3 3 M9 7h4v4',pan:'M10 2v16 M2 10h16 M7 5l3-3 3 3 M7 15l3 3 3-3 M5 7l-3 3 3 3 M15 7l3 3-3 3',focus:'M3 7V3h4 M13 3h4v4 M17 13v4h-4 M7 17H3v-4 M6 10h8 M10 6v8',group:'M6 2h12v12H6z M2 6v12h12 M6 6h12 M10 2v4',return_group:'M2 3h16v14H2z M2 7h16 M7 3v4 M12 9l-3 3 3 3 M9 12h6',save:'M3 3h11l3 3v11H3z M6 3v5h8V3 M6 17v-6h8v6',reload:'M16 6a7 7 0 1 0 1 7 M16 2v5h-5',check:'m4 10 4 4 8-9',plus:'M10 3v14 M3 10h14',remove:'M4 5h12 M8 5V3h4v2 M6 5l1 12h6l1-12 M9 8v6 M11 8v6',play:'m6 3 10 7-10 7z',cube:'m10 2 7 4v8l-7 4-7-4V6z M3 6l7 4 7-4 M10 10v8',float:'M7 3h10v10H7z M3 7v10h10',return:'M3 4h14v13H3z M11 7l-3 3 3 3 M8 10h7',layout:'M3 3h14v14H3z M7 3v14 M13 3v14',scene:'m10 2 7 4v8l-7 4-7-4V6z M3 6l7 4 7-4 M10 10v8',workflow:'M3 3h5v5H3z M12 12h5v5h-5z M8 5h6v7',viewport:'M2 3h16v12H2z M7 18h6 M10 15v3'};
+const paths={stop:'M4 4h12v12H4z',export:'M10 2v10 M6 6l4-4 4 4 M3 11v6h14v-6',step:'m4 3 9 7-9 7z M16 3v14',pause:'M6 3v14 M14 3v14',undo:'M7 5 3 9l4 4 M3 9h8a5 5 0 0 1 5 5',redo:'m13 5 4 4-4 4 M17 9H9a5 5 0 0 0-5 5',select:'M4 2l12 9-6 1-3 6z',move:'M10 2v16 M2 10h16 M7 5l3-3 3 3 M15 7l3 3-3 3 M7 15l3 3 3-3 M5 7l-3 3 3 3',rotate:'M16 6a7 7 0 1 0 1 7 M16 2v5h-5',scale:'M3 3h5v5H3z M11 11h6v6h-6z M8 8l4 4 M12 8v4H8',grid:'M3 3h14v14H3z M3 8h14 M3 12h14 M8 3v14 M12 3v14',axes:'M5 15h12 M5 15V3 M5 15l8-8 M14 12l3 3-3 3 M2 6l3-3 3 3 M9 7h4v4',pan:'M10 2v16 M2 10h16 M7 5l3-3 3 3 M7 15l3 3 3-3 M5 7l-3 3 3 3 M15 7l3 3-3 3',focus:'M3 7V3h4 M13 3h4v4 M17 13v4h-4 M7 17H3v-4 M6 10h8 M10 6v8',group:'M6 2h12v12H6z M2 6v12h12 M6 6h12 M10 2v4',return_group:'M2 3h16v14H2z M2 7h16 M7 3v4 M12 9l-3 3 3 3 M9 12h6',save:'M3 3h11l3 3v11H3z M6 3v5h8V3 M6 17v-6h8v6',reload:'M16 6a7 7 0 1 0 1 7 M16 2v5h-5',check:'m4 10 4 4 8-9',plus:'M10 3v14 M3 10h14',remove:'M4 5h12 M8 5V3h4v2 M6 5l1 12h6l1-12 M9 8v6 M11 8v6',play:'m6 3 10 7-10 7z',cube:'m10 2 7 4v8l-7 4-7-4V6z M3 6l7 4 7-4 M10 10v8',float:'M7 3h10v10H7z M3 7v10h10',return:'M3 4h14v13H3z M11 7l-3 3 3 3 M8 10h7',layout:'M3 3h14v14H3z M7 3v14 M13 3v14',scene:'m10 2 7 4v8l-7 4-7-4V6z M3 6l7 4 7-4 M10 10v8',workflow:'M3 3h5v5H3z M12 12h5v5h-5z M8 5h6v7',viewport:'M2 3h16v12H2z M7 18h6 M10 15v3'};
 function icon(name){const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 20 20');svg.setAttribute('aria-hidden','true');const p=document.createElementNS(svg.namespaceURI,'path');p.setAttribute('d',paths[name]);svg.append(p);return svg;}
 document.querySelectorAll('[data-icon]').forEach(el=>el.append(icon(el.dataset.icon)));
 const $=id=>document.getElementById(id),view=new URLSearchParams(location.search).get('view')||'toolbar',isSplit=view.startsWith('split-');
@@ -43,6 +43,11 @@ let locale='ja',current=null,layout=null,busy=false,statusKey='connecting',gpuKe
 const t=key=>translations[locale][key]||translations[locale].error,api=window.__TAURI__;
 function nodes(root,kind){if(!root)return [];if(root.kind===kind)return [root,...(root.kind==='split'?[...nodes(root.first,kind),...nodes(root.second,kind)]:[])];return root.kind==='split'?[...nodes(root.first,kind),...nodes(root.second,kind)]:[];}
 function groupFor(s,p){return nodes(s?.root,'tabs').find(g=>g.panels.includes(p))||s?.floating_groups.find(g=>g.panels.includes(p));}
+function setSimulationIcon(button,name){
+ if(button.dataset.icon===name)return;
+ button.dataset.icon=name;
+ button.replaceChildren(icon(name));
+}
 function controls(){
  document.querySelectorAll('button').forEach(b=>b.disabled=busy||!current||!api||!!jointDrag);
  for(const id of ['cameraFocus','sceneFocus'])$(id).disabled=busy||!api||!camera?.selected;
@@ -61,7 +66,16 @@ function controls(){
  document.querySelectorAll('[data-remove-id]').forEach(b=>{const id=Number(b.dataset.removeId);b.disabled=locked||!!current?.robots.some(r=>r.root!==id&&r.links.some(l=>l.object_id===id));});
  reachControls();runtimeControls();planControls();batchControls();
  $('simulate').disabled=busy||!current||!api||!!current.simulation_running||(current.previewing&&!current.simulation);$('simulationSteps').disabled=busy||!!current?.simulation_running;
- $('resetSimulation').disabled=busy||!current?.simulation||!!current?.simulation_running||!api;
+ $('simulateContinuous').disabled=$('simulate').disabled;
+ const pause=$('pauseSimulation'), pauseLabel=t(current?.simulation_paused?'sim_resume':'sim_pause');
+ pause.disabled=!api||!current?.simulation_continuous;
+ pause.title=pauseLabel;pause.setAttribute('aria-label',pauseLabel);
+ setSimulationIcon(pause,current?.simulation_paused?'play':'pause');
+ const reset=$('resetSimulation');
+ reset.disabled=!api||(!current?.simulation_running&&(busy||!current?.simulation));
+ const resetLabel=current?.simulation_continuous?t('sim_stop'):current?.simulation_running?t('sim_cancel'):t('reset_physics');
+ reset.title=resetLabel;reset.setAttribute('aria-label',resetLabel);
+ setSimulationIcon(reset,current?.simulation_running?'stop':'reload');
  $('materialTarget').disabled=busy||!!current?.previewing;
  $('dockApply').disabled=busy||!layout||!$('dockTarget').options.length;$('floatPanel').disabled=busy||!layout||(layout.floating.includes(view)&&groupFor(layout,view)?.panels.length===1);
  $('floatGroup').hidden=!!layout?.floating.includes(view);$('floatGroup').disabled=busy||!layout||(groupFor(layout,view)?.panels.length||0)<2;
@@ -72,7 +86,7 @@ function localize(){
  document.documentElement.lang=locale;
  document.querySelectorAll('[data-text]').forEach(el=>el.textContent=t(el.dataset.text));document.querySelectorAll('[data-label]').forEach(el=>{el.title=t(el.dataset.label);el.setAttribute('aria-label',t(el.dataset.label));});
  $('status').textContent=t(statusKey);$('gpu').textContent=t(gpuKey);$('report').textContent=t(reportKey);$('locale').value=locale;
- document.querySelectorAll('.transform-number').forEach(el=>el.setAttribute('aria-label',`${t(el.dataset.labelKey)} ${'XYZ'[Number(el.dataset.axis)]}`));
+ document.querySelectorAll('.transform-number[data-axis][data-label-key]').forEach(el=>el.setAttribute('aria-label',`${t(el.dataset.labelKey)} ${'XYZ'[Number(el.dataset.axis)]}`));
  if(view==='workflow')renderDagger();
  if(current)render(current);else controls();
 }
@@ -354,6 +368,39 @@ function renderIk(robot,link){
   ikInputs.forEach((input,i)=>input.setAttribute('aria-label',`${t('ik_target')} ${'XYZ'[i]}`));
  }
 }
+const gravityPolarLabels = {
+ en:{gravity_polar:'Magnitude and direction',gravity_strength:'Magnitude (m/s²)',gravity_azimuth:'Azimuth (°)',gravity_elevation:'Elevation (°)',gravity_apply:'Apply gravity vector',gravity_polar_help:'Physics Z-up. Azimuth starts at +X toward +Y. Elevation −90° is down. Each Cartesian component must be within ±1000 m/s².'},
+ ja:{gravity_polar:'大きさと方向',gravity_strength:'大きさ（m/s²）',gravity_azimuth:'方位角（°）',gravity_elevation:'仰角（°）',gravity_apply:'重力ベクトルを適用',gravity_polar_help:'物理座標のZが上です。方位角は+Xから+Yへ測り、仰角−90°が真下です。XYZ各成分は±1000 m/s²以内です。'},
+ 'zh-CN':{gravity_polar:'大小和方向',gravity_strength:'大小（m/s²）',gravity_azimuth:'方位角（°）',gravity_elevation:'仰角（°）',gravity_apply:'应用重力向量',gravity_polar_help:'物理坐标Z轴向上。方位角从+X朝+Y测量，仰角−90°表示正下方。各分量须在±1000 m/s²以内。'}
+};
+for(const [lang,labels] of Object.entries(gravityPolarLabels))Object.assign(translations[lang],labels);
+const gravityPolarInputs=['gravityStrength','gravityAzimuth','gravityElevation'].map($);
+let renderedGravityVector;
+function gravityAngles([x,y,z]){
+ const magnitude=Math.hypot(x,y,z);
+ return [magnitude,Math.atan2(y,x)*180/Math.PI,magnitude ? Math.atan2(z,Math.hypot(x,y))*180/Math.PI : -90];
+}
+function gravityCartesian(magnitude,azimuth,elevation){
+ const az=azimuth*Math.PI/180,el=elevation*Math.PI/180;
+ return [Math.cos(el)*Math.cos(az),Math.cos(el)*Math.sin(az),Math.sin(el)].map(value=>{
+  if(Math.abs(value)<1e-15)return 0;
+  const component=magnitude*value;
+  return Math.abs(Math.abs(component)-1000)<1e-10 ? Math.sign(component)*1000 : component;
+ });
+}
+$('gravityApply').onclick=()=>{
+ const strength=gravityPolarInputs[0];
+ strength.setCustomValidity('');
+ if(gravityPolarInputs.some(input=>!input.reportValidity()))return;
+ const vector=gravityCartesian(...gravityPolarInputs.map(input=>input.valueAsNumber));
+ if(vector.some(value=>!Number.isFinite(value)||Math.abs(value)>1000)){
+  strength.setCustomValidity(t('gravity_polar_help'));
+  strength.reportValidity();
+  return;
+ }
+ mutate({kind:'set_gravity',gravity:{preset:'custom',vector}});
+};
+for(const input of gravityPolarInputs)input.oninput=()=>gravityPolarInputs[0].setCustomValidity('');
 const gravityInputs=[];
 for(let axis=0;axis<3;axis++){
  const cell=document.createElement('label');cell.className='transform-cell';const letter=document.createElement('span');letter.textContent='XYZ'[axis];letter.dataset.axis=axis;cell.append(letter);
@@ -362,6 +409,54 @@ for(let axis=0;axis<3;axis++){
  input.onkeydown=e=>{if(e.key==='Escape'){input.value=current.physics.gravity.vector[axis];input.blur();}else if(e.key==='Enter')input.blur();};
  cell.append(input);gravityInputs.push(input);$('gravityVector').append(cell);
 }
+const massLabels={
+ en:{mass_override:'Explicit mass (kg)',mass_override_help:'Explicit mass in kg. Clear to use material density and box volume.'},
+ ja:{mass_override:'指定質量（kg）',mass_override_help:'質量をkgで指定します。空欄にすると素材の密度と箱の体積から算出します。'},
+ 'zh-CN':{mass_override:'指定质量（kg）',mass_override_help:'以kg指定质量。留空时根据材质密度和箱体体积计算。'}
+};
+for(const [lang,labels] of Object.entries(massLabels))Object.assign(translations[lang],labels);
+$('massOverride').onchange=()=>{
+ const input=$('massOverride');
+ if(!input.reportValidity())return;
+ mutate({kind:'set_mass',id:materialId(),mass:input.value===''?null:input.valueAsNumber});
+};
+const inertiaLabels={
+ en:{inertia_override:'Inertia (kg·m²)',inertia_apply:'Apply inertia',inertia_help:'Enter all three moments about the box’s local axes through its center. The largest must not exceed the sum of the other two. Clear all three for automatic calculation.'},
+ ja:{inertia_override:'慣性モーメント（kg·m²）',inertia_apply:'慣性を適用',inertia_help:'箱の中心を通るローカルXYZ軸の3成分を入力します。最大値は他の2成分の和以下です。3欄を空にすると自動算出に戻ります。'},
+ 'zh-CN':{inertia_override:'转动惯量（kg·m²）',inertia_apply:'应用转动惯量',inertia_help:'输入绕箱体中心局部XYZ轴的三个分量。最大值不得超过其余两项之和。清空三项可恢复自动计算。'}
+};
+for(const [lang,labels] of Object.entries(inertiaLabels))Object.assign(translations[lang],labels);
+const inertiaInputs=Array.from('XYZ',axis=>{
+ const cell=document.createElement('label');
+ cell.className='transform-cell';
+ const letter=document.createElement('span');
+ letter.textContent=axis;
+ const input=document.createElement('input');
+ input.type='number';
+ input.className='transform-number';
+ input.min='0.000000000000001';
+ input.step='any';
+ input.oninput=()=>inertiaInputs[0].setCustomValidity('');
+ cell.append(letter,input);
+ $('inertiaVector').append(cell);
+ return input;
+});
+let renderedInertia;
+$('inertiaApply').onclick=()=>{
+ const first=inertiaInputs[0];
+ first.setCustomValidity('');
+ if(inertiaInputs.some(input=>!input.reportValidity()))return;
+ const inertia=inertiaInputs.every(input=>input.value==='')?null:inertiaInputs.map(input=>input.valueAsNumber);
+ if(inertia){
+  const [small,middle,large]=[...inertia].sort((a,b)=>a-b);
+  if(inertia.some(value=>!Number.isFinite(value))||large-middle>small){
+   first.setCustomValidity(t('inertia_help'));
+   first.reportValidity();
+   return;
+  }
+ }
+ mutate({kind:'set_inertia',id:materialId(),inertia});
+};
 const frictionInputs=[];
 for(const [axis,label] of ['sliding','torsional','rolling'].entries()){
  const row=document.createElement('label');row.className='setting-row';const title=document.createElement('span');title.dataset.text=label;row.append(title);
@@ -370,6 +465,57 @@ for(const [axis,label] of ['sliding','torsional','rolling'].entries()){
  row.append(input);frictionInputs.push(input);$('frictionVector').append(row);
 }
 for(const name of ['wood','steel','aluminum','rubber','plastic','glass','concrete','ice','custom']){const option=document.createElement('option');option.value=name;option.dataset.text=name;$('materialPreset').append(option);}
+const contactLabels={
+ en:{contact_friction:'Pair friction',contact_object:'Contact partner',contact_apply:'Apply pair friction',contact_help:'Enter sliding, torsional and rolling coefficients. Clear all three to use material friction.',contact_auto:'From materials',contact_override:'Override'},
+ ja:{contact_friction:'接触ペアの摩擦',contact_object:'接触相手',contact_apply:'ペアの摩擦を適用',contact_help:'滑り・ねじり・転がりの摩擦を指定します。3欄を空にして適用すると素材設定に戻ります。',contact_auto:'素材から算出',contact_override:'上書き'},
+ 'zh-CN':{contact_friction:'接触对摩擦',contact_object:'接触对象',contact_apply:'应用接触对摩擦',contact_help:'输入滑动、扭转和滚动摩擦。清空三项并应用可恢复材质摩擦。',contact_auto:'根据材质计算',contact_override:'覆盖'}
+};
+for(const [lang,labels] of Object.entries(contactLabels))Object.assign(translations[lang],labels);
+let contactSource, contactRevision;
+const contactInputs=['sliding','torsional','rolling'].map(label=>{
+ const cell=document.createElement('label');cell.className='transform-cell';
+ const input=document.createElement('input');
+ input.type='number';input.min='0';input.max='100';input.step='any';
+ input.className='transform-number';input.dataset.label=label;
+ cell.append(input);$('contactValues').append(cell);
+ return input;
+});
+function renderContactValues(){
+ const partner=Number($('contactObject').value);
+ const pair=current.physics.contact_pairs?.find(pair=>pair.objects.includes(contactSource)&&pair.objects.includes(partner));
+ contactInputs.forEach((input,i)=>{
+  input.value=pair?.friction[i]??'';
+  input.placeholder=t(input.dataset.label);
+ });
+ $('contactMode').textContent=t(pair?'contact_override':'contact_auto');
+}
+function renderContactFriction(object){
+ $('contactFriction').hidden=true;
+ if(!object){contactSource=null;return;}
+ const connected=new Set();
+ for(const robot of current.robots)for(const link of robot.links){
+  if(link.parent===object.id)connected.add(link.object_id);
+  if(link.object_id===object.id)connected.add(link.parent);
+ }
+ const candidates=current.objects.filter(other=>other.id!==object.id&&!connected.has(other.id));
+ if(!candidates.length)return;
+ $('contactFriction').hidden=false;
+ const select=$('contactObject'), previous=contactSource===object.id?select.value:'';
+ const revisionKey=`${current.project_id}/${current.revision}`;
+ select.replaceChildren(...candidates.map(other=>new Option(objectName(other),String(other.id))));
+ if(candidates.some(other=>String(other.id)===previous))select.value=previous;
+ if(contactSource!==object.id||contactRevision!==revisionKey||select.value!==previous){
+  contactSource=object.id;contactRevision=revisionKey;renderContactValues();
+ }
+}
+$('contactObject').onchange=renderContactValues;
+$('contactApply').onclick=()=>{
+ const empty=contactInputs.every(input=>input.value===''&&!input.validity.badInput);
+ for(const input of contactInputs)input.required=!empty;
+ if(contactInputs.some(input=>!input.reportValidity()))return;
+ mutate({kind:'set_contact_friction',objects:[contactSource,Number($('contactObject').value)],
+  friction:empty?null:contactInputs.map(input=>input.valueAsNumber)});
+};
 function materialId(){return $('materialTarget').value==='floor'?null:(camera?.selected??undefined);}
 function selectedMaterial(){return materialId()===null?current?.physics.floor:current?.objects.find(o=>o.id===materialId())?.material;}
 function editMaterialNumber(input,axis){
@@ -391,21 +537,57 @@ $('addRobot').onclick=()=>action(async()=>{
  applyCamera(await api.core.invoke('camera_command',{command:{kind:'focus'},expectedRevision:s.revision}));
 });
 $('simulate').onclick=()=>action(async()=>render(await api.core.invoke('simulate',{expectedRevision:current.revision,projectId:current.project_id,steps:Number($('simulationSteps').value)})));
-$('resetSimulation').onclick=()=>action(async()=>render(await api.core.invoke('reset_simulation')));
+$('simulateContinuous').onclick=()=>action(async()=>render(await api.core.invoke('simulate',{
+ expectedRevision:current.revision,projectId:current.project_id,steps:500,continuous:true
+})));
+$('pauseSimulation').onclick=async()=>{
+ try{render(await api.core.invoke('pause_simulation',{paused:!current.simulation_paused}));}
+ catch(e){status(e?.code||'error',true);}
+};
+$('resetSimulation').onclick=async()=>{
+ if(current?.simulation_running){
+  try{render(await api.core.invoke('reset_simulation'));}catch(e){status(e?.code||'error',true);}
+ }else{
+  await action(async()=>render(await api.core.invoke('reset_simulation')));
+ }
+};
+function continuousStatus(time){
+ const label=t(current.simulation_paused?'sim_paused':'sim_running');
+ return time==null?label:`${label} · ${time.toFixed(3)} s`;
+}
 function renderPhysics(){
  renderReach();renderDataset();renderControl();renderRuntime();renderPlan();renderBatch();
  renderAssets();
  if(!current?.physics)return;
  $('gravityPreset').value=current.physics.gravity.preset;
  gravityInputs.forEach((input,i)=>{input.setAttribute('aria-label',`${t('gravity')} ${'XYZ'[i]} (m/s², Z-up)`);if(document.activeElement!==input)input.value=current.physics.gravity.vector[i];});
+ const vector=current.physics.gravity.vector;
+ const gravityKey=JSON.stringify([current.project_id,current.physics.gravity]);
+ const polar=gravityAngles(vector);
+ if(gravityKey!==renderedGravityVector){
+  renderedGravityVector=gravityKey;
+  gravityPolarInputs.forEach((input,i)=>{input.setCustomValidity('');input.value=polar[i];});
+ }
+ $('gravityRatio').textContent=`${(polar[0]/9.80665).toLocaleString(locale,{maximumSignificantDigits:4})} g`;
  $('floorEnabled').checked=current.physics.floor_enabled;
  const material=selectedMaterial(),object=current.objects.find(o=>o.id===materialId());
  $('materialPreset').value=material?.preset||'custom';if(document.activeElement!==$('density'))$('density').value=material?.density??'';
  frictionInputs.forEach((input,i)=>{if(document.activeElement!==input)input.value=material?.friction[i]??'';});
+ renderContactFriction(object);
+ $('massOverrideRow').hidden=!object||object.mesh_ref!=null;
+ if(document.activeElement!==$('massOverride'))$('massOverride').value=object?.mass_override??'';
+ $('inertiaOverrideRow').hidden=$('massOverrideRow').hidden;
+ const inertiaKey=JSON.stringify([current.project_id,current.revision,object?.id,object?.inertia_override]);
+ const refreshInertia=inertiaKey!==renderedInertia;
+ inertiaInputs.forEach((input,i)=>{
+  input.setAttribute('aria-label',`${t('inertia_override')} ${'XYZ'[i]}`);
+  if(refreshInertia){input.setCustomValidity('');input.value=object?.inertia_override?.[i]??'';}
+ });
+ renderedInertia=inertiaKey;
  $('objectFixed').checked=object?.fixed??true;
  const mass=object?(object.mass_override??(object.mesh_ref?null:object.scale.reduce((a,b)=>a*b,1)*object.material.density)):null;
  $('bodyMass').textContent=object?(mass===null?'— kg':`${mass.toLocaleString(locale,{maximumFractionDigits:2})} kg`):'';
- $('simulationStatus').textContent=current.reach?`Reach · ${current.reach.time.toFixed(3)} s`:current.simulation_running?t('sim_running'):current.simulation?`${current.simulation.engine} · ${current.simulation.time.toFixed(3)} s`:t('sim_idle');
+ $('simulationStatus').textContent=current.reach?`Reach · ${current.reach.time.toFixed(3)} s`:current.simulation_continuous?continuousStatus(current.simulation?.time):current.simulation_running?t('sim_running'):current.simulation?`${current.simulation.engine} · ${current.simulation.time.toFixed(3)} s`:t('sim_idle');
 }
 
 let assetCatalogData=null,assetWasRunning=false;
@@ -537,9 +719,9 @@ $('runtimeSmoke').onclick=()=>{if($('runtimeTokens').reportValidity())action(()=
 
 
 for(const [language,labels] of Object.entries({
- en:{plan_help:'Generate a candidate from the live unsaved Rust scene and your instruction. Only a bounded focused summary (up to 8 objects / 2 KiB), IDs, poses, joint limits and environment settings are sent to the configured local runtime. Names, paths, geometry, Episode data and credentials are omitted. Inspect the summary with the scene icon. SkillPlan v1 permits non-robot moves, joint angles, one position IK, gravity/material presets and floor settings, up to 6 steps. Output is strict JSON with 512-token / 15 s generation limits; no silent repair or auto-application. Rust validates sequentially through editor dry-run on a detached history copy. The original document, save state and Undo/Redo stay unchanged. Dry-run is not physics/collision/balance validation or proof of intent. Edits/previews invalidate old scene guards. You may paste/edit JSON and revalidate against the current scene without an LLM.',plan_goal:'Instruction (up to 512 UTF-8 bytes)',plan_scene:'Inspect shared scene summary',plan_generate:'Generate SkillPlan candidate and dry-run',plan_validate:'Validate JSON and dry-run against the current scene',plan_context:'Scene sent / scope',plan_candidate:'SkillPlan JSON candidate',plan_dry_run:'Validate / dry-run',plan_diff:'Predicted authored-state diff',plan_none:'No candidate',plan_valid:'Validated · not applied',plan_invalid:'Rejected',plan_stale:'Scene changed · revalidate',plan_draft:'Edited JSON · revalidate',plan_summary_truncated:'Objects omitted from summary; this is not a complete world model.',plan_invalid_json:'Invalid JSON/schema. Use SkillPlan v1 only; no markdown, extra fields or unknown skills.',plan_version:'Unsupported SkillPlan version.',plan_invalid_summary:'Plan summary must be a short, single-line reason (1–160 UTF-8 bytes).',plan_step_budget:'Use 1–6 steps.',plan_ik_budget:'At most one position IK step is allowed.',plan_object_out_of_scope:'Object or IK chain is outside the supplied summary.',plan_robot_move_unsupported:'Use joint angles or IK for robot links; direct robot geometry moves are unsupported.',plan_invalid_number:'Invalid numeric value.',plan_joint_missing:'Joint or axis does not exist.',plan_joint_limit:'Angle exceeds the joint limit; no clamping was accepted.',plan_ik_chain:'IK base must be a listed ancestor and the full chain must be in scope.',plan_custom_preset:'Choose a named gravity/material preset; custom values are not supported here.',plan_generation_truncated:'Generation reached its output limit; candidate was not accepted.',plan_context_budget:'Context budget exceeded. Reduce instruction length or scene scope.',plan_response_budget:'Candidate exceeds 8192 UTF-8 bytes.',plan_instruction_budget:'Enter an instruction of 1–512 UTF-8 bytes and choose an observed model.',plan_report_budget:'Dry-run report exceeds its size budget.',plan_scene_busy:'Scene is busy or previewing; return to authoring first.',plan_scene_stale:'Scene changed before capture. Refresh the summary.',plan_changed:'Change',plan_no_change:'No change',plan_manual:'Manual',plan_runtime:'LLM candidate',plan_scope_label:'Scope',plan_move_object:'Move',plan_set_joint_angle:'Joint angle',plan_solve_ik:'Position IK',plan_set_gravity:'Gravity',plan_set_material:'Material',plan_set_floor:'Floor',plan_validation_only:'Validation only · no physics or application'},
- ja:{plan_help:'共有Rust文書の未保存sceneと指示から候補を生成します。選択を優先した要約（最大8物体／2KiB）、ID・姿勢・関節制限・環境設定だけを設定済みローカルruntimeへ送信。名前・パス・形状・Episode・認証情報は要約に含めません。sceneアイコンで送信範囲を確認できます。SkillPlan v1は通常物体の移動、関節角、位置IK 1件、重力／素材preset、床設定の最大6step。出力は厳密なJSON、生成512token／15秒、自動修復・実適用なし。Rustが履歴を複製した状態で既存編集dry-runを順次検証し、元文書・保存状態・Undo／Redoは変更しません。物理・衝突・バランスや指示達成の保証ではありません。編集・previewで古いguardは失効。JSONを貼り付け・編集し、LLMなしでも現在sceneで再検証できます。',plan_goal:'指示（UTF-8で最大512byte）',plan_scene:'共有sceneの要約を確認',plan_generate:'SkillPlan候補を生成・dry-run',plan_validate:'現在sceneでJSON検証・dry-run',plan_context:'送信scene・範囲',plan_candidate:'SkillPlan候補JSON',plan_dry_run:'検証・dry-run',plan_diff:'予測した編集状態の差分',plan_none:'候補なし',plan_valid:'検証済み・未適用',plan_invalid:'検証失敗',plan_stale:'scene変更・再検証',plan_draft:'JSON編集済み・再検証',plan_summary_truncated:'要約に含まれない物体があります。完全な環境モデルではありません。',plan_invalid_json:'JSONまたはschemaが不正です。SkillPlan v1のみ。Markdown・余分なfield・未対応skillは使えません。',plan_version:'SkillPlanの版に対応していません。',plan_invalid_summary:'summaryは1〜160byteの短い1行で指定してください。',plan_step_budget:'step数は1〜6です。',plan_ik_budget:'位置IKは1件までです。',plan_object_out_of_scope:'物体またはIK chainが要約の範囲外です。',plan_robot_move_unsupported:'robot linkは関節角・IKで操作してください。形状の直接移動には未対応です。',plan_invalid_number:'数値が不正です。',plan_joint_missing:'関節・軸が存在しません。',plan_joint_limit:'関節角が可動範囲外です。clampでの受理は行いません。',plan_ik_chain:'IK基点は要約内の祖先を指定し、chain全体を範囲に含めてください。',plan_custom_preset:'重力・素材は名前付きpresetを指定してください。customは未対応です。',plan_generation_truncated:'出力上限で生成が打ち切られたため、候補を受理しませんでした。',plan_context_budget:'context上限を超えました。指示・scene範囲を小さくしてください。',plan_response_budget:'候補が8192byteを超えています。',plan_instruction_budget:'指示を1〜512byteで入力し、取得済みモデルを選んでください。',plan_report_budget:'dry-run結果が容量上限を超えています。',plan_scene_busy:'scene処理中・preview中です。編集状態へ戻してください。',plan_scene_stale:'取得前にsceneが変わりました。要約を更新してください。',plan_changed:'変更あり',plan_no_change:'無変更',plan_manual:'手動JSON',plan_runtime:'LLM候補',plan_scope_label:'範囲',plan_move_object:'移動',plan_set_joint_angle:'関節角',plan_solve_ik:'位置IK',plan_set_gravity:'重力',plan_set_material:'素材',plan_set_floor:'床',plan_validation_only:'検証のみ・物理実行／実適用なし'},
- 'zh-CN':{plan_help:'根据共享Rust文档的未保存scene与指令生成候选。仅向配置的本地runtime发送优先选择对象的摘要（最多8个对象／2KiB）、ID、姿态、关节限位及环境设置。不包含名称、路径、几何、Episode或凭据。使用scene图标检查范围。SkillPlan v1支持普通对象移动、关节角、一次位置IK、重力／材质preset、地面，最多6步。严格JSON，生成上限512token／15秒，不自动修复或应用。Rust在历史副本上顺序调用编辑dry-run验证，不改变原文档、保存状态或撤销／重做。不保证物理、碰撞、平衡或指令达成。编辑／preview会使旧guard失效。也可粘贴／编辑JSON，在当前scene重新验证，无需LLM。',plan_goal:'指令（最多512 UTF-8字节）',plan_scene:'检查共享scene摘要',plan_generate:'生成SkillPlan候选并dry-run',plan_validate:'在当前scene验证JSON并dry-run',plan_context:'发送的scene／范围',plan_candidate:'SkillPlan候选JSON',plan_dry_run:'验证／dry-run',plan_diff:'预测编辑状态差异',plan_none:'无候选',plan_valid:'已验证・未应用',plan_invalid:'验证失败',plan_stale:'scene已更改・请重验',plan_draft:'JSON已编辑・请重验',plan_summary_truncated:'摘要省略了部分对象，不是完整环境模型。',plan_invalid_json:'无效JSON或schema。仅支持SkillPlan v1，不接受Markdown、多余字段或未知skill。',plan_version:'不支持此SkillPlan版本。',plan_invalid_summary:'summary须为1–160字节的简短单行文本。',plan_step_budget:'步骤数必须为1–6。',plan_ik_budget:'最多一次位置IK。',plan_object_out_of_scope:'对象或IK chain不在摘要范围内。',plan_robot_move_unsupported:'请通过关节角或IK操作robot link，不支持直接移动其几何。',plan_invalid_number:'无效数值。',plan_joint_missing:'关节或轴不存在。',plan_joint_limit:'关节角超出限位，不通过clamp接受。',plan_ik_chain:'IK基点必须是摘要内祖先，且整个chain须在范围内。',plan_custom_preset:'请选择有名称的重力／材质preset，不支持custom。',plan_generation_truncated:'生成达到输出上限，未接受候选。',plan_context_budget:'超过context预算，请缩短指令或scene范围。',plan_response_budget:'候选超过8192字节。',plan_instruction_budget:'请输入1–512字节指令并选择查询到的模型。',plan_report_budget:'dry-run报告超过容量预算。',plan_scene_busy:'scene忙碌或正在preview，请返回编辑状态。',plan_scene_stale:'捕获前scene已更改，请刷新摘要。',plan_changed:'有变化',plan_no_change:'无变化',plan_manual:'手动JSON',plan_runtime:'LLM候选',plan_scope_label:'范围',plan_move_object:'移动',plan_set_joint_angle:'关节角',plan_solve_ik:'位置IK',plan_set_gravity:'重力',plan_set_material:'材质',plan_set_floor:'地面',plan_validation_only:'仅验证・无物理执行或应用'}
+ en:{plan_help:'Generate a candidate from the live unsaved Rust scene and your instruction. Only a bounded focused summary (up to 8 objects / 2 KiB), IDs, poses, joint limits and environment settings are sent to the configured local runtime. Names, paths, geometry, Episode data and credentials are omitted. Inspect the summary with the scene icon. SkillPlan v1 permits non-robot moves, joint angles, one position IK, gravity/material presets and floor settings, up to 6 steps. Output is strict JSON with 512-token / 15 s generation limits; no silent repair or auto-application. Rust validates sequentially through editor dry-run on a detached history copy. The original document, save state and Undo/Redo stay unchanged. Dry-run is not physics/collision/balance validation or proof of intent. Edits/previews invalidate old scene guards. You may paste/edit JSON and revalidate against the current scene without an LLM.',plan_goal:'Instruction (up to 512 UTF-8 bytes)',plan_scene:'Inspect shared scene summary',plan_generate:'Generate SkillPlan candidate and dry-run',plan_validate:'Validate JSON and dry-run against the current scene',plan_context:'Scene sent / scope',plan_candidate:'SkillPlan JSON candidate',plan_apply:'Apply validated plan (one Undo)',plan_dry_run:'Validate / dry-run',plan_diff:'Predicted authored-state diff',plan_none:'No candidate',plan_valid:'Validated · not applied',plan_invalid:'Rejected',plan_stale:'Scene changed · revalidate',plan_draft:'Edited JSON · revalidate',plan_summary_truncated:'Objects omitted from summary; this is not a complete world model.',plan_invalid_json:'Invalid JSON/schema. Use SkillPlan v1 only; no markdown, extra fields or unknown skills.',plan_version:'Unsupported SkillPlan version.',plan_invalid_summary:'Plan summary must be a short, single-line reason (1–160 UTF-8 bytes).',plan_step_budget:'Use 1–6 steps.',plan_ik_budget:'At most one position IK step is allowed.',plan_object_out_of_scope:'Object or IK chain is outside the supplied summary.',plan_robot_move_unsupported:'Use joint angles or IK for robot links; direct robot geometry moves are unsupported.',plan_invalid_number:'Invalid numeric value.',plan_joint_missing:'Joint or axis does not exist.',plan_joint_limit:'Angle exceeds the joint limit; no clamping was accepted.',plan_ik_chain:'IK base must be a listed ancestor and the full chain must be in scope.',plan_custom_preset:'Choose a named gravity/material preset; custom values are not supported here.',plan_generation_truncated:'Generation reached its output limit; candidate was not accepted.',plan_context_budget:'Context budget exceeded. Reduce instruction length or scene scope.',plan_response_budget:'Candidate exceeds 8192 UTF-8 bytes.',plan_instruction_budget:'Enter an instruction of 1–512 UTF-8 bytes and choose an observed model.',plan_report_budget:'Dry-run report exceeds its size budget.',plan_scene_busy:'Scene is busy or previewing; return to authoring first.',plan_scene_stale:'Scene changed before capture. Refresh the summary.',plan_changed:'Change',plan_no_change:'No change',plan_manual:'Manual',plan_runtime:'LLM candidate',plan_scope_label:'Scope',plan_move_object:'Move',plan_set_joint_angle:'Joint angle',plan_solve_ik:'Position IK',plan_set_gravity:'Gravity',plan_set_material:'Material',plan_set_floor:'Floor',plan_validation_only:'Validation only · no physics or application'},
+ ja:{plan_help:'共有Rust文書の未保存sceneと指示から候補を生成します。選択を優先した要約（最大8物体／2KiB）、ID・姿勢・関節制限・環境設定だけを設定済みローカルruntimeへ送信。名前・パス・形状・Episode・認証情報は要約に含めません。sceneアイコンで送信範囲を確認できます。SkillPlan v1は通常物体の移動、関節角、位置IK 1件、重力／素材preset、床設定の最大6step。出力は厳密なJSON、生成512token／15秒、自動修復・実適用なし。Rustが履歴を複製した状態で既存編集dry-runを順次検証し、元文書・保存状態・Undo／Redoは変更しません。物理・衝突・バランスや指示達成の保証ではありません。編集・previewで古いguardは失効。JSONを貼り付け・編集し、LLMなしでも現在sceneで再検証できます。',plan_goal:'指示（UTF-8で最大512byte）',plan_scene:'共有sceneの要約を確認',plan_generate:'SkillPlan候補を生成・dry-run',plan_validate:'現在sceneでJSON検証・dry-run',plan_context:'送信scene・範囲',plan_candidate:'SkillPlan候補JSON',plan_apply:'検証済み計画を適用（Undo 1回）',plan_dry_run:'検証・dry-run',plan_diff:'予測した編集状態の差分',plan_none:'候補なし',plan_valid:'検証済み・未適用',plan_invalid:'検証失敗',plan_stale:'scene変更・再検証',plan_draft:'JSON編集済み・再検証',plan_summary_truncated:'要約に含まれない物体があります。完全な環境モデルではありません。',plan_invalid_json:'JSONまたはschemaが不正です。SkillPlan v1のみ。Markdown・余分なfield・未対応skillは使えません。',plan_version:'SkillPlanの版に対応していません。',plan_invalid_summary:'summaryは1〜160byteの短い1行で指定してください。',plan_step_budget:'step数は1〜6です。',plan_ik_budget:'位置IKは1件までです。',plan_object_out_of_scope:'物体またはIK chainが要約の範囲外です。',plan_robot_move_unsupported:'robot linkは関節角・IKで操作してください。形状の直接移動には未対応です。',plan_invalid_number:'数値が不正です。',plan_joint_missing:'関節・軸が存在しません。',plan_joint_limit:'関節角が可動範囲外です。clampでの受理は行いません。',plan_ik_chain:'IK基点は要約内の祖先を指定し、chain全体を範囲に含めてください。',plan_custom_preset:'重力・素材は名前付きpresetを指定してください。customは未対応です。',plan_generation_truncated:'出力上限で生成が打ち切られたため、候補を受理しませんでした。',plan_context_budget:'context上限を超えました。指示・scene範囲を小さくしてください。',plan_response_budget:'候補が8192byteを超えています。',plan_instruction_budget:'指示を1〜512byteで入力し、取得済みモデルを選んでください。',plan_report_budget:'dry-run結果が容量上限を超えています。',plan_scene_busy:'scene処理中・preview中です。編集状態へ戻してください。',plan_scene_stale:'取得前にsceneが変わりました。要約を更新してください。',plan_changed:'変更あり',plan_no_change:'無変更',plan_manual:'手動JSON',plan_runtime:'LLM候補',plan_scope_label:'範囲',plan_move_object:'移動',plan_set_joint_angle:'関節角',plan_solve_ik:'位置IK',plan_set_gravity:'重力',plan_set_material:'素材',plan_set_floor:'床',plan_validation_only:'検証のみ・物理実行／実適用なし'},
+ 'zh-CN':{plan_help:'根据共享Rust文档的未保存scene与指令生成候选。仅向配置的本地runtime发送优先选择对象的摘要（最多8个对象／2KiB）、ID、姿态、关节限位及环境设置。不包含名称、路径、几何、Episode或凭据。使用scene图标检查范围。SkillPlan v1支持普通对象移动、关节角、一次位置IK、重力／材质preset、地面，最多6步。严格JSON，生成上限512token／15秒，不自动修复或应用。Rust在历史副本上顺序调用编辑dry-run验证，不改变原文档、保存状态或撤销／重做。不保证物理、碰撞、平衡或指令达成。编辑／preview会使旧guard失效。也可粘贴／编辑JSON，在当前scene重新验证，无需LLM。',plan_goal:'指令（最多512 UTF-8字节）',plan_scene:'检查共享scene摘要',plan_generate:'生成SkillPlan候选并dry-run',plan_validate:'在当前scene验证JSON并dry-run',plan_context:'发送的scene／范围',plan_candidate:'SkillPlan候选JSON',plan_apply:'应用已验证计划（一次撤销）',plan_dry_run:'验证／dry-run',plan_diff:'预测编辑状态差异',plan_none:'无候选',plan_valid:'已验证・未应用',plan_invalid:'验证失败',plan_stale:'scene已更改・请重验',plan_draft:'JSON已编辑・请重验',plan_summary_truncated:'摘要省略了部分对象，不是完整环境模型。',plan_invalid_json:'无效JSON或schema。仅支持SkillPlan v1，不接受Markdown、多余字段或未知skill。',plan_version:'不支持此SkillPlan版本。',plan_invalid_summary:'summary须为1–160字节的简短单行文本。',plan_step_budget:'步骤数必须为1–6。',plan_ik_budget:'最多一次位置IK。',plan_object_out_of_scope:'对象或IK chain不在摘要范围内。',plan_robot_move_unsupported:'请通过关节角或IK操作robot link，不支持直接移动其几何。',plan_invalid_number:'无效数值。',plan_joint_missing:'关节或轴不存在。',plan_joint_limit:'关节角超出限位，不通过clamp接受。',plan_ik_chain:'IK基点必须是摘要内祖先，且整个chain须在范围内。',plan_custom_preset:'请选择有名称的重力／材质preset，不支持custom。',plan_generation_truncated:'生成达到输出上限，未接受候选。',plan_context_budget:'超过context预算，请缩短指令或scene范围。',plan_response_budget:'候选超过8192字节。',plan_instruction_budget:'请输入1–512字节指令并选择查询到的模型。',plan_report_budget:'dry-run报告超过容量预算。',plan_scene_busy:'scene忙碌或正在preview，请返回编辑状态。',plan_scene_stale:'捕获前scene已更改，请刷新摘要。',plan_changed:'有变化',plan_no_change:'无变化',plan_manual:'手动JSON',plan_runtime:'LLM候选',plan_scope_label:'范围',plan_move_object:'移动',plan_set_joint_angle:'关节角',plan_solve_ik:'位置IK',plan_set_gravity:'重力',plan_set_material:'材质',plan_set_floor:'地面',plan_validation_only:'仅验证・无物理执行或应用'}
 }))Object.assign(translations[language],labels);
 let planningSceneView=null,planTextKey=null;
 function sceneMatches(b){return !!current&&!current.previewing&&b?.project_id===current.project_id&&b.revision===current.revision&&b.sequence===current.sequence;}
@@ -548,6 +730,8 @@ function planControls(){
  $('planGoal').disabled=locked;$('planJson').disabled=locked;$('planScene').disabled=locked;
  $('planGenerate').disabled=locked||runtimeDirty()||!$('runtimeModel').value||!$('planGoal').value.trim()||(!s?.capabilities?.connected&&!s?.completion&&!s?.plan?.completion)||s?.capabilities?.inference_ready===false||s?.capabilities?.control_ready===false;
  $('planValidate').disabled=locked||!$('planJson').value.trim();
+ const plan=s?.plan;
+ $('planApply').disabled=locked||!plan?.validation.dry_run?.would_change||!sceneMatches(plan.scene.basis)||$('planJson').value!==plan.raw;
 }
 function renderPlan(){
  const p=runtimeSnapshot?.plan,scene=planningSceneView||p?.scene,el=$('planStatus');
@@ -571,6 +755,10 @@ async function fetchPlanningScene(){planningSceneView=await api.core.invoke('pla
 $('planScene').onclick=()=>action(fetchPlanningScene);
 $('planGoal').oninput=planControls;$('planJson').oninput=()=>{renderPlan();planControls();};
 $('planGenerate').onclick=()=>action(async()=>{const scene=await fetchPlanningScene();await sendRuntime({op:'plan',model:$('runtimeModel').value,instruction:$('planGoal').value,focus:scene.focus,basis:scene.basis});});
+$('planApply').onclick=()=>action(async()=>{
+ const plan=runtimeSnapshot.plan;
+ render(await api.core.invoke('apply_plan',{basis:plan.scene.basis,text:$('planJson').value}));
+});
 $('planValidate').onclick=()=>action(async()=>{const text=$('planJson').value,scene=await fetchPlanningScene();await sendRuntime({op:'validate_plan',text,focus:scene.focus,basis:scene.basis});});
 
 let controlReport=null;
@@ -590,7 +778,11 @@ async function start(){
   if(!isSplit){
    await api.event.listen('atom://runtime',e=>acceptRuntime(e.payload));
    acceptRuntime(await api.core.invoke('runtime_state'));
-   await api.event.listen('atom://changed',e=>render(e.payload));await api.event.listen('atom://close-blocked',()=>status(current?.asset_importing?'usd_importing':current?.reach?'reach_close_first':'unsaved_changes',true));await api.event.listen('atom://panel-error',e=>status(e.payload,true));await api.event.listen('atom://viewport',e=>{gpuKey=e.payload;$('gpu').textContent=t(gpuKey);});
+   await api.event.listen('atom://changed',e=>render(e.payload));await api.event.listen('atom://simulation-tick',e=>{
+    const [sequence,time]=e.payload;
+    if(current?.simulation_continuous&&!current.simulation_paused&&sequence>=current.sequence)
+     $('simulationStatus').textContent=continuousStatus(time);
+   });await api.event.listen('atom://close-blocked',()=>status(current?.asset_importing?'usd_importing':current?.reach?'reach_close_first':'unsaved_changes',true));await api.event.listen('atom://panel-error',e=>status(e.payload,true));await api.event.listen('atom://viewport',e=>{gpuKey=e.payload;$('gpu').textContent=t(gpuKey);});
    await api.event.listen('atom://dock-preview',e=>{const d=e.payload;$('dockPreview').textContent=d?`${d.target?t(d.target)+' · ':''}${t(d.zone==='floating'?'float':d.zone)}`:'';document.body.dataset.drop=d?.target===view?d.zone:'';});
    await api.event.listen('atom://camera',e=>applyCamera(e.payload));
    render(await api.core.invoke('snapshot'));applyCamera(await api.core.invoke('camera_state'));

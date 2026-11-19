@@ -405,7 +405,16 @@ impl Plugin<EventLoopMessage> for Input {
         let scale = window.scale_factor().unwrap_or(1.);
         let region = super::viewport::region(&self.app, &label, true);
         match event {
-            WindowEvent::ModifiersChanged(m) => self.modifiers = *m,
+            WindowEvent::ModifiersChanged(m) => {
+                let snap_changed = self.modifiers.shift_key() != m.shift_key();
+                self.modifiers = *m;
+                if snap_changed
+                    && let Some(drag) = self.object_drag.as_ref().filter(|drag| drag.moved)
+                    && let Some(point) = self.position
+                {
+                    self.pending = Some(drag.pose(point, m.shift_key()));
+                }
+            }
             WindowEvent::CursorMoved { position, .. } => {
                 let point = [position.x, position.y];
                 let inside = region.is_some_and(|r| {
@@ -436,7 +445,7 @@ impl Plugin<EventLoopMessage> for Input {
                         || (point[0] - d.origin[0]).hypot(point[1] - d.origin[1]) / d.scale >= 3.
                     {
                         d.moved = true;
-                        self.pending = Some(d.pose(point));
+                        self.pending = Some(d.pose(point, self.modifiers.shift_key()));
                     }
                     return false;
                 }

@@ -68,6 +68,10 @@ pub(crate) fn prepare(source: &Project, config: Config) -> Result<Manifest> {
         .object_id;
     let mut project = source.clone();
     project.objects.retain(|o| ids.contains(&o.id));
+    project
+        .physics
+        .contact_pairs
+        .retain(|pair| pair.objects.iter().all(|id| ids.contains(id)));
     project.robots.retain(|r| r.root == config.robot);
     project.assets.clear();
     project.physics.gravity = Gravity {

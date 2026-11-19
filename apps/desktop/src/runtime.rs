@@ -245,6 +245,48 @@ pub async fn planning_scene(
     .map_err(|_| error("internal_error"))?
 }
 
+#[tauri::command]
+pub async fn apply_plan(
+    webview: tauri::Webview,
+    basis: atom_core::planning::Basis,
+    text: String,
+) -> Result<atom_core::Snapshot, UiError> {
+    authorize(&webview)?;
+    let app = webview.app_handle().clone();
+    let worker = app.clone();
+    let snapshot = tauri::async_runtime::spawn_blocking(move || {
+        let runtime = worker.state::<State>();
+        let state = runtime
+            .session
+            .lock()
+            .map_err(|_| error("internal_error"))?;
+        let report = state.snapshot();
+        let plan = report
+            .plan
+            .as_ref()
+            .filter(|plan| {
+                !report.busy
+                    && plan.validation.valid
+                    && plan.scene.basis == basis
+                    && plan.raw == text
+            })
+            .ok_or_else(|| error("plan_stale"))?;
+        let shared = worker.state::<Shared>();
+        let mut session = shared.0.try_lock().map_err(|_| error("plan_scene_busy"))?;
+        session
+            .core
+            .apply_plan(&basis, plan.scene.focus, &text)
+            .map_err(UiError::from)
+    })
+    .await
+    .map_err(|_| error("internal_error"))??;
+    super::camera::reconcile(&app);
+    let _ = app.emit("atom://changed", &snapshot);
+    let redraw = app.clone();
+    let _ = app.run_on_main_thread(move || super::viewport::draw(&redraw));
+    Ok(snapshot)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

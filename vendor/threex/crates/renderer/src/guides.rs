@@ -328,7 +328,7 @@ impl Guides {
             pass.set_bind_group(1, bind, &[]);
             pass.draw(0..3, 0..1);
         }
-        if view.gizmo.is_some() {
+        if let Some(gizmo) = &view.gizmo {
             let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some("transform handles"),
                 color_attachments: &[attachment(target, wgpu::LoadOp::Load)],
@@ -337,7 +337,12 @@ impl Guides {
             viewport(&mut pass);
             pass.set_pipeline(&self.gizmo);
             pass.set_bind_group(0, &self.bind, &[]);
-            pass.draw(0..9, 3..6);
+            let vertices = match gizmo.mode {
+                2 => 64 * 6,
+                3 => 12,
+                _ => 9,
+            };
+            pass.draw(0..vertices, 3..6);
         }
     }
 }

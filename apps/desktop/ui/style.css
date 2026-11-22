@@ -198,3 +198,5 @@ body[data-split="true"] #splitter{display:block;width:100vw;height:100vh;backgro
 .joint-anchor-form button{flex:none;width:24px;height:25px;padding:4px}
 
 #ikFailure{font-size:11px;line-height:1.4;color:var(--color-error,#ff9c8c);overflow-wrap:anywhere}
+
+#ikPathStatus{font-size:10px;white-space:nowrap;color:#75dfb6}#ikPathStatus[data-blocked="true"]{color:#ff9c8c}

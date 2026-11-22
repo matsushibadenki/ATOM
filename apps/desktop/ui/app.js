@@ -57,6 +57,7 @@ function controls(){
  $('reload').disabled=busy||!current||current.dirty||current.previewing||!api;$('save').disabled=busy||!current||current.previewing||!api;$('locale').disabled=busy||!layout||!api;
  const locked=busy||!current||!api||!!current?.previewing;
  $('ikFields').disabled=locked;
+ $('ikAvoidCollision').disabled=$('ikValidatePath').checked;
  $('jointAnchorFields').disabled=locked||!!jointDrag;
  $('jointFields').disabled=locked&&!(jointDrag&&!jointDrag.ending);$('jointSelect').disabled=locked||!!jointDrag;
  $('jointFields').querySelectorAll('input,button').forEach(el=>el.disabled=!!jointDrag&&(el!==jointDrag.input||!!jointDrag.ending));
@@ -97,7 +98,7 @@ function render(s){
  if(document.activeElement!==$('name'))$('name').value=s.name;
  $('dirty').textContent=t(s.dirty?'unsaved':'saved');$('revision').textContent=`rev ${s.revision}`;$('report').textContent=t(reportKey);$('objectCount').textContent=`${s.objects.length} ${t('objects')}`;
  if(view==='scene')renderObjectHierarchy(s);
- renderInspector();controls();
+ renderInspector();renderPathReport(s.ik_path);controls();
 }
 const collapsedLinks=new Set();
 let hierarchyProject;
@@ -455,10 +456,29 @@ const ikVectors=[
  {container:$('ikOrientation'),label:'ik_orientation',limit:360,inputs:[]}
 ];
 const ikUseOrientation=$('ikUseOrientation');
+for(const [lang,labels] of Object.entries({
+ en:{ik_validate_path:'Check path and obstacles',ik_path_ok:'IK path clear',ik_path_blocked:'IK path blocked',ik_path_budget:'The path exceeds the sampling budget.',ik_path_floor:'Floor penetration',ik_path_obstacle:'Obstacle collision',ik_path_self_collision:'Self-collision',ik_path_help:'The sampled joint path checks the enabled floor, scene obstacles and self-collision. Mesh obstacles use conservative boxes. Green marks a clear path and orange marks a blocked path.'},
+ ja:{ik_validate_path:'経路・障害物を検証',ik_path_ok:'IK経路：通過',ik_path_blocked:'IK経路：干渉',ik_path_budget:'経路が検証ステップの上限を超えました。',ik_path_floor:'床と干渉',ik_path_obstacle:'障害物と干渉',ik_path_self_collision:'自己衝突',ik_path_help:'関節角を補間して、有効な床・シーン内障害物・自己衝突を検証します。メッシュ障害物には外接箱を使います。緑は通過、橙は干渉です。'},
+ 'zh-CN':{ik_validate_path:'检查路径和障碍物',ik_path_ok:'IK路径通过',ik_path_blocked:'IK路径受阻',ik_path_budget:'路径超出采样预算。',ik_path_floor:'与地面相交',ik_path_obstacle:'与障碍物碰撞',ik_path_self_collision:'自碰撞',ik_path_help:'对关节角插值采样，检查已启用的地面、场景障碍物和自碰撞。网格障碍物使用包围盒。绿色表示通过，橙色表示受阻。'}
+}))Object.assign(translations[lang],labels);
 let ikFailure='';
+function pathDetail(report){
+ const hit=report?.impact;
+ if(!hit)return '';
+ const ids=hit.links||[hit.link,hit.obstacle].filter(id=>id!=null);
+ return `${t('ik_path_'+hit.kind)} · ${ids.map(id=>'#'+id).join(' / ')} · ${Math.round(report.fraction*100)}%`;
+}
+function renderPathReport(report){
+ const badge=$('ikPathStatus');
+ badge.hidden=!report;
+ badge.dataset.blocked=String(!!report?.impact);
+ badge.textContent=report?t(report.impact?'ik_path_blocked':'ik_path_ok'):'';
+ badge.title=pathDetail(report)||t('ik_path_help');
+ if(ikFailure==='ik_path_blocked')showIkFailure(ikFailure);
+}
 function showIkFailure(key=''){
  ikFailure=key;
- $('ikFailure').textContent=key?t(key):'';
+ $('ikFailure').textContent=key==='ik_path_blocked'?(pathDetail(current?.ik_path)||t(key)):key?t(key):'';
  $('ikFailure').hidden=!key;
 }
 function resetIkTarget(){
@@ -475,8 +495,9 @@ async function solveIk(){
  const vectors=constrain?ikVectors:ikVectors.slice(0,1);
  if(vectors.some(({inputs})=>inputs.some(input=>!input.reportValidity())))return;
  const [target,orientation]=vectors.map(({inputs})=>inputs.map(input=>input.valueAsNumber));
+ const path=$('ikValidatePath').checked;
  const avoid=$('ikAvoidCollision').checked;
- const command={kind:avoid?'solve_collision_free_ik':constrain?'solve_pose_ik':'solve_ik',id:camera.selected,base:Number($('ikBase').value),target};
+ const command={kind:path?'solve_path_ik':avoid?'solve_collision_free_ik':constrain?'solve_pose_ik':'solve_ik',id:camera.selected,base:Number($('ikBase').value),target};
  if(constrain)command.orientation=orientation.map(v=>v*Math.PI/180);
  vectors.forEach(({inputs})=>inputs.forEach(input=>input.dataset.committed=input.value));
  showIkFailure();
@@ -490,6 +511,7 @@ for(const {container,limit,inputs} of ikVectors){
   cell.append(label,input);inputs.push(input);container.append(cell);
  }
 }
+$('ikValidatePath').onchange=controls;
 ikUseOrientation.onchange=()=>{$('ikOrientation').hidden=!ikUseOrientation.checked;};
 $('ikCurrent').onclick=resetIkTarget;$('ikSolve').onclick=solveIk;
 function renderIk(robot,link){

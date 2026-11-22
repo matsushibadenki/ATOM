@@ -241,10 +241,11 @@ fn ik_default_humanoid_root_chain_reaches_without_moving_root() {
     let target = [p[0] - 0.08, p[1] + 0.04, p[2] + 0.08];
     edit(
         &mut c,
-        Command::SolveIk {
+        Command::SolveCollisionFreeIk {
             id: end,
             base,
             target,
+            orientation: None,
         },
     )
     .unwrap();
@@ -376,4 +377,214 @@ for i in range(m.nu):
     c.finish_simulation(token, Ok(result), 1).unwrap();
     c.reset_simulation();
     assert_eq!(c.snapshot().objects, authored);
+}
+
+#[test]
+fn pose_ik_reaches_world_target_and_roundtrips_as_one_edit() {
+    let mut core = robot(RobotTemplate::DualArm);
+    let base = core.project().robots[0].root;
+    let end = id(&core, "left_gripper");
+    let other = id(&core, "right_gripper");
+    let mut transform = Transform::from(core.object(base).unwrap());
+    transform.rotation = [0.2, -0.4, 0.3];
+    transform.position[2] += 0.5;
+    edit(
+        &mut core,
+        Command::Transform {
+            id: base,
+            transform,
+        },
+    )
+    .unwrap();
+    let before = core.snapshot();
+    let mut reference = AppCore::new(core.project().clone()).unwrap();
+    for (label, angle) in [
+        ("left_shoulder", 0.4),
+        ("left_upper_arm", 0.65),
+        ("left_elbow", -0.5),
+        ("left_forearm", -0.7),
+        ("left_wrist", 0.25),
+        ("left_gripper", 0.35),
+    ] {
+        let id = id(&reference, label);
+        edit(
+            &mut reference,
+            Command::SetJointAngle { id, axis: 0, angle },
+        )
+        .unwrap();
+    }
+    let goal = reference.object(end).unwrap();
+    let solved = edit(
+        &mut core,
+        Command::SolveCollisionFreeIk {
+            id: end,
+            base,
+            target: goal.position,
+            orientation: Some(goal.rotation),
+        },
+    )
+    .unwrap();
+    let endpoint = core.object(end).unwrap();
+    assert!(distance(endpoint.position, goal.position) <= 0.001);
+    // Both Euler triples are away from a singularity for this fixture.
+    assert!(distance(endpoint.rotation, goal.rotation) < 0.009);
+    assert_eq!(solved.undo_depth, before.undo_depth + 1);
+    assert_eq!(
+        core.object(other),
+        before.objects.iter().find(|o| o.id == other)
+    );
+    core.project().validate().unwrap();
+    let no_op = edit(
+        &mut core,
+        Command::SolveCollisionFreeIk {
+            id: end,
+            base,
+            target: goal.position,
+            orientation: Some(goal.rotation),
+        },
+    )
+    .unwrap();
+    assert_eq!(no_op.revision, solved.revision);
+    let temp = tempfile::tempdir().unwrap();
+    let mut store = ProjectStore::open(temp.path().join("pose.atom.json")).unwrap();
+    store.save(core.project()).unwrap();
+    let restored = AppCore::new(store.load().unwrap().unwrap())
+        .unwrap()
+        .snapshot();
+    assert_eq!(restored.objects, solved.objects);
+    assert_eq!(restored.robots, solved.robots);
+    assert_eq!(
+        edit(&mut core, Command::Undo).unwrap().objects,
+        before.objects
+    );
+    assert_eq!(
+        edit(&mut core, Command::Redo).unwrap().objects,
+        solved.objects
+    );
+}
+
+#[test]
+fn unreachable_orientation_preserves_the_pose_and_history() {
+    let mut core = robot(RobotTemplate::DualArm);
+    let endpoint = id(&core, "left_gripper");
+    let base = core.project().robots[0]
+        .links
+        .iter()
+        .find(|link| link.object_id == endpoint)
+        .unwrap()
+        .parent
+        .unwrap();
+    let before = core.snapshot();
+    let target = core.object(endpoint).unwrap().position;
+    let result = edit(
+        &mut core,
+        Command::SolvePoseIk {
+            id: endpoint,
+            base,
+            target,
+            orientation: [std::f32::consts::PI, 0., 0.],
+        },
+    );
+    assert!(matches!(result, Err(Error::IkUnreachable)));
+    assert_eq!(core.snapshot().revision, before.revision);
+    assert_eq!(core.snapshot().objects, before.objects);
+    assert_eq!(core.snapshot().undo_depth, before.undo_depth);
+}
+
+#[test]
+fn collision_free_ik_chooses_an_alternate_bend() {
+    let core = robot(RobotTemplate::DualArm);
+    let mut project = core.project().clone();
+    let robot = &mut project.robots[0];
+    robot.links.truncate(4);
+    robot.links[3].parent = Some(1);
+    project.objects.truncate(4);
+    for (i, link) in robot.links.iter_mut().enumerate() {
+        link.axis = [0., 0., 1.];
+        link.anchor = if i == 2 { [1., 0., 0.] } else { [0.; 3] };
+        link.range = [-2., 2.];
+    }
+    for (object, position) in
+        project
+            .objects
+            .iter_mut()
+            .zip([[0., -2., 0.], [0.5, 0., 0.], [2., 0., 0.], [0., 0., 2.]])
+    {
+        object.position = position;
+        object.scale = [0.12; 3];
+    }
+    // Attach the obstacle to the fixed base, making it part of the robot.
+    let mut unconstrained = AppCore::new(project.clone()).unwrap();
+    let target = [1., 1., 0.];
+    edit(
+        &mut unconstrained,
+        Command::SolveIk {
+            id: 3,
+            base: 1,
+            target,
+        },
+    )
+    .unwrap();
+    let blocked_center = unconstrained.object(2).unwrap().position;
+    project.objects[3].position = blocked_center;
+    let mut constrained = AppCore::new(project).unwrap();
+    let solved = edit(
+        &mut constrained,
+        Command::SolveCollisionFreeIk {
+            id: 3,
+            base: 1,
+            target,
+            orientation: None,
+        },
+    )
+    .unwrap();
+    assert!(distance(constrained.object(3).unwrap().position, target) <= 0.001);
+    assert!(distance(constrained.object(2).unwrap().position, blocked_center) > 0.5);
+    assert_eq!(solved.undo_depth, 1);
+}
+
+#[test]
+fn collision_at_pose_target_reports_reason_and_keeps_history() {
+    let core = robot(RobotTemplate::DualArm);
+    let base = core.project().robots[0].root;
+    let end = id(&core, "left_shoulder");
+    let blocker = id(&core, "right_gripper");
+    let mut reference = AppCore::new(core.project().clone()).unwrap();
+    edit(
+        &mut reference,
+        Command::SetJointAngle {
+            id: end,
+            axis: 0,
+            angle: 0.7,
+        },
+    )
+    .unwrap();
+    let target = reference.object(end).unwrap().position;
+    let orientation = reference.object(end).unwrap().rotation;
+    let mut project = core.project().clone();
+    let obstacle = project
+        .objects
+        .iter_mut()
+        .find(|o| o.id == blocker)
+        .unwrap();
+    obstacle.position = target;
+    obstacle.scale = [0.025; 3];
+    let mut constrained = AppCore::new(project).unwrap();
+    let before = constrained.snapshot();
+    let request = |orientation| Command::SolveCollisionFreeIk {
+        id: end,
+        base,
+        target,
+        orientation,
+    };
+    for orientation in [None, Some(orientation)] {
+        assert!(matches!(
+            edit(&mut constrained, request(orientation)),
+            Err(Error::IkSelfCollision)
+        ));
+        let after = constrained.snapshot();
+        assert_eq!(after.objects, before.objects);
+        assert_eq!(after.revision, before.revision);
+        assert_eq!(after.undo_depth, before.undo_depth);
+    }
 }

@@ -143,7 +143,7 @@
 <body name="b28" pos="-0.08 -0.019999504 0">
 <joint name="j28_0" type="hinge" axis="1 0 0" limited="true" range="-0.3 0.3" damping="0.1" armature="0.001"/>
 <joint name="j28_1" type="hinge" axis="0 1 0" limited="true" range="-0.4 0.4" damping="0.1" armature="0.001"/>
-<geom name="o28" type="box" pos="-0.075 0 0" euler="0 0 0" size="0.065 0.0225 0.03" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<geom name="o28" type="box" pos="-0.105000004 0 0" euler="0 0 0" size="0.03 0.0225 0.03" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
 <body name="b29" pos="-0.16 0 0">
 <joint name="j29_0" type="hinge" axis="1 0 0" limited="true" range="-2 2" damping="0.1" armature="0.001"/>
 <joint name="j29_1" type="hinge" axis="0 1 0" limited="true" range="-1.5 1.5" damping="0.1" armature="0.001"/>
@@ -225,7 +225,7 @@
 <body name="b64" pos="0.08 -0.019999504 0">
 <joint name="j64_0" type="hinge" axis="1 0 0" limited="true" range="-0.3 0.3" damping="0.1" armature="0.001"/>
 <joint name="j64_1" type="hinge" axis="0 1 0" limited="true" range="-0.4 0.4" damping="0.1" armature="0.001"/>
-<geom name="o64" type="box" pos="0.075 0 0" euler="0 0 0" size="0.065 0.0225 0.03" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
+<geom name="o64" type="box" pos="0.105000004 0 0" euler="0 0 0" size="0.03 0.0225 0.03" density="1000" friction="1.2 0.005 0.0001" condim="6" rgba="0.75 0.69 0.57 1"/>
 <body name="b65" pos="0.16 0 0">
 <joint name="j65_0" type="hinge" axis="1 0 0" limited="true" range="-2 2" damping="0.1" armature="0.001"/>
 <joint name="j65_1" type="hinge" axis="0 1 0" limited="true" range="-1.5 1.5" damping="0.1" armature="0.001"/>

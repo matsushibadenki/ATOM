@@ -39,6 +39,9 @@ impl AppCore {
                 | Command::SetJointAngle { .. }
                 | Command::SetJointRange { .. }
                 | Command::SolveIk { .. }
+                | Command::SolvePoseIk { .. }
+                | Command::SolveCollisionFreeIk { .. }
+                | Command::SolvePathIk { .. }
         );
         fork.apply(request)?;
         Ok(self.authoring_diff(&fork, is_physical))

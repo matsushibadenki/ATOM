@@ -14,7 +14,12 @@ struct Version {
 struct Preview {
     owner: String,
     object: SceneObject,
-    scene: Option<threex_core::Scene>,
+    frame: Option<TransformFrame>,
+}
+struct TransformFrame {
+    project: Project,
+    objects: Vec<SceneObject>,
+    scene: threex_core::Scene,
 }
 struct JointPreview {
     owner: String,
@@ -38,6 +43,7 @@ pub struct AppCore {
     redo: VecDeque<Version>,
     preview: Option<Preview>,
     joint_preview: Option<JointPreview>,
+    ik_path: Option<robots::IkPathReport>,
     simulation: Option<(Project, threex_core::Scene, mujoco::SimulationResult)>,
     simulation_token: Option<u64>,
     simulation_continuous: bool,
@@ -71,6 +77,7 @@ impl AppCore {
             redo: VecDeque::new(),
             preview: None,
             joint_preview: None,
+            ik_path: None,
             simulation: None,
             simulation_token: None,
             simulation_continuous: false,
@@ -89,10 +96,8 @@ impl AppCore {
         if let Some(p) = &self.joint_preview {
             objects = p.objects.clone();
         }
-        if let Some(p) = &self.preview
-            && let Some(o) = objects.iter_mut().find(|o| o.id == p.object.id)
-        {
-            *o = p.object.clone();
+        if let Some(frame) = self.transform_frame() {
+            objects = frame.objects.clone();
         }
         Snapshot {
             project_id: self.project.id,
@@ -124,12 +129,9 @@ impl AppCore {
             robots: if self.reach.is_some() {
                 Vec::new()
             } else {
-                self.joint_preview
-                    .as_ref()
-                    .map_or(&self.project, |p| &p.project)
-                    .robots
-                    .clone()
+                self.transform_project().robots.clone()
             },
+            ik_path: self.ik_path().cloned(),
             joint_preview: self.joint_preview.as_ref().map(|p| p.info.clone()),
             simulation_running: self.simulation_token.is_some(),
             simulation_continuous: self.simulation_continuous,
@@ -138,6 +140,11 @@ impl AppCore {
             workflow_nodes: self.project.workflow.graph().nodes().len(),
             workflow_edges: self.project.workflow.graph().edges().len(),
         }
+    }
+    pub fn ik_path(&self) -> Option<&robots::IkPathReport> {
+        (!self.has_preview())
+            .then_some(self.ik_path.as_ref())
+            .flatten()
     }
     pub fn project(&self) -> &Project {
         &self.project
@@ -152,22 +159,22 @@ impl AppCore {
         if let Some(p) = &self.reach {
             return p.objects.iter().find(|o| o.id == id);
         }
-        if let Some(p) = &self.preview
-            && p.object.id == id
-        {
-            Some(&p.object)
-        } else {
-            self.joint_preview
-                .as_ref()
-                .map(|p| &p.objects)
-                .unwrap_or_else(|| {
-                    self.simulation
-                        .as_ref()
-                        .map_or(&self.posed_objects, |s| &s.0.objects)
-                })
-                .iter()
-                .find(|o| o.id == id)
+        if let Some(frame) = self.transform_frame() {
+            return frame.objects.iter().find(|o| o.id == id);
         }
+        self.joint_preview
+            .as_ref()
+            .map(|p| &p.objects)
+            .unwrap_or_else(|| {
+                self.simulation
+                    .as_ref()
+                    .map_or(&self.posed_objects, |s| &s.0.objects)
+            })
+            .iter()
+            .find(|o| o.id == id)
+    }
+    fn transform_frame(&self) -> Option<&TransformFrame> {
+        self.preview.as_ref().and_then(|p| p.frame.as_ref())
     }
     pub fn scene(&self) -> &threex_core::Scene {
         if let Some(p) = &self.reach {
@@ -176,9 +183,8 @@ impl AppCore {
         if let Some(p) = &self.joint_preview {
             return &p.scene;
         }
-        self.preview
-            .as_ref()
-            .and_then(|p| p.scene.as_ref())
+        self.transform_frame()
+            .map(|frame| &frame.scene)
             .unwrap_or_else(|| self.simulation.as_ref().map_or(&self.scene, |s| &s.1))
     }
     pub fn has_transform_preview(&self) -> bool {
@@ -279,13 +285,7 @@ impl AppCore {
                 });
             }
             Command::Transform { id, transform } => {
-                let transform = candidate.rest_transform(id, &transform);
-                let object = candidate
-                    .objects
-                    .iter_mut()
-                    .find(|o| o.id == id)
-                    .ok_or_else(|| Error::Invalid("missing object".into()))?;
-                transform.assign(object);
+                candidate.apply_world_transform(id, &transform)?;
             }
             Command::SetGravity { gravity } => candidate.physics.gravity = gravity,
             Command::SetMaterial { id, material } => {
@@ -358,6 +358,18 @@ impl AppCore {
                 }
             }
             Command::SetFloor { enabled } => candidate.physics.floor_enabled = enabled,
+            Command::SetJointAnchor { id, anchor } => {
+                let link = candidate
+                    .robots
+                    .iter_mut()
+                    .flat_map(|robot| &mut robot.links)
+                    .find(|link| link.object_id == id && link.parent.is_some())
+                    .ok_or_else(|| Error::Invalid("missing articulated joint".into()))?;
+                if link.anchor == anchor {
+                    return Ok(self.snapshot());
+                }
+                link.anchor = anchor;
+            }
             Command::SetJointRange { id, axis, range } => {
                 if !candidate.set_joint_range(id, axis, range)? {
                     return Ok(self.snapshot());
@@ -365,6 +377,47 @@ impl AppCore {
             }
             Command::SetJointAngle { id, axis, angle } => {
                 if !candidate.set_joint_angle(id, axis, angle)? {
+                    return Ok(self.snapshot());
+                }
+            }
+            Command::SolvePathIk {
+                id,
+                base,
+                target,
+                orientation,
+            } => {
+                let mut report = None;
+                let result = candidate.solve_path_ik(id, base, target, orientation, &mut report);
+                match result {
+                    Ok(true) => {
+                        self.commit_authoring(candidate, next)?;
+                    }
+                    Ok(false) => {}
+                    Err(e) => {
+                        self.ik_path = report;
+                        return Err(e);
+                    }
+                }
+                self.ik_path = report;
+                return Ok(self.snapshot());
+            }
+            Command::SolveCollisionFreeIk {
+                id,
+                base,
+                target,
+                orientation,
+            } => {
+                if !candidate.solve_collision_free_ik(id, base, target, orientation)? {
+                    return Ok(self.snapshot());
+                }
+            }
+            Command::SolvePoseIk {
+                id,
+                base,
+                target,
+                orientation,
+            } => {
+                if !candidate.solve_pose_ik(id, base, target, orientation)? {
                     return Ok(self.snapshot());
                 }
             }
@@ -468,6 +521,7 @@ impl AppCore {
         self.posed_objects = self.project.posed_objects();
         self.scene = scene;
         self.revision = revision;
+        self.ik_path = None;
         self.sequence = sequence;
         self.next_object_id = next;
         Ok(self.snapshot())
@@ -492,6 +546,7 @@ impl AppCore {
         self.posed_objects = self.project.posed_objects();
         self.scene = scene;
         self.revision = revision;
+        self.ik_path = None;
         self.sequence = sequence;
         Ok(self.snapshot())
     }
@@ -517,7 +572,7 @@ impl AppCore {
         self.preview = Some(Preview {
             owner: owner.into(),
             object,
-            scene: None,
+            frame: None,
         });
         self.sequence = sequence;
         Ok(self.snapshot())
@@ -539,16 +594,14 @@ impl AppCore {
             return Ok(self.snapshot());
         }
         let mut project = self.project.clone();
-        let rest = project.rest_transform(p.object.id, &transform);
-        let object = project
-            .objects
-            .iter_mut()
-            .find(|o| o.id == p.object.id)
-            .ok_or_else(|| Error::Invalid("missing object".into()))?;
-        rest.assign(object);
-        let mut object = object.clone();
-        transform.assign(&mut object);
+        project.apply_world_transform(p.object.id, &transform)?;
         let scene = project.render_scene()?;
+        let mut object = p.object.clone();
+        transform.assign(&mut object);
+        let mut objects = project.posed_objects();
+        if let Some(selected) = objects.iter_mut().find(|o| o.id == object.id) {
+            *selected = object.clone();
+        }
         let sequence = self
             .sequence
             .checked_add(1)
@@ -556,7 +609,11 @@ impl AppCore {
         self.preview = Some(Preview {
             owner: owner.into(),
             object,
-            scene: Some(scene),
+            frame: Some(TransformFrame {
+                project,
+                objects,
+                scene,
+            }),
         });
         self.sequence = sequence;
         Ok(self.snapshot())
@@ -590,7 +647,7 @@ impl AppCore {
             return Err(Error::EditBusy);
         }
         let p = self.preview.take().unwrap();
-        if p.scene.is_none() {
+        if p.frame.is_none() {
             self.sequence = self.sequence.saturating_add(1);
             return Ok(self.snapshot());
         }
@@ -977,9 +1034,14 @@ impl AppCore {
         if self.reach.is_some() || self.simulation.is_some() || self.simulation_token.is_some() {
             return None;
         }
-        self.joint_preview
-            .as_ref()
-            .map_or(&self.project, |p| &p.project)
-            .joint_ranges(id)
+        self.transform_project().joint_ranges(id)
+    }
+    fn transform_project(&self) -> &Project {
+        if let Some(preview) = &self.joint_preview {
+            &preview.project
+        } else {
+            self.transform_frame()
+                .map_or(&self.project, |frame| &frame.project)
+        }
     }
 }

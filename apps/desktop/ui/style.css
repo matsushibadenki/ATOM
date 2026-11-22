@@ -183,3 +183,18 @@ body[data-split="true"] #splitter{display:block;width:100vw;height:100vh;backgro
 #daggerResults table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:11px;margin:8px 0}
 #daggerResults caption{text-align:left;padding:5px 0;color:var(--color-muted)}
 #daggerResults th,#daggerResults td{padding:4px 2px;border-bottom:1px solid var(--color-border);text-align:left;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+
+#objects li{padding-inline-start:calc(3px + var(--link-indent, 0px))}
+#objects .link-disclosure{flex:0 0 16px;width:16px;padding:0;color:var(--color-muted)}
+
+#jointAnchorEditor{margin-top:6px;border-top:1px solid var(--color-border);padding-top:5px}
+#jointAnchorEditor summary{font-size:10px;color:var(--color-muted);cursor:pointer}
+#jointAnchorEditor summary .info{float:right}
+#jointAnchorFields{border:0;margin:4px 0 0;padding:0;min-width:0}
+.joint-anchor-form{display:flex;align-items:center;gap:4px}
+.joint-anchor-form .vector-row{flex:1;min-width:0}
+#jointAnchorVector label{display:flex;align-items:center;gap:3px;min-width:0;font-size:10px}
+#jointAnchorVector input{width:100%;min-width:0}
+.joint-anchor-form button{flex:none;width:24px;height:25px;padding:4px}
+
+#ikFailure{font-size:11px;line-height:1.4;color:var(--color-error,#ff9c8c);overflow-wrap:anywhere}

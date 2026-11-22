@@ -1,6 +1,6 @@
 # ATOM Roadmap
 
-更新：2026-11-10（JST）。ベース実装済み。詳細は[FOUNDATION.md](FOUNDATION.md)。
+更新：2026-11-22（JST）。ベース実装済み。詳細は[FOUNDATION.md](FOUNDATION.md)。
 
 状態の意味：
 
@@ -45,7 +45,7 @@ ThreeX／UNGEの採用ソースはhashとコピー元revisionを記録した。
 - 🟢 [Done] 各方式の採用デモを4件に揃えて再評価。特徴量方式は4条件中3条件で成功数が増え、1条件で平均最終距離が短縮。[結果](TRAIN_MINING.md)。
 - 🟢 [Done] 検証済み計画をデスクトップから明示的に適用し、全編集を1件のUndo／Redoに集約。
 - ⭕️ [Pending] 実モデル推論。vLLM-appleは現在のMLX／Transformers版がreview済みgate外で拒否、Strataはserver未起動。gateや依存を変更せず保留。
-- 🔴 [Later] 位置IKの3D目標ハンドル・ライブプレビュー、向きの制約、衝突・バランスを考慮する姿勢計画。素材表示・操作補助の拡張と並行し、依存が成立した項目から着手。
+- 🔴 [Later] IKの3D目標ハンドル・ライブプレビュー、衝突・バランスを考慮する姿勢計画。素材表示・操作補助の拡張と並行し、依存が成立した項目から着手。
 
 
 ## 予算付きBC学習job v1（2026-11-06）
@@ -169,7 +169,7 @@ ThreeX／UNGEの採用ソースはhashとコピー元revisionを記録した。
 - 🟢 [Done] 双腕・人体・多軸・全身チェーン・一直線からの屈曲・回転済み基点・編集済み制限・決定性・保存復元・一括履歴・失敗時非変更をcoreで検証。実MuJoCoのauthored keyframeで手先位置と限界を照合し、1step／reset後の復元を確認。
 - 🟢 [Done] Metal offscreenでIKによる実フレームの変化とUndo／Redoのピクセル復元。実Rust coreに接続したGUIで到達・基点保持・履歴・Esc・失敗・無変更・保存復元と3言語／幅900・280・220pxを検証。
 - 🟢 [Done] Reach v1の参照制御・成功判定・Episode記録を別経路で実装。位置IK自体は静的姿勢編集で、Reach v1もIK計画・把持・姿勢安定方策ではない。
-- 🔴 [Later] 3D目標ハンドル、向きの制約、関節支点・軸編集、自己衝突・環境接触・バランスの制約。人体の医学的可動性を保証しない。
+- 🔴 [Later] 3D目標ハンドル、向きの制約、関節支点・軸編集、環境接触・バランスの制約。人体の医学的可動性を保証しない。
 - ⭕️ [Pending] 実Tauriウインドウのnative IPC・イベント配送、各OS・浮動／複数モニターでの手動QA。GUI試験はHTTPテストホスト＋実coreであり、native WebViewの実操作とは区別する。
 
 ## 実装済みのベース
@@ -232,7 +232,7 @@ ThreeX／UNGEの採用ソースはhashとコピー元revisionを記録した。
 - 🟢 [Done] Esc、フォーカス／viewport喪失、layout／DPI変更で範囲と姿勢を一緒に取消。1ドラッグの確定だけを1件の履歴とし、無変更操作は履歴を増やさない。数値入力はEnter／blurで確定、Escで未確定値を復元。
 - 🟢 [Done] coreの保存・履歴・補正・不正入力・typed preview・stale token、native controllerの上下限・交差・full turn・極小区間を検証。Metal GPUで端点ドラッグ→円弧／姿勢更新→commit→Undo／Redo→取消を確認。MuJoCoへ変更後のrange／ctrlrangeと初期姿勢を出力し、実行・resetを検証。
 - 🟢 [Done] 実Rust coreを使うGUI試験で数値範囲・姿勢補正のUndo／Redo、Esc、保存復元、編集後スライダーの制限、3言語・幅280／220pxを確認。
-- 🟠 [Next] 位置IKの向き制約、自己衝突に配慮した可動範囲設定、軸・支点の編集。位置IKの基本実装は上記で完了。
+- 🟠 [Next] 自己衝突に配慮した可動範囲設定、軸・支点の編集。位置IKの基本実装は上記で完了。
 - ⭕️ [Pending] Tauri実ウインドウでのOSイベント配送、複数モニター／フローティング／OS別の手動QA。UI操作試験はHTTPホスト＋実core、3D統合試験は同じnative controller＋Metal offscreen描画。
 
 ## 3Dガイドからの関節角度操作（2026-10-23）
@@ -242,7 +242,7 @@ ThreeX／UNGEの採用ソースはhashとコピー元revisionを記録した。
 - 🟢 [Done] native-joint owner＋tokenで既存のpreview／commit／cancelを共用。途中は文書・履歴を変更せず、mouseup時に最終ポインター値をflushして1件だけ記録。無変更クリックは履歴を増やさない。
 - 🟢 [Done] Esc、native Undo、ビュー外・window focus喪失、resize／DPI変更、layout変更で取消。古いドラッグは別ownerの新しい操作を変更しない。Shift＋左パン／Alt＋左orbitはハンドルより優先し、通常の形状操作はガイド以外で継続する。
 - 🟢 [Done] 円弧／shaft、横向き、Retina、座標オフセット、near clip、角度制限、no-op、取消、stale token、親姿勢付きの複数軸を自動テスト。Metal GPUで直接ドラッグ→FK→実フレーム更新→commit→Undo／Redo→取消を確認。
-- 🟠 [Next] 向き・自己衝突を考慮した姿勢作成。位置IKは実装済み。
+- 🟠 [Next] 衝突を避ける姿勢間の経路検証。姿勢単体の自己衝突回避は実装済み。
 - ⭕️ [Pending] 実Tauriウインドウ上でのOSイベント配送とポインター境界、フローティング／複数モニター／OS別の手動QA。現段階の直接操作試験は同じnativeドラッグcontrollerと実core・Metal offscreen描画を使用。
 
 ## 関節のライブプレビュー・3D可動範囲（2026-10-23）
@@ -253,7 +253,7 @@ ThreeX／UNGEの採用ソースはhashとコピー元revisionを記録した。
 - 🟢 [Done] 選択した関節の支点・軸・可動範囲円弧・端点キャップ・現在角度の金色rayをRust/wgpuで描画。親関節と先行する回転軸の姿勢を反映し、操作軸を強調。三軸の線分は最大315本で、WebViewへメッシュやフレームを転送しない。物理preview中は不正確な軸を表示しないよう非表示。
 - 🟢 [Done] 連続プレビュー30回→1履歴、取消・no-op・競合・ABA token・関節フレームをテスト。実Rust coreへのGUI試験で押下中の姿勢変化、入力集約、Undo／Redo、Esc／pointercancel／blur、キーボード、保存復元、三言語と幅280／220pxを確認。
 - 🟢 [Done] Metal GPUで円弧の実ピクセル・現在角度の変化・近クリップ・分割領域のクリップを検証。人体全体のFK Sceneと同じアプリ側変換から描画し、確定前に人体形状とガイドのフレームが変わることを確認。
-- 🟠 [Next] 向き・接触・自己衝突を考慮した姿勢作成。位置IKは実装済み。
+- 🟠 [Next] 環境接触と姿勢間の経路検証。姿勢単体の自己衝突回避は実装済み。
 - ⭕️ [Pending] Tauriの実ウインドウをまたぐpointer capture、ネイティブIPC、各OS／入力デバイスでの手動操作QA。現段階のUI試験はローカルHTTPホスト＋実core、GPU試験はMetalのoffscreen描画。
 
 ガイドは角度の範囲を示す操作補助で、到達可能領域や衝突しない姿勢を保証しない。形状越しに見えるoverlayとし、視認性に応じた表示半径を使う。色は関節のローカルX／Y／Zに対応し、世界軸の向きとは区別する。
@@ -274,7 +274,12 @@ ThreeX／UNGEの採用ソースはhashとコピー元revisionを記録した。
 - 🟢 [Done] 選択部位の回転軸・角度範囲と一体の可動接続数／回転自由度を3言語で表示。詳細モデルの追加・削除・保存・Undo／Redo、旧14関節モデルの無変更読込を検証。
 - 🟢 [Done] MuJoCo 3.1.6で182軸の駆動方向・独立した運動学、末端軸の動作、1,000stepの物理実行を確認。Web UIはIPC shimで英語／日本語／简体中文、幅280／220pxの表示を確認。
 - 🟢 [Done] 全回転軸の角度をGUIのスライダー／数値入力で編集。関節選択・軸リセット、軸別制限のRust検証、子孫リンクのFK追従、保存・復元・Undo／Redo、MJCF authored keyframeと物理プレビュー初期姿勢を実装。
-- 🟠 [Next] 関節階層ツリー、向き・接触を考慮したIK、関節支点を伴う一体変形。関節限界の3D直接編集、位置IK、ドラッグ中の連続姿勢プレビューと角度円弧は実装済み。
+- 🟢 [Done] シーン一覧でロボットの親子リンクを階層表示し、枝の展開・折りたたみとリンク選択に対応。
+- 🟢 [Done] 人型・双腕の関節インスペクタで支点のXYZを編集。関節回転前のワールド座標（m、Y上）を指定し、保存・再読込とUndo／Redoに対応。子孫の姿勢、3Dの関節ガイドおよびMuJoCoの初期姿勢に反映。
+- 🟢 [Done] ルートの移動・回転に全リンクと関節支点・軸が追従。3Dドラッグ中のプレビュー、MuJoCo、保存・復元、Undo／Redoに対応。
+- 🟢 [Done] 位置IKに末端リンクの向き制約を追加。三言語GUIでワールド位置とXYZ角度を指定し、関節限界内で位置1 mm・向き0.5°の両方を満たす姿勢を適用。3D表示、保存・復元、Undo／Redoに対応。
+- 🟢 [Done] 位置・向きIKで自己衝突回避を既定で有効化。同一ロボットの箱形状を向き付きで検査し、直接接続する親子リンクを除外。干渉する候補は適用せず、別の姿勢を探索。GUIに失敗理由を表示。新規人型テンプレートは鎖骨と胸椎の初期干渉を解消。既存文書は保存時の形状を維持。
+- 🟠 [Next] 環境接触を考慮したIKと姿勢間の経路検証。関節限界の3D直接編集、位置IK、ドラッグ中の連続姿勢プレビューと角度円弧は実装済み。
 - 🔴 [Later] 肩甲骨の滑走、橈尺関節・膝蓋骨・左右の顎関節、胸郭・肋骨・骨盤・靱帯・腱・筋骨格の詳細化と計測データによる校正。
 - ⭕️ [Pending] 詳細モデルのネイティブ3D外観・パネル操作の実機QA、医学的精度・実機人体動作との照合。
 
@@ -290,7 +295,7 @@ ThreeX／UNGEの採用ソースはhashとコピー元revisionを記録した。
 - 🟢 [Done] MuJoCo 3.1.6で落下・ゼロg・任意方向・摩擦・密度／慣性・両テンプレートを実行。ネイティブUIで保存復元とUndo／Redoを確認。
 - 🟢 [Done] 一般sceneの短時間MuJoCoプレビューを中断し、ワーカー終了後に編集シーンへ復帰。
 - 🟢 [Done] 一般sceneの連続MuJoCo、同一物理状態での一時停止・再開、3Dへの反映、停止時の編集姿勢復元。
-- 🟠 [Next] 関節支点編集、把持・人型の姿勢安定方策。Reach v1はsingle-step継続・時系列記録・記録再生を実装済み。従来の汎用物理previewは編集状態からの短時間計算と最終姿勢表示。
+- 🟠 [Next] 把持・人型の姿勢安定方策。Reach v1はsingle-step継続・時系列記録・記録再生を実装済み。従来の汎用物理previewは編集状態からの短時間計算と最終姿勢表示。
 - 🟠 [Next] presetの校正・出典管理、一般MJCF import。
 - 🟢 [Done] 箱の明示質量を編集・保存し、素材・スケール変更時に保持。MuJoCoは箱寸法から慣性を算出。
 - 🟢 [Done] 物体ペア単位の滑り・ねじり・転がり摩擦。3欄を空にすると素材由来に復帰。保存・Undo／Redo、MuJoCoの接触ペア出力に対応。直結ロボットリンクのペアは対象外。
@@ -356,7 +361,7 @@ Rustが文書・ジョブ・表示状態を所有し、外部Workerはそのジ�
 | 段階・状態 | 実装するもの | 完了を判定する実験 |
 |---|---|---|
 | M0-A 🟠 [Next] | backend registry／doctor、version付きRPC、能力表、資源上限、asset registry | mock Workerのtimeout・クラッシュ・未対応機能・古い応答を扱える。probe成功と実際のstep成功を別に表示 |
-| M1-A 🟠 [Next] | Reach v1のreset／step・参照controllerとIKはDone。一般sceneの連続物理／pauseもDone。残りはロボット階層、MJCF import | 固定seedのReachをheadlessとUIで実行。関節制限、座標、時間刻みを確認し、停止時にWorkerが残らない。URDF／USDの全面対応は後段 |
+| M1-A 🟠 [Next] | Reach v1のreset／step・参照controllerとIKはDone。一般sceneの連続物理／pauseもDone。残りはMJCF import | 固定seedのReachをheadlessとUIで実行。関節制限、座標、時間刻みを確認し、停止時にWorkerが残らない。URDF／USDの全面対応は後段 |
 | M1-B 🟠 [Next] | Reach recorder／再生と10 seed比較はDone。残りは失敗分類、solver snapshotからの再開・分岐 | 初期検証として10 seedを各2回実行。固定backendで許容誤差を判定し、記録再生と物理再実行を区別。中断artifactは未完了扱い、保存復元未対応backendではaction列の再実行へ明示的に切り替え |
 | M2-A 🔴 [Later] | vLLM-apple／Strata接続、SkillPlan、LLM SFT／LoRA、教師候補の検証 | 既存[RuntimeGateway設計](RUNTIME-INTEGRATION.ja.md)に従い、手書き基準→LLM計画→追加学習モデルを固定holdoutで比較。推論runtimeのautotuneを重み学習と数えない |
 | M2-B 🔴 [Later] | RoboCasa adapter、小規模task browser、公式demo再生、収集・注釈・データ変換 | 一つのatomic課題と一つのcomposite課題でreset／action／成功判定／再生を通す。元demo ID・action schema・時刻・splitを保持し、公式loader／evaluatorで照合 |

@@ -116,13 +116,13 @@ pub(super) fn build(start: u32) -> Result<(Robot, Vec<SceneObject>, u32)> {
         &[[-0.45, 0.01]],
     )?;
     for (side, s) in [("left", -1.), ("right", 1.)] {
-        // Clavicular girdle is a reduced two-axis shoulder-girdle connection.
+        // Keep the clavicle box outside nonadjacent thoracic boxes in the rest pose.
         let clavicle = b.add(
             &format!("{side}_clavicle"),
             Some(thoracic_top),
             [s * 0.08, 1.49, 0.],
-            [s * 0.155, 1.49, 0.],
-            [0.13, 0.045, 0.06],
+            [s * 0.185, 1.49, 0.],
+            [0.06, 0.045, 0.06],
             &[[-0.3, 0.3], [-0.4, 0.4]],
         )?;
         let arm = b.add(

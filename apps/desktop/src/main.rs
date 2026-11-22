@@ -67,18 +67,22 @@ async fn edit(webview: tauri::Webview, request: EditRequest) -> Result<Snapshot,
     let app = webview.app_handle().clone();
     // IK is bounded CPU work; keep it off the native UI/event thread.
     let worker_app = app.clone();
-    let snapshot = tauri::async_runtime::spawn_blocking(move || {
-        worker_app
-            .state::<Shared>()
-            .0
-            .lock()
-            .map_err(|_| error("internal_error"))?
-            .core
-            .apply(request)
-            .map_err(UiError::from)
+    let (result, failure_snapshot) = tauri::async_runtime::spawn_blocking(move || {
+        let path_edit = matches!(request.command, atom_core::Command::SolvePathIk { .. });
+        let state = worker_app.state::<Shared>();
+        let mut session = state.0.lock().map_err(|_| error("internal_error"))?;
+        let result = session.core.apply(request).map_err(UiError::from);
+        let failure_snapshot = (path_edit && result.is_err()).then(|| session.core.snapshot());
+        Ok::<_, UiError>((result, failure_snapshot))
     })
     .await
     .map_err(|_| error("internal_error"))??;
+    if let Some(snapshot) = failure_snapshot {
+        let _ = app.emit("atom://changed", &snapshot);
+        let redraw = app.clone();
+        let _ = app.run_on_main_thread(move || viewport::draw(&redraw));
+    }
+    let snapshot = result?;
     camera::reconcile(&app);
     let _ = app.emit("atom://changed", &snapshot);
     let redraw = app.clone();

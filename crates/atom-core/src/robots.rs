@@ -2,7 +2,7 @@
 mod human;
 mod pose;
 use crate::{Error, MaterialPreset, PhysicalMaterial, Result, SceneObject};
-pub use pose::{JointRange, JointRangeAxis};
+pub use pose::{IkImpact, IkPathReport, JointRange, JointRangeAxis};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]

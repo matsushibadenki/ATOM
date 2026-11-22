@@ -161,6 +161,15 @@ pub fn draw(app: &tauri::AppHandle) {
                         })
                     }),
             )?;
+            target
+                .backend
+                .set_path_guide(session.core.ik_path().map(|report| {
+                    threex_renderer::joint_ranges::PathGuide {
+                        points: report.points.clone(),
+                        marker: report.marker,
+                        marker_radius: (view.distance * 0.012).clamp(0.01, 0.3),
+                    }
+                }));
             target.backend.set_joint_ranges(super::joints::range_view(
                 &session.core,
                 &view,

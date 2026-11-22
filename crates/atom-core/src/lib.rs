@@ -34,6 +34,12 @@ pub enum Error {
     Invalid(String),
     #[error("position IK did not converge within the joint limits and solve budget")]
     IkUnreachable,
+    #[error("IK did not find a collision-free pose within the joint limits and solve budget")]
+    IkSelfCollision,
+    #[error("IK path intersects scene collision geometry")]
+    IkPathBlocked,
+    #[error("IK path exceeds the sampling budget")]
+    IkPathBudget,
     #[error("project is already open by another process")]
     Locked,
     #[error("project file changed outside this session")]
@@ -64,6 +70,9 @@ impl Error {
             Self::Version => "unsupported_version",
             Self::Invalid(_) => "invalid_project",
             Self::IkUnreachable => "ik_unreachable",
+            Self::IkSelfCollision => "ik_self_collision",
+            Self::IkPathBlocked => "ik_path_blocked",
+            Self::IkPathBudget => "ik_path_budget",
             Self::Locked => "project_locked",
             Self::ExternalChange => "external_change",
             Self::EditBusy => "edit_busy",
@@ -351,6 +360,11 @@ pub enum Command {
     SetFloor {
         enabled: bool,
     },
+    SetJointAnchor {
+        id: u32,
+        /// Joint pivot in the unposed scene, in editor world meters (Y up).
+        anchor: [f32; 3],
+    },
     SetJointRange {
         id: u32,
         axis: usize,
@@ -360,6 +374,26 @@ pub enum Command {
         id: u32,
         axis: usize,
         angle: f32,
+    },
+    SolvePathIk {
+        id: u32,
+        base: u32,
+        target: [f32; 3],
+        orientation: Option<[f32; 3]>,
+    },
+    SolveCollisionFreeIk {
+        id: u32,
+        base: u32,
+        target: [f32; 3],
+        /// Optional world XYZ orientation in radians.
+        orientation: Option<[f32; 3]>,
+    },
+    SolvePoseIk {
+        id: u32,
+        base: u32,
+        target: [f32; 3],
+        /// World XYZ Euler orientation in radians, using Rx * Ry * Rz.
+        orientation: [f32; 3],
     },
     SolveIk {
         id: u32,
@@ -406,6 +440,7 @@ pub struct Snapshot {
     pub objects: Vec<SceneObject>,
     pub physics: PhysicsSpec,
     pub robots: Vec<robots::Robot>,
+    pub ik_path: Option<robots::IkPathReport>,
     pub joint_preview: Option<JointPreviewInfo>,
     pub reach: Option<reach::Summary>,
     pub simulation_running: bool,

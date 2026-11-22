@@ -1,6 +1,6 @@
 //! Bounded world-space angular guides. Only small command/state data enters Rust.
 use wgpu::util::DeviceExt;
-const MAX_LINES: usize = 384;
+const MAX_LINES: usize = 384 + 720 + 3;
 #[derive(Clone, Debug)]
 pub struct Arc {
     pub channel: usize,
@@ -132,6 +132,37 @@ fn lines(view: &JointRanges) -> Vec<[f32; 11]> {
     }
     lines
 }
+#[derive(Clone, Debug)]
+pub struct PathGuide {
+    pub points: Vec<[f32; 3]>,
+    pub marker: Option<[f32; 3]>,
+    pub marker_radius: f32,
+}
+
+fn append_path(lines: &mut Vec<[f32; 11]>, path: &PathGuide) {
+    let color = if path.marker.is_some() {
+        [1., 0.45, 0.28, 1.]
+    } else {
+        [0.30, 0.90, 0.72, 1.]
+    };
+    let mut add = |a: [f32; 3], b: [f32; 3]| {
+        lines.push([
+            a[0], a[1], a[2], b[0], b[1], b[2], color[0], color[1], color[2], color[3], 2.5,
+        ]);
+    };
+    for points in path.points.windows(2).take(720) {
+        add(points[0], points[1]);
+    }
+    if let Some(point) = path.marker.or_else(|| path.points.last().copied()) {
+        for i in 0..3 {
+            let (mut a, mut b) = (point, point);
+            a[i] -= path.marker_radius;
+            b[i] += path.marker_radius;
+            add(a, b);
+        }
+    }
+}
+
 pub(crate) struct Ranges {
     pipeline: wgpu::RenderPipeline,
     uniform: wgpu::Buffer,
@@ -198,9 +229,13 @@ impl Ranges {
         region: [u32; 4],
         vp: &[f32; 16],
         scale: f32,
-        view: &JointRanges,
+        view: Option<&JointRanges>,
+        path: Option<&PathGuide>,
     ) {
-        let lines = lines(view);
+        let mut lines = view.map_or_else(Vec::new, lines);
+        if let Some(path) = path {
+            append_path(&mut lines, path);
+        }
         if lines.is_empty() {
             return;
         }

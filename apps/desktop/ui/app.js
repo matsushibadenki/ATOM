@@ -18,9 +18,9 @@ const transformTranslations={
 };
 for(const language of Object.keys(translations))Object.assign(translations[language],transformTranslations[language]);
 const physicsTranslations = {
- en:{environment:'Environment',gravity:'Gravity',earth:'Earth',moon:'Moon',mars:'Mars',zero:'Zero gravity',custom:'Custom',gravity_help:'Gravity in m/s², physics coordinates: Z up. Converted to the Y-up 3D view in Rust. Numeric edits use Custom. Range: ±1000 per axis.',floor_enabled:'Contact floor · Y = 0',floor:'Floor',robot_template:'Robot template',humanoid:'Humanoid',dual_arm:'Dual arm',add_robot:'Add robot template',robot_help:'Generic box-link robots with joints, limits and bounded position servos. Humanoid: floating base, 98 articulated connections / 182 rotational DoF (plus 6 floating-base DoF); dual arm: fixed base, 6 hinges per arm. Engineering approximation; not a medical anatomical joint count. No balance or grasp policy. Remove the root to remove a robot. Moving geometry does not move its joint pivots.',physical_material:'Physical material',material_target:'Apply to',density:'Density · kg/m³',sliding:'Sliding μ',torsional:'Torsion · m',rolling:'Rolling · m',fixed_body:'Fixed body',material_help:'Illustrative dry-contact presets, not calibrated measurements. MuJoCo sliding, torsional and rolling friction; not separate static/dynamic coefficients. Mass and inertia follow box volume × density. Visual color stays unchanged. Floor pairs use geometric-mean friction; object pairs use MuJoCo mixing.',wood:'Wood',steel:'Steel',aluminum:'Aluminum',rubber:'Rubber',plastic:'Plastic',glass:'Glass',concrete:'Concrete',ice:'Ice',physics_preview:'MuJoCo preview',run_physics:'Run bounded physics preview',reset_physics:'Restore authored scene',duration:'Simulation duration from authored state',simulation_help:'Each run starts from the authored scene, at 0.002 s per step. Shows the final pose; does not bake it into the saved document. Reset before editing. Worker timeout: 15 s. Requires Python with MuJoCo; set ATOM_MUJOCO_PYTHON if needed.',sim_continuous:'Run continuous physics',sim_pause:'Pause physics',sim_resume:'Resume physics',sim_paused:'Paused',sim_stop:'Stop physics',sim_cancel:'Cancel physics preview',sim_running:'Simulating…',sim_idle:'Authored state',physics_unavailable:'MuJoCo unavailable. Set ATOM_MUJOCO_PYTHON to a Python with mujoco installed.',physics_failed:'Physics failed or timed out. Check geometry and runtime.',base:'Base',pelvis:'Pelvis',torso:'Torso',head:'Head',left:'Left',right:'Right',thigh:'Thigh',shin:'Shin',foot:'Foot',upper_arm:'Upper arm',forearm:'Forearm',gripper:'Gripper',shoulder:'Shoulder',elbow:'Elbow',wrist:'Wrist'},
- ja:{environment:'環境',gravity:'重力',earth:'地球',moon:'月',mars:'火星',zero:'無重力',custom:'カスタム',gravity_help:'単位m/s²、物理座標はZが上。RustでY-upの3D表示へ変換します。数値編集はカスタム設定です。各軸±1000まで。',floor_enabled:'接触する床 · Y＝0',floor:'床',robot_template:'ロボットテンプレート',humanoid:'人型ロボット',dual_arm:'双腕ロボット',add_robot:'ロボットテンプレートを追加',robot_help:'関節・可動範囲・出力制限付き位置サーボを持つ汎用モデル。人型は98可動接続・182回転自由度＋浮動ベース6自由度、双腕は固定ベースと片腕6関節。工学的な近似で、医学的な総関節数ではありません。姿勢安定・把持方策は未搭載。ルートを削除すると一体を削除します。形状の移動では関節支点は動きません。',physical_material:'物理素材',material_target:'適用先',density:'密度 · kg/m³',sliding:'滑り摩擦 μ',torsional:'ねじり · m',rolling:'転がり · m',fixed_body:'固定する',material_help:'プリセットは乾燥接触の初期例で、実測保証値ではありません。MuJoCoの滑り・ねじり・転がり摩擦です。静止／動摩擦の区別はありません。箱の体積×密度で質量と慣性を算出。表示色は維持。床との摩擦は幾何平均、物体間はMuJoCoの組合せ規則を使います。',wood:'木材',steel:'鋼',aluminum:'アルミニウム',rubber:'ゴム',plastic:'樹脂',glass:'ガラス',concrete:'コンクリート',ice:'氷',physics_preview:'MuJoCoプレビュー',run_physics:'短時間の物理プレビューを実行',reset_physics:'編集時のシーンへ戻す',duration:'編集時の状態からの実行時間',simulation_help:'毎回、編集時の状態から0.002秒刻みで計算し、最終姿勢を表示します。保存文書には焼き込みません。編集前にリセットしてください。処理上限15秒。MuJoCo入りPythonが必要です。必要に応じATOM_MUJOCO_PYTHONを指定。',sim_continuous:'連続物理を開始',sim_pause:'物理を一時停止',sim_resume:'物理を再開',sim_paused:'一時停止中',sim_stop:'物理を停止',sim_cancel:'物理プレビューを中断',sim_running:'物理計算中…',sim_idle:'編集時の状態',physics_unavailable:'MuJoCoが見つかりません。ATOM_MUJOCO_PYTHONにMuJoCo入りPythonを指定してください。',physics_failed:'物理計算に失敗、または時間上限に達しました。形状と実行環境を確認してください。',base:'基台',pelvis:'骨盤',torso:'胴体',head:'頭',left:'左',right:'右',thigh:'大腿',shin:'下腿',foot:'足',upper_arm:'上腕',forearm:'前腕',gripper:'グリッパー',shoulder:'肩',elbow:'肘',wrist:'手首'},
- 'zh-CN':{environment:'环境',gravity:'重力',earth:'地球',moon:'月球',mars:'火星',zero:'零重力',custom:'自定义',gravity_help:'单位m/s²，物理坐标Z向上。Rust转换至Y向上的3D视图。数值修改使用自定义，每轴范围±1000。',floor_enabled:'接触地面 · Y＝0',floor:'地面',robot_template:'机器人模板',humanoid:'人形机器人',dual_arm:'双臂机器人',add_robot:'添加机器人模板',robot_help:'带关节、限位及限力位置伺服的通用模型。人形：浮动基座、98个可动连接及182个旋转自由度，另有6个基座自由度；双臂：固定基座、每臂6关节。属于工程近似，并非医学关节总数。无平衡或抓取策略。删除根节点可移除整台机器人。移动几何体不会移动关节支点。',physical_material:'物理材质',material_target:'应用于',density:'密度 · kg/m³',sliding:'滑动摩擦 μ',torsional:'扭转 · m',rolling:'滚动 · m',fixed_body:'固定物体',material_help:'预设是干燥接触的起始示例，不是校准数据。使用MuJoCo滑动、扭转和滚动摩擦，不区分静摩擦与动摩擦。质量和惯性随体积与密度更新，保持显示颜色。与地面接触采用几何平均，其余采用MuJoCo混合规则。',wood:'木材',steel:'钢',aluminum:'铝',rubber:'橡胶',plastic:'塑料',glass:'玻璃',concrete:'混凝土',ice:'冰',physics_preview:'MuJoCo预览',run_physics:'运行短时物理预览',reset_physics:'恢复编辑场景',duration:'从编辑状态开始的时长',simulation_help:'每次从编辑状态开始，以0.002秒步长计算并显示最终姿态。不写入保存文档，编辑前请重置。超时15秒。需要安装MuJoCo的Python，可用ATOM_MUJOCO_PYTHON指定。',sim_continuous:'开始连续物理模拟',sim_pause:'暂停物理模拟',sim_resume:'继续物理模拟',sim_paused:'已暂停',sim_stop:'停止物理模拟',sim_cancel:'中止物理预览',sim_running:'仿真中…',sim_idle:'编辑状态',physics_unavailable:'找不到MuJoCo，请用ATOM_MUJOCO_PYTHON指定已安装MuJoCo的Python。',physics_failed:'物理计算失败或超时，请检查几何体和运行环境。',base:'基座',pelvis:'骨盆',torso:'躯干',head:'头部',left:'左',right:'右',thigh:'大腿',shin:'小腿',foot:'脚',upper_arm:'上臂',forearm:'前臂',gripper:'夹爪',shoulder:'肩',elbow:'肘',wrist:'腕'}
+ en:{environment:'Environment',gravity:'Gravity',earth:'Earth',moon:'Moon',mars:'Mars',zero:'Zero gravity',custom:'Custom',gravity_help:'Gravity in m/s², physics coordinates: Z up. Converted to the Y-up 3D view in Rust. Numeric edits use Custom. Range: ±1000 per axis.',floor_enabled:'Contact floor · Y = 0',floor:'Floor',robot_template:'Robot template',humanoid:'Humanoid',dual_arm:'Dual arm',add_robot:'Add robot template',robot_help:'Generic box-link robots with joints, limits and bounded position servos. Humanoid: floating base, 98 articulated connections / 182 rotational DoF (plus 6 floating-base DoF); dual arm: fixed base, 6 hinges per arm. Engineering approximation; not a medical anatomical joint count. No balance or grasp policy. Remove the root to remove a robot. Moving or rotating the root carries all links and pivots.',physical_material:'Physical material',material_target:'Apply to',density:'Density · kg/m³',sliding:'Sliding μ',torsional:'Torsion · m',rolling:'Rolling · m',fixed_body:'Fixed body',material_help:'Illustrative dry-contact presets, not calibrated measurements. MuJoCo sliding, torsional and rolling friction; not separate static/dynamic coefficients. Mass and inertia follow box volume × density. Visual color stays unchanged. Floor pairs use geometric-mean friction; object pairs use MuJoCo mixing.',wood:'Wood',steel:'Steel',aluminum:'Aluminum',rubber:'Rubber',plastic:'Plastic',glass:'Glass',concrete:'Concrete',ice:'Ice',physics_preview:'MuJoCo preview',run_physics:'Run bounded physics preview',reset_physics:'Restore authored scene',duration:'Simulation duration from authored state',simulation_help:'Each run starts from the authored scene, at 0.002 s per step. Shows the final pose; does not bake it into the saved document. Reset before editing. Worker timeout: 15 s. Requires Python with MuJoCo; set ATOM_MUJOCO_PYTHON if needed.',sim_continuous:'Run continuous physics',sim_pause:'Pause physics',sim_resume:'Resume physics',sim_paused:'Paused',sim_stop:'Stop physics',sim_cancel:'Cancel physics preview',sim_running:'Simulating…',sim_idle:'Authored state',physics_unavailable:'MuJoCo unavailable. Set ATOM_MUJOCO_PYTHON to a Python with mujoco installed.',physics_failed:'Physics failed or timed out. Check geometry and runtime.',base:'Base',pelvis:'Pelvis',torso:'Torso',head:'Head',left:'Left',right:'Right',thigh:'Thigh',shin:'Shin',foot:'Foot',upper_arm:'Upper arm',forearm:'Forearm',gripper:'Gripper',shoulder:'Shoulder',elbow:'Elbow',wrist:'Wrist'},
+ ja:{environment:'環境',gravity:'重力',earth:'地球',moon:'月',mars:'火星',zero:'無重力',custom:'カスタム',gravity_help:'単位m/s²、物理座標はZが上。RustでY-upの3D表示へ変換します。数値編集はカスタム設定です。各軸±1000まで。',floor_enabled:'接触する床 · Y＝0',floor:'床',robot_template:'ロボットテンプレート',humanoid:'人型ロボット',dual_arm:'双腕ロボット',add_robot:'ロボットテンプレートを追加',robot_help:'関節・可動範囲・出力制限付き位置サーボを持つ汎用モデル。人型は98可動接続・182回転自由度＋浮動ベース6自由度、双腕は固定ベースと片腕6関節。工学的な近似で、医学的な総関節数ではありません。姿勢安定・把持方策は未搭載。ルートを削除すると一体を削除します。ルートを移動・回転すると、子リンクと支点も追従します。',physical_material:'物理素材',material_target:'適用先',density:'密度 · kg/m³',sliding:'滑り摩擦 μ',torsional:'ねじり · m',rolling:'転がり · m',fixed_body:'固定する',material_help:'プリセットは乾燥接触の初期例で、実測保証値ではありません。MuJoCoの滑り・ねじり・転がり摩擦です。静止／動摩擦の区別はありません。箱の体積×密度で質量と慣性を算出。表示色は維持。床との摩擦は幾何平均、物体間はMuJoCoの組合せ規則を使います。',wood:'木材',steel:'鋼',aluminum:'アルミニウム',rubber:'ゴム',plastic:'樹脂',glass:'ガラス',concrete:'コンクリート',ice:'氷',physics_preview:'MuJoCoプレビュー',run_physics:'短時間の物理プレビューを実行',reset_physics:'編集時のシーンへ戻す',duration:'編集時の状態からの実行時間',simulation_help:'毎回、編集時の状態から0.002秒刻みで計算し、最終姿勢を表示します。保存文書には焼き込みません。編集前にリセットしてください。処理上限15秒。MuJoCo入りPythonが必要です。必要に応じATOM_MUJOCO_PYTHONを指定。',sim_continuous:'連続物理を開始',sim_pause:'物理を一時停止',sim_resume:'物理を再開',sim_paused:'一時停止中',sim_stop:'物理を停止',sim_cancel:'物理プレビューを中断',sim_running:'物理計算中…',sim_idle:'編集時の状態',physics_unavailable:'MuJoCoが見つかりません。ATOM_MUJOCO_PYTHONにMuJoCo入りPythonを指定してください。',physics_failed:'物理計算に失敗、または時間上限に達しました。形状と実行環境を確認してください。',base:'基台',pelvis:'骨盤',torso:'胴体',head:'頭',left:'左',right:'右',thigh:'大腿',shin:'下腿',foot:'足',upper_arm:'上腕',forearm:'前腕',gripper:'グリッパー',shoulder:'肩',elbow:'肘',wrist:'手首'},
+ 'zh-CN':{environment:'环境',gravity:'重力',earth:'地球',moon:'月球',mars:'火星',zero:'零重力',custom:'自定义',gravity_help:'单位m/s²，物理坐标Z向上。Rust转换至Y向上的3D视图。数值修改使用自定义，每轴范围±1000。',floor_enabled:'接触地面 · Y＝0',floor:'地面',robot_template:'机器人模板',humanoid:'人形机器人',dual_arm:'双臂机器人',add_robot:'添加机器人模板',robot_help:'带关节、限位及限力位置伺服的通用模型。人形：浮动基座、98个可动连接及182个旋转自由度，另有6个基座自由度；双臂：固定基座、每臂6关节。属于工程近似，并非医学关节总数。无平衡或抓取策略。删除根节点可移除整台机器人。移动或旋转根节点时，子连杆与关节支点随之变换。',physical_material:'物理材质',material_target:'应用于',density:'密度 · kg/m³',sliding:'滑动摩擦 μ',torsional:'扭转 · m',rolling:'滚动 · m',fixed_body:'固定物体',material_help:'预设是干燥接触的起始示例，不是校准数据。使用MuJoCo滑动、扭转和滚动摩擦，不区分静摩擦与动摩擦。质量和惯性随体积与密度更新，保持显示颜色。与地面接触采用几何平均，其余采用MuJoCo混合规则。',wood:'木材',steel:'钢',aluminum:'铝',rubber:'橡胶',plastic:'塑料',glass:'玻璃',concrete:'混凝土',ice:'冰',physics_preview:'MuJoCo预览',run_physics:'运行短时物理预览',reset_physics:'恢复编辑场景',duration:'从编辑状态开始的时长',simulation_help:'每次从编辑状态开始，以0.002秒步长计算并显示最终姿态。不写入保存文档，编辑前请重置。超时15秒。需要安装MuJoCo的Python，可用ATOM_MUJOCO_PYTHON指定。',sim_continuous:'开始连续物理模拟',sim_pause:'暂停物理模拟',sim_resume:'继续物理模拟',sim_paused:'已暂停',sim_stop:'停止物理模拟',sim_cancel:'中止物理预览',sim_running:'仿真中…',sim_idle:'编辑状态',physics_unavailable:'找不到MuJoCo，请用ATOM_MUJOCO_PYTHON指定已安装MuJoCo的Python。',physics_failed:'物理计算失败或超时，请检查几何体和运行环境。',base:'基座',pelvis:'骨盆',torso:'躯干',head:'头部',left:'左',right:'右',thigh:'大腿',shin:'小腿',foot:'脚',upper_arm:'上臂',forearm:'前臂',gripper:'夹爪',shoulder:'肩',elbow:'肘',wrist:'腕'}
 };
 for(const language of Object.keys(translations))Object.assign(translations[language],physicsTranslations[language]);
 
@@ -57,6 +57,7 @@ function controls(){
  $('reload').disabled=busy||!current||current.dirty||current.previewing||!api;$('save').disabled=busy||!current||current.previewing||!api;$('locale').disabled=busy||!layout||!api;
  const locked=busy||!current||!api||!!current?.previewing;
  $('ikFields').disabled=locked;
+ $('jointAnchorFields').disabled=locked||!!jointDrag;
  $('jointFields').disabled=locked&&!(jointDrag&&!jointDrag.ending);$('jointSelect').disabled=locked||!!jointDrag;
  $('jointFields').querySelectorAll('input,button').forEach(el=>el.disabled=!!jointDrag&&(el!==jointDrag.input||!!jointDrag.ending));
  $('assetFields').disabled=locked;$('cancelAssetImport').disabled=!current?.asset_importing;$('cancelAssetImport').hidden=!current?.asset_importing;
@@ -95,7 +96,78 @@ function render(s){
  if(jointDrag?.token!=null&&!jointDrag.ending&&s.joint_preview?.token!==jointDrag.token){jointDrag.ending='aborted';wakeJoint(jointDrag);}
  if(document.activeElement!==$('name'))$('name').value=s.name;
  $('dirty').textContent=t(s.dirty?'unsaved':'saved');$('revision').textContent=`rev ${s.revision}`;$('report').textContent=t(reportKey);$('objectCount').textContent=`${s.objects.length} ${t('objects')}`;
- if(view==='scene')$('objects').replaceChildren(...s.objects.map(o=>{const row=document.createElement('li');row.dataset.selected=String(camera?.selected===o.id);row.append(icon('cube'));const name=document.createElement('button');name.className='object-name';name.textContent=objectName(o);name.setAttribute('aria-label',`${t('select_object')} ${o.id}`);name.setAttribute('aria-pressed',String(camera?.selected===o.id));name.onclick=()=>cameraCommand({kind:'select',id:o.id});row.append(name);const pos=document.createElement('span');pos.className='position';pos.textContent=o.position.map(n=>n.toFixed(1)).join(' / ');row.append(pos);const remove=document.createElement('button');remove.title=t('remove');remove.setAttribute('aria-label',`${t('remove')} ${o.id}`);remove.append(icon('remove'));remove.dataset.removeId=String(o.id);remove.onclick=()=>mutate({kind:'remove_box',id:o.id});row.append(remove);return row;}));renderInspector();controls();
+ if(view==='scene')renderObjectHierarchy(s);
+ renderInspector();controls();
+}
+const collapsedLinks=new Set();
+let hierarchyProject;
+for(const [language,labels] of Object.entries({
+ en:{link_expand:'Expand child links',link_collapse:'Collapse child links'},
+ ja:{link_expand:'子リンクを展開',link_collapse:'子リンクを折りたたむ'},
+ 'zh-CN':{link_expand:'展开子连杆',link_collapse:'折叠子连杆'}
+}))Object.assign(translations[language],labels);
+
+function objectHierarchy(snapshot, collapsed){
+ const children=new Map(),parents=new Map();
+ for(const robot of snapshot.robots)for(const link of robot.links){
+  if(link.parent==null)continue;
+  parents.set(link.object_id,link.parent);
+  if(!children.has(link.parent))children.set(link.parent,[]);
+  children.get(link.parent).push(link.object_id);
+ }
+ const objects=new Map(snapshot.objects.map(object=>[object.id,object]));
+ const rows=[];
+ function visit(object,depth){
+  const branch=children.get(object.id);
+  rows.push({object,depth,branch:!!branch});
+  if(branch&&!collapsed.has(object.id))for(const id of branch){
+   const child=objects.get(id);
+   if(child)visit(child,depth+1);
+  }
+ }
+ for(const object of snapshot.objects)if(!parents.has(object.id))visit(object,0);
+ return rows;
+}
+
+function renderObjectHierarchy(snapshot){
+ if(hierarchyProject!==snapshot.project_id){
+  hierarchyProject=snapshot.project_id;
+  collapsedLinks.clear();
+ }
+ $('objects').replaceChildren(...objectHierarchy(snapshot,collapsedLinks).map(({object,depth,branch})=>{
+  const row=document.createElement('li');
+  row.style.setProperty('--link-indent',`${Math.min(depth,6)*8}px`);
+  row.dataset.selected=String(camera?.selected===object.id);
+  if(branch){
+   const toggle=document.createElement('button');
+   toggle.type='button';toggle.className='link-disclosure';
+   toggle.dataset.linkToggle=String(object.id);
+   const expanded=!collapsedLinks.has(object.id);
+   toggle.textContent=expanded?'▾':'▸';
+   toggle.setAttribute('aria-expanded',String(expanded));
+   toggle.title=`${t(expanded?'link_collapse':'link_expand')} · ${objectName(object)}`;
+   toggle.setAttribute('aria-label',toggle.title);
+   toggle.onclick=()=>{
+    if(expanded)collapsedLinks.add(object.id);else collapsedLinks.delete(object.id);
+    renderObjectHierarchy(current);controls();
+    $('objects').querySelector(`[data-link-toggle="${object.id}"]`)?.focus();
+   };
+   row.append(toggle);
+  }else row.append(icon('cube'));
+  const name=document.createElement('button');
+  name.className='object-name';name.textContent=objectName(object);
+  name.setAttribute('aria-label',`${t('select_object')} ${object.id} · ${objectName(object)}`);
+  name.setAttribute('aria-pressed',String(camera?.selected===object.id));
+  name.onclick=()=>cameraCommand({kind:'select',id:object.id});
+  const position=document.createElement('span');
+  position.className='position';position.textContent=object.position.map(n=>n.toFixed(1)).join(' / ');
+  const remove=document.createElement('button');
+  remove.title=t('remove');remove.setAttribute('aria-label',`${t('remove')} ${object.id}`);
+  remove.append(icon('remove'));remove.dataset.removeId=String(object.id);
+  remove.onclick=()=>mutate({kind:'remove_box',id:object.id});
+  row.append(name,position,remove);
+  return row;
+ }));
 }
 function applyLayout(s){
  if(layout&&s.revision<layout.revision)return;
@@ -116,7 +188,12 @@ function applyLayout(s){
 }
 function status(key,isError=false){statusKey=key;$('status').textContent=t(key);$('status').parentElement.dataset.error=String(isError);}
 async function action(fn){if(busy||!api||jointDrag)return;busy=true;controls();try{await numericQueue;await fn();status('ready');}catch(e){status(e?.code||'error',true);try{if(e?.code==='revision_conflict')render(await api.core.invoke('snapshot'));if(['layout_conflict','panel_error','layout_save_failed'].includes(e?.code))applyLayout(await api.core.invoke('workspace_state'));}catch{/* Keep original failure visible. */}}finally{busy=false;controls();}}
-function mutate(command){return action(async()=>render(await api.core.invoke('edit',{request:{expected_revision:current.revision,project_id:current.project_id,command}})));}
+function mutate(command,onError){
+ return action(async()=>{
+  try{render(await api.core.invoke('edit',{request:{expected_revision:current.revision,project_id:current.project_id,command}}));}
+  catch(error){onError?.(error);throw error;}
+ });
+}
 function command(command){return action(async()=>applyLayout(await api.core.invoke('workspace_command',{command,expectedRevision:layout.revision})));}
 function applyCamera(s){if(camera&&s.revision<camera.revision)return;const selectionChanged=camera?.selected!==s.selected;camera=s;document.querySelectorAll('[data-tool]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.tool===s.tool)));$('transformAxis').value=s.axis;$('cameraGrid').setAttribute('aria-pressed',String(s.show_grid));$('cameraAxes').setAttribute('aria-pressed',String(s.show_axes));$('cameraPan').setAttribute('aria-pressed',String(s.pan_mode));$('cameraSelection').textContent=s.selected?`#${s.selected}`:'';$('cameraSelection').title=s.selected?`${t('selected_object')} · ${t('box')} ${s.selected}`:'';if(current&&selectionChanged)render(current);else {renderInspector();controls();}}
 function cameraCommand(command){return action(async()=>applyCamera(await api.core.invoke('camera_command',{command,expectedRevision:current.revision})));}
@@ -171,6 +248,10 @@ for(const [part,label,shape] of [['position','position','move'],['rotation','rot
  }
  $('transformFields').append(row);
 }
+function jointAxisLabel(axis,channel){
+ const cardinal=axis.findIndex(v=>Math.abs(v)>0.999999);
+ return cardinal<0?`#${channel+1}`:`${axis[cardinal]<0?'−':''}${'XYZ'[cardinal]}`;
+}
 function renderInspector(){
  renderPhysics();
  const object=current?.objects.find(o=>o.id===camera?.selected);$('inspectorSelection').textContent=object?objectName(object):'—';
@@ -178,7 +259,7 @@ function renderInspector(){
  const link=robot?.links.find(l=>l.object_id===object?.id);
  $('jointSummary').textContent=robot?`${t('joints')} ${robot.links.length-1} · ${t('dof')} ${robot.links.filter(l=>l.parent!==null).reduce((n,l)=>n+1+(l.extra_axes?.length||0),0)}`:'';
  renderJointEditor(robot,link);
- $('jointAxes').textContent=link?.parent!=null?[{axis:link.axis,range:link.range},...(link.extra_axes||[])].map(a=>`${'XYZ'[a.axis.findIndex(v=>Math.abs(v)>0.5)]} ${a.range.map(v=>Math.round(v*180/Math.PI)).join('…')}°`).join(' · '):'';
+ $('jointAxes').textContent=link?.parent!=null?[{axis:link.axis,range:link.range},...(link.extra_axes||[])].map((a,i)=>`${jointAxisLabel(a.axis,i)} ${a.range.map(v=>Math.round(v*180/Math.PI)).join('…')}°`).join(' · '):'';
 
  for(const input of transformInputs){if(document.activeElement===input)continue;const value=object?.[input.dataset.part][Number(input.dataset.axis)];input.value=value===undefined?'':String(Number((input.dataset.part==='rotation'?value*180/Math.PI:value).toFixed(input.dataset.part==='rotation'?2:4)));}
 }
@@ -250,12 +331,43 @@ async function runJoint(session){
 window.addEventListener('blur',()=>finishJoint(true));
 window.addEventListener('pagehide',()=>finishJoint(true));
 document.addEventListener('visibilitychange',()=>{if(document.hidden)finishJoint(true);});
-const jointTranslations={en:{joint_select:'Joint',joint_angle:'Joint angle',joint_reset:'Reset axis',joint_help:'Edit angles in degrees, within the joint limits. Sliders update 3D live; one drag is one undoable edit. Release to commit; Escape, lost pointer capture or window blur cancels. Press Enter or leave a numeric field to apply it. Drag colored arcs or short rotation axes directly in 3D. Limits are enforced; release commits one edit and Esc cancels. Shift + left drag pans; Alt + left drag orbits. Drag the cyan lower-limit grip or magenta upper-limit grip to edit bounds, or enter Lower/Upper values (−180°…180°, lower < upper). Narrowing clamps the current angle; one Undo restores both. Colored arcs show angular limits; gold rays show current angles. Child links follow the joint. Physics starts from this pose. Geometry XYZ fields edit shapes, not joint pivots.'},ja:{joint_select:'関節',joint_angle:'関節角度',joint_reset:'軸をゼロへ',joint_help:'角度は度単位。可動範囲内で編集できます。スライダー操作中も3Dに反映し、1回のドラッグを1件の履歴にします。離すと確定、Esc・ポインター操作の中断・ウインドウのフォーカス喪失で取消。数値欄はEnterまたは欄を離れると確定。3Dの色付き円弧や短い回転軸も直接ドラッグできます。可動範囲内で動き、離すと1件として確定、Escで取消。Shift＋左ドラッグはパン、Alt＋左ドラッグは視点回転。シアンの下限端点／マゼンタの上限端点をドラッグするか、下限／上限を数値入力して範囲を編集できます（−180°〜180°、下限＜上限）。現在角度が範囲外になれば端へ補正し、同じUndoで両方戻ります。円弧は可動範囲、金色の線は現在角度です。子孫リンクが追従し、物理計算もこの姿勢から開始します。XYZ欄は形状の編集で、関節支点の編集ではありません。'},'zh-CN':{joint_select:'关节',joint_angle:'关节角度',joint_reset:'轴归零',joint_help:'以度为单位，在关节限位内编辑。拖动滑块时实时更新3D，一次拖动记录为一次操作。松开提交，Esc、指针中断或窗口失焦取消。数值框按Enter或离开时提交。可直接拖动3D彩色圆弧或短旋转轴，角度受限，松开提交一次操作，Esc取消。Shift＋左键平移，Alt＋左键旋转视角。拖动青色下限端点／品红色上限端点，或输入下限／上限以编辑范围（−180°至180°，下限＜上限）。缩小范围时当前角度会被限制在边界，一次撤销可恢复两者。彩色圆弧表示限位，金色射线表示当前角度。子连杆随关节运动，物理计算从此姿态开始。XYZ编辑几何形状，不改变关节支点。'}};
+const jointTranslations={en:{joint_select:'Joint',joint_angle:'Joint angle',joint_reset:'Reset axis',joint_help:'Edit angles in degrees, within the joint limits. Sliders update 3D live; one drag is one undoable edit. Release to commit; Escape, lost pointer capture or window blur cancels. Press Enter or leave a numeric field to apply it. Drag colored arcs or short rotation axes directly in 3D. Limits are enforced; release commits one edit and Esc cancels. Shift + left drag pans; Alt + left drag orbits. Drag the cyan lower-limit grip or magenta upper-limit grip to edit bounds, or enter Lower/Upper values (−180°…180°, lower < upper). Narrowing clamps the current angle; one Undo restores both. Colored arcs show angular limits; gold rays show current angles. Child links follow the joint. Physics starts from this pose. The XYZ transform fields for a child link edit its shape.'},ja:{joint_select:'関節',joint_angle:'関節角度',joint_reset:'軸をゼロへ',joint_help:'角度は度単位。可動範囲内で編集できます。スライダー操作中も3Dに反映し、1回のドラッグを1件の履歴にします。離すと確定、Esc・ポインター操作の中断・ウインドウのフォーカス喪失で取消。数値欄はEnterまたは欄を離れると確定。3Dの色付き円弧や短い回転軸も直接ドラッグできます。可動範囲内で動き、離すと1件として確定、Escで取消。Shift＋左ドラッグはパン、Alt＋左ドラッグは視点回転。シアンの下限端点／マゼンタの上限端点をドラッグするか、下限／上限を数値入力して範囲を編集できます（−180°〜180°、下限＜上限）。現在角度が範囲外になれば端へ補正し、同じUndoで両方戻ります。円弧は可動範囲、金色の線は現在角度です。子孫リンクが追従し、物理計算もこの姿勢から開始します。子リンクの変形XYZ欄は形状を編集します。'},'zh-CN':{joint_select:'关节',joint_angle:'关节角度',joint_reset:'轴归零',joint_help:'以度为单位，在关节限位内编辑。拖动滑块时实时更新3D，一次拖动记录为一次操作。松开提交，Esc、指针中断或窗口失焦取消。数值框按Enter或离开时提交。可直接拖动3D彩色圆弧或短旋转轴，角度受限，松开提交一次操作，Esc取消。Shift＋左键平移，Alt＋左键旋转视角。拖动青色下限端点／品红色上限端点，或输入下限／上限以编辑范围（−180°至180°，下限＜上限）。缩小范围时当前角度会被限制在边界，一次撤销可恢复两者。彩色圆弧表示限位，金色射线表示当前角度。子连杆随关节运动，物理计算从此姿态开始。子连杆的变换XYZ字段用于编辑几何形状。'}};
 for(const [language,labels] of Object.entries(jointTranslations))Object.assign(translations[language],labels);
 for(const [language,labels] of Object.entries({en:{joint_lower:'Lower',joint_upper:'Upper'},ja:{joint_lower:'下限',joint_upper:'上限'},'zh-CN':{joint_lower:'下限',joint_upper:'上限'}}))Object.assign(translations[language],labels);
+for(const [language,labels] of Object.entries({
+ en:{joint_anchor:'Joint pivot · m',joint_anchor_apply:'Apply joint pivot',joint_anchor_help:'World XYZ in the unposed scene, Y up. Changes the point this link and its descendants rotate around. Apply with Enter or the check button. Esc restores the current authored values.'},
+ ja:{joint_anchor:'関節支点 · m',joint_anchor_apply:'関節支点を適用',joint_anchor_help:'関節回転を適用する前のワールドXYZ座標（Y上）。このリンクと子孫が回転する中心を変更します。Enterまたはチェックボタンで反映し、Escで未確定の入力を取り消します。'},
+ 'zh-CN':{joint_anchor:'关节枢轴 · m',joint_anchor_apply:'应用关节枢轴',joint_anchor_help:'关节旋转前的世界XYZ坐标，Y轴朝上。修改此连杆及其后代的旋转中心。按Enter或点击勾选应用，按Esc取消未提交的输入。'}
+}))Object.assign(translations[language],labels);
+let jointAnchorKey='';
+function renderJointAnchor(link){
+ const editor=$('jointAnchorEditor'),form=$('jointAnchorForm'),vector=$('jointAnchorVector');
+ editor.hidden=link?.parent==null;
+ if(editor.hidden){jointAnchorKey='';return;}
+ const key=JSON.stringify([current.project_id,link.object_id,link.anchor,locale]);
+ if(jointAnchorKey===key)return;
+ jointAnchorKey=key;
+ const inputs=Array.from('XYZ',(axis,i)=>{
+  const label=document.createElement('label'),mark=document.createElement('span'),input=document.createElement('input');
+  mark.textContent=axis;input.type='number';input.step='any';input.min='-10000';input.max='10000';input.inputMode='decimal';input.required=true;
+  input.setAttribute('aria-label',`${t('joint_anchor')} ${axis}`);
+  input.value=String(link.anchor[i]);
+  label.append(mark,input);
+  return input;
+ });
+ const restore=()=>inputs.forEach((input,i)=>input.value=String(link.anchor[i]));
+ vector.replaceChildren(...inputs.map(input=>input.parentElement));
+ form.onkeydown=e=>{if(e.key==='Escape'){e.preventDefault();restore();}};
+ form.onsubmit=async e=>{
+  e.preventDefault();
+  if($('jointAnchorFields').disabled||camera?.selected!==link.object_id)return;
+  await mutate({kind:'set_joint_anchor',id:link.object_id,anchor:inputs.map(input=>input.valueAsNumber)});
+  if(jointAnchorKey===key)restore();
+ };
+}
 let jointEditorKey='';
 function renderJointEditor(robot,link){
- const editor=$('jointEditor'),fields=$('jointFields'),select=$('jointSelect');editor.hidden=!robot;renderIk(robot,link);
+ const editor=$('jointEditor'),fields=$('jointFields'),select=$('jointSelect');editor.hidden=!robot;renderIk(robot,link);renderJointAnchor(link);
  if(!robot){fields.replaceChildren();jointEditorKey='';return;}
  const key=`${current.project_id}:${robot.root}:${link?.object_id}:${locale}:${JSON.stringify([link?.axis,link?.range,link?.extra_axes,robot.links.map(l=>[l.object_id,l.parent])])}`;
  if(jointEditorKey!==key){
@@ -269,8 +381,8 @@ function renderJointEditor(robot,link){
    const specs=[{axis:link.axis,range:link.range},...(link.extra_axes||[])];
    for(const [i,spec] of specs.entries()){
     const row=document.createElement('div');row.className='joint-row';row.dataset.jointAxis=String(i);
-    const axisName='XYZ'[spec.axis.findIndex(v=>Math.abs(v)>0.5)];
-    const label=document.createElement('span');label.textContent=axisName;label.dataset.axis=String('XYZ'.indexOf(axisName));label.title=spec.range.map(v=>(v*180/Math.PI).toFixed(1)).join(' … ')+'°';
+    const axisName=jointAxisLabel(spec.axis,i);
+    const label=document.createElement('span');label.textContent=axisName;label.dataset.axis=String('XYZ'.indexOf(axisName.slice(-1)));label.title=spec.range.map(v=>(v*180/Math.PI).toFixed(1)).join(' … ')+'°';
     const slider=document.createElement('input');slider.type='range';slider.step='any';
     const number=document.createElement('input');number.type='number';number.step='any';number.required=true;
     for(const input of [slider,number]){input.min=String(spec.range[0]*180/Math.PI);input.max=String(spec.range[1]*180/Math.PI);input.setAttribute('aria-label',`${t('joint_angle')} ${axisName} (°)`);}
@@ -333,30 +445,56 @@ function renderJointEditor(robot,link){
  }
 }
 for(const [language,labels] of Object.entries({
- en:{ik_position:'Position IK',ik_base:'Fixed chain base',ik_current:'Use current center as target',ik_solve:'Solve position IK',ik_target:'Target · m',ik_unreachable:'No IK solution found within the limits and budget. Pose unchanged.',ik_help:'Target: selected object center in world meters (Y up). The chosen ancestor stays fixed; joints on the path below it may rotate within their limits. Other descendants follow their parent. Position only, tolerance 1 mm. No collision, balance or orientation constraint. A bounded local search may fail even for a reachable target. Apply with the target icon or Enter; all solved angles form one Undo. Esc restores an uncommitted target field.'},
- ja:{ik_position:'位置IK',ik_base:'固定するチェーン基点',ik_current:'現在の中心位置を目標にする',ik_solve:'位置IKを適用',ik_target:'目標 · m',ik_unreachable:'制限・計算上限内でIK解が見つかりません。姿勢は変更していません。',ik_help:'選択部位の中心をワールド座標の目標へ移動（m、Y上）。選んだ祖先を固定し、その下から選択部位までの関節を制限内で回転。ほかの子孫も親に追従します。位置のみ、許容誤差1mm。衝突・バランス・向きの制約なし。局所探索のため、到達可能でも解が見つからない場合があります。目標アイコンまたはEnterで適用、全関節を1件のUndoに記録。Escで未確定の入力を復元。'},
- 'zh-CN':{ik_position:'位置IK',ik_base:'固定链基点',ik_current:'以当前中心为目标',ik_solve:'应用位置IK',ik_target:'目标 · m',ik_unreachable:'在限位与计算预算内未找到IK解，姿态保持不变。',ik_help:'以世界坐标米为单位移动选中部位的中心（Y向上）。固定所选祖先，仅在限位内旋转下方路径上的关节；其他后代随父节点运动。仅约束位置，容差1mm，不含碰撞、平衡或朝向约束。局部搜索可能无法找到可达目标的解。目标图标或Enter应用，全部关节合为一次撤销；Esc恢复未提交的输入。'}
+ en:{ik_position:'Position IK',ik_base:'Fixed chain base',ik_current:'Use current pose as target',ik_solve:'Apply IK',ik_orientation:'Constrain orientation · °',ik_target:'Target · m',ik_avoid_collision:'Avoid self-collision',ik_self_collision:'The search reached the target with overlapping links. No collision-free pose was found within the search budget.',ik_unreachable:'No IK solution found within the limits and budget. Pose unchanged.',ik_help:'Target: selected object center in world meters (Y up). The chosen ancestor stays fixed; joints on the path below it may rotate within their limits. Other descendants follow their parent. Position tolerance: 1 mm. Optional world XYZ orientation (Rx × Ry × Rz), tolerance 0.5°. Self-collision checks box links on the same robot, excluding direct parent-child pairs at joints. The check applies to the solved pose. A bounded local search may fail even for a reachable target. Apply with the target icon or Enter; all solved angles form one Undo. Esc restores an uncommitted target field.'},
+ ja:{ik_position:'位置IK',ik_base:'固定するチェーン基点',ik_current:'現在の姿勢を目標にする',ik_solve:'IKを適用',ik_orientation:'向きを指定 · °',ik_target:'目標 · m',ik_avoid_collision:'自己衝突を回避',ik_self_collision:'目標に達した候補でリンクが干渉しました。探索上限内で干渉のない姿勢が見つかりませんでした。',ik_unreachable:'制限・計算上限内でIK解が見つかりません。姿勢は変更していません。',ik_help:'選択部位の中心をワールド座標の目標へ移動（m、Y上）。選んだ祖先を固定し、その下から選択部位までの関節を制限内で回転。ほかの子孫も親に追従します。位置の許容誤差は1 mm。向きを指定する場合はワールドXYZ（Rx × Ry × Rz）、許容誤差0.5°。自己衝突は同じロボットの箱形リンクを調べます。関節で直接つながる親子は除外し、解いた姿勢で判定します。局所探索のため、到達可能でも解が見つからない場合があります。目標アイコンまたはEnterで適用、全関節を1件のUndoに記録。Escで未確定の入力を復元。'},
+ 'zh-CN':{ik_position:'位置IK',ik_base:'固定链基点',ik_current:'以当前姿态为目标',ik_solve:'应用IK',ik_orientation:'约束朝向 · °',ik_target:'目标 · m',ik_avoid_collision:'避免自碰撞',ik_self_collision:'达到目标的候选姿态存在连杆重叠。在搜索预算内未找到无自碰撞的姿态。',ik_unreachable:'在限位与计算预算内未找到IK解，姿态保持不变。',ik_help:'以世界坐标米为单位移动选中部位的中心（Y向上）。固定所选祖先，仅在限位内旋转下方路径上的关节；其他后代随父节点运动。位置容差为1 mm。可选世界XYZ朝向（Rx × Ry × Rz），容差0.5°。自碰撞检查同一机器人的盒形连杆，排除直接相连的父子连杆。检查作用于求解后的姿态。局部搜索可能无法找到可达目标的解。目标图标或Enter应用，全部关节合为一次撤销；Esc恢复未提交的输入。'}
 }))Object.assign(translations[language],labels);
 let ikKey='';
-const ikInputs=[];
-function currentIkTarget(){return current?.objects.find(o=>o.id===camera?.selected)?.position;}
-function resetIkTarget(){const target=currentIkTarget();if(target)ikInputs.forEach((input,i)=>{input.value=String(target[i]);input.dataset.committed=input.value;});}
+const ikVectors=[
+ {container:$('ikTarget'),label:'ik_target',limit:10000,inputs:[]},
+ {container:$('ikOrientation'),label:'ik_orientation',limit:360,inputs:[]}
+];
+const ikUseOrientation=$('ikUseOrientation');
+let ikFailure='';
+function showIkFailure(key=''){
+ ikFailure=key;
+ $('ikFailure').textContent=key?t(key):'';
+ $('ikFailure').hidden=!key;
+}
+function resetIkTarget(){
+ const object=current?.objects.find(o=>o.id===camera?.selected);
+ if(!object)return;
+ const values=[object.position,object.rotation.map(v=>(v*180/Math.PI)%360)];
+ ikVectors.forEach(({inputs},vector)=>inputs.forEach((input,i)=>{
+  input.value=String(values[vector][i]);input.dataset.committed=input.value;
+ }));
+}
 async function solveIk(){
- if(ikInputs.some(input=>!input.reportValidity())||!$('ikBase').value)return;
- const target=ikInputs.map(input=>input.valueAsNumber);
- ikInputs.forEach(input=>input.dataset.committed=input.value);
- await mutate({kind:'solve_ik',id:camera.selected,base:Number($('ikBase').value),target});
+ if($('ikFields').disabled||!$('ikBase').value)return;
+ const constrain=ikUseOrientation.checked;
+ const vectors=constrain?ikVectors:ikVectors.slice(0,1);
+ if(vectors.some(({inputs})=>inputs.some(input=>!input.reportValidity())))return;
+ const [target,orientation]=vectors.map(({inputs})=>inputs.map(input=>input.valueAsNumber));
+ const avoid=$('ikAvoidCollision').checked;
+ const command={kind:avoid?'solve_collision_free_ik':constrain?'solve_pose_ik':'solve_ik',id:camera.selected,base:Number($('ikBase').value),target};
+ if(constrain)command.orientation=orientation.map(v=>v*Math.PI/180);
+ vectors.forEach(({inputs})=>inputs.forEach(input=>input.dataset.committed=input.value));
+ showIkFailure();
+ await mutate(command,error=>showIkFailure(error?.code||'error'));
 }
-for(let axis=0;axis<3;axis++){
- const cell=document.createElement('label');cell.className='transform-cell';const label=document.createElement('span');label.textContent='XYZ'[axis];label.dataset.axis=String(axis);
- const input=document.createElement('input');input.type='number';input.className='transform-number';input.step='any';input.min='-10000';input.max='10000';input.required=true;
- input.onkeydown=e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();input.value=input.dataset.committed;input.blur();}else if(e.key==='Enter'){e.preventDefault();solveIk();}};
- cell.append(label,input);ikInputs.push(input);$('ikTarget').append(cell);
+for(const {container,limit,inputs} of ikVectors){
+ for(let axis=0;axis<3;axis++){
+  const cell=document.createElement('label');cell.className='transform-cell';const label=document.createElement('span');label.textContent='XYZ'[axis];label.dataset.axis=String(axis);
+  const input=document.createElement('input');input.type='number';input.className='transform-number';input.step='any';input.min=String(-limit);input.max=String(limit);input.required=true;
+  input.onkeydown=e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();input.value=input.dataset.committed;input.blur();}else if(e.key==='Enter'){e.preventDefault();solveIk();}};
+  cell.append(label,input);inputs.push(input);container.append(cell);
+ }
 }
+ikUseOrientation.onchange=()=>{$('ikOrientation').hidden=!ikUseOrientation.checked;};
 $('ikCurrent').onclick=resetIkTarget;$('ikSolve').onclick=solveIk;
 function renderIk(robot,link){
  $('ikEditor').hidden=link?.parent==null;
- if(!robot||link?.parent==null){ikKey='';return;}
+ if(!robot||link?.parent==null){ikKey='';showIkFailure();return;}
  const key=`${current.project_id}:${link.object_id}:${locale}`;
  if(key!==ikKey){
   const oldBase=$('ikBase').value;const sameSelection=ikKey.split(':').slice(0,2).join(':')===key.split(':').slice(0,2).join(':');ikKey=key;
@@ -364,8 +502,8 @@ function renderIk(robot,link){
   while(cursor!=null){ancestors.push(cursor);cursor=robot.links.find(l=>l.object_id===cursor)?.parent;}
   $('ikBase').replaceChildren(...ancestors.reverse().map(id=>new Option(objectName(current.objects.find(o=>o.id===id)),String(id))));
   $('ikBase').value=sameSelection&&ancestors.includes(Number(oldBase))?oldBase:String(robot.root);
-  if(!sameSelection)resetIkTarget();
-  ikInputs.forEach((input,i)=>input.setAttribute('aria-label',`${t('ik_target')} ${'XYZ'[i]}`));
+  if(!sameSelection){resetIkTarget();showIkFailure();}else showIkFailure(ikFailure);
+  ikVectors.forEach(({label,inputs})=>inputs.forEach((input,i)=>input.setAttribute('aria-label',`${t(label)} ${'XYZ'[i]}`)));
  }
 }
 const gravityPolarLabels = {

@@ -1,7 +1,9 @@
 //! Rigid forward kinematics; rest geometry and world-space joint pivots stay authored.
 mod ik;
+mod ik_collision;
 use super::*;
 use crate::{Project, Transform};
+pub use ik_collision::{IkImpact, IkPathReport};
 use std::collections::BTreeMap;
 type Matrix = [[f64; 3]; 3];
 const ID: Matrix = [[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]];
@@ -100,6 +102,57 @@ impl Project {
             })
             .collect()
     }
+    pub(crate) fn apply_world_transform(&mut self, id: u32, world: &Transform) -> Result<()> {
+        let rest = self.rest_transform(id, world);
+        let object = self
+            .objects
+            .iter_mut()
+            .find(|o| o.id == id)
+            .ok_or_else(|| Error::Invalid("missing object".into()))?;
+        let previous = Transform::from(&*object);
+        rest.assign(object);
+        if let Some(robot) = self.robots.iter_mut().find(|robot| robot.root == id)
+            && (previous.position != rest.position || previous.rotation != rest.rotation)
+        {
+            let rotating = previous.rotation != rest.rotation;
+            let old = Rigid {
+                r: from_euler(previous.rotation),
+                t: previous.position.map(f64::from),
+            };
+            let r = if rotating {
+                mul(from_euler(rest.rotation), old.inverse().r)
+            } else {
+                ID
+            };
+            // Map the previous root center to the requested center after rotation.
+            let center = vector(r, old.t);
+            let delta = Rigid {
+                r,
+                t: std::array::from_fn(|i| f64::from(rest.position[i]) - center[i]),
+            };
+            for link in &mut robot.links {
+                link.anchor = delta.point(link.anchor);
+                if rotating {
+                    link.axis = vector(r, link.axis.map(f64::from)).map(|v| v as f32);
+                    for axis in &mut link.extra_axes {
+                        axis.axis = vector(r, axis.axis.map(f64::from)).map(|v| v as f32);
+                    }
+                }
+            }
+            for object in self
+                .objects
+                .iter_mut()
+                .filter(|o| o.id != id && robot.links.iter().any(|link| link.object_id == o.id))
+            {
+                object.position = delta.point(object.position);
+                if rotating {
+                    object.rotation = euler(mul(r, from_euler(object.rotation)));
+                }
+            }
+        }
+        Ok(())
+    }
+
     /// Convert an editor world-space geometry edit back into the unposed document frame.
     pub(crate) fn rest_transform(&self, id: u32, world: &Transform) -> Transform {
         let mut rest = world.clone();

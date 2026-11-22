@@ -90,6 +90,180 @@ fn joint_pose_moves_descendants_and_roundtrips_with_history() {
     assert_eq!(c.snapshot().objects, original.objects);
 }
 #[test]
+fn joint_pivot_edit_updates_only_the_posed_branch_and_persists() {
+    let mut c = human();
+    let arm = id(&c, "left_upper_arm");
+    let hand = id(&c, "left_palm");
+    let other = id(&c, "right_palm");
+    let root = c.project().robots[0].root;
+    let rest = c.snapshot().objects;
+    let anchor = c.joint_ranges(arm).unwrap().origin;
+    let moved = [anchor[0], anchor[1] + 0.1, anchor[2]];
+    let command = || Command::SetJointAnchor {
+        id: arm,
+        anchor: moved,
+    };
+    let original_project = c.project().clone();
+    let changed = edit(&mut c, command()).unwrap();
+    assert_eq!(c.joint_ranges(arm).unwrap().origin, moved);
+    assert_eq!(changed.objects, rest);
+    assert_eq!(changed.undo_depth, 1);
+    assert_eq!(edit(&mut c, command()).unwrap().revision, changed.revision);
+    for (id, anchor) in [(root, moved), (arm, [f32::NAN; 3]), (arm, [10_001.; 3])] {
+        assert!(edit(&mut c, Command::SetJointAnchor { id, anchor }).is_err());
+        assert_eq!(c.snapshot().revision, changed.revision);
+    }
+    let pose = || Command::SetJointAngle {
+        id: arm,
+        axis: 0,
+        angle: 0.8,
+    };
+    edit(&mut c, pose()).unwrap();
+    let posed = c.snapshot();
+    let mut baseline = AppCore::new(original_project).unwrap();
+    edit(&mut baseline, pose()).unwrap();
+    assert_ne!(c.object(hand), baseline.object(hand));
+    assert_eq!(c.object(other), baseline.object(other));
+
+    let temp = tempfile::tempdir().unwrap();
+    let mut store = ProjectStore::open(temp.path().join("pivot.json")).unwrap();
+    store.save(c.project()).unwrap();
+    let restored = AppCore::new(store.load().unwrap().unwrap()).unwrap();
+    assert_eq!(restored.snapshot().objects, posed.objects);
+    assert_eq!(restored.project().robots, c.project().robots);
+    edit(&mut c, Command::Undo).unwrap();
+    edit(&mut c, Command::Undo).unwrap();
+    assert_eq!(c.joint_ranges(arm).unwrap().origin, anchor);
+    edit(&mut c, Command::Redo).unwrap();
+    assert_eq!(c.joint_ranges(arm).unwrap().origin, moved);
+    edit(&mut c, Command::Redo).unwrap();
+    assert_eq!(c.snapshot().objects, posed.objects);
+}
+
+#[test]
+fn root_rigid_transform_moves_posed_links_and_pivots_as_one_edit() {
+    for template in [RobotTemplate::Humanoid, RobotTemplate::DualArm] {
+        let mut project = Project::new("Root transform").unwrap();
+        let (robot, objects, _) = robots::build(template, 1).unwrap();
+        let root = robot.root;
+        let child = robot.links[1].object_id;
+        project.robots.push(robot);
+        project.objects = objects;
+        let mut core = AppCore::new(project).unwrap();
+        edit(
+            &mut core,
+            Command::SetJointAngle {
+                id: child,
+                axis: 0,
+                angle: 0.1,
+            },
+        )
+        .unwrap();
+        edit(&mut core, Command::AddBox).unwrap();
+        let before = core.snapshot();
+        let center = core.object(root).unwrap().position;
+        let joint = core.joint_ranges(child).unwrap();
+        let mut transform = Transform::from(core.object(root).unwrap());
+        transform.position = [2., 3., 4.];
+        transform.rotation[2] = std::f32::consts::FRAC_PI_2;
+        let moved = |p: [f32; 3]| {
+            [
+                2. - (p[1] - center[1]),
+                3. + (p[0] - center[0]),
+                4. + (p[2] - center[2]),
+            ]
+        };
+        core.begin_transform("view", before.revision, before.project_id, root)
+            .unwrap();
+        let preview = core
+            .preview_transform(
+                "view",
+                before.revision,
+                before.project_id,
+                transform.clone(),
+            )
+            .unwrap();
+        assert_eq!(preview.undo_depth, before.undo_depth);
+        for (old, new) in before.objects.iter().zip(&preview.objects) {
+            if before.robots[0]
+                .links
+                .iter()
+                .any(|link| link.object_id == old.id)
+            {
+                close(new.position, moved(old.position));
+                assert_eq!(new.scale, old.scale);
+            } else {
+                assert_eq!(old, new);
+            }
+        }
+        close(
+            core.joint_ranges(child).unwrap().origin,
+            moved(joint.origin),
+        );
+        let axis = joint.axes[0].axis;
+        close(
+            core.joint_ranges(child).unwrap().axes[0].axis,
+            [-axis[1], axis[0], axis[2]],
+        );
+        assert_eq!(
+            core.object(child),
+            preview.objects.iter().find(|o| o.id == child)
+        );
+        assert_eq!(core.project().robots, before.robots);
+        assert_eq!(
+            core.cancel_transform("view").unwrap().objects,
+            before.objects
+        );
+
+        core.begin_transform("view", before.revision, before.project_id, root)
+            .unwrap();
+        core.preview_transform("view", before.revision, before.project_id, transform)
+            .unwrap();
+        let committed = core
+            .commit_transform("view", before.revision, before.project_id)
+            .unwrap();
+        assert_eq!(committed.objects, preview.objects);
+        assert_eq!(committed.robots, preview.robots);
+        assert_eq!(committed.undo_depth, before.undo_depth + 1);
+
+        let temp = tempfile::tempdir().unwrap();
+        let mut store = ProjectStore::open(temp.path().join("root.json")).unwrap();
+        store.save(core.project()).unwrap();
+        let restored = AppCore::new(store.load().unwrap().unwrap())
+            .unwrap()
+            .snapshot();
+        assert_eq!(restored.objects, committed.objects);
+        assert_eq!(restored.robots, committed.robots);
+        let undone = edit(&mut core, Command::Undo).unwrap();
+        assert_eq!(undone.objects, before.objects);
+        assert_eq!(undone.robots, before.robots);
+        assert_eq!(
+            edit(&mut core, Command::Redo).unwrap().objects,
+            committed.objects
+        );
+
+        let mut scale_only = Transform::from(core.object(root).unwrap());
+        scale_only.scale[0] *= 1.1;
+        let scaled = edit(
+            &mut core,
+            Command::Transform {
+                id: root,
+                transform: scale_only,
+            },
+        )
+        .unwrap();
+        assert_eq!(scaled.robots, committed.robots);
+        assert!(
+            scaled
+                .objects
+                .iter()
+                .zip(&committed.objects)
+                .all(|(a, b)| a.id == root || a == b)
+        );
+    }
+}
+
+#[test]
 fn every_axis_enforces_limits_without_mutating_on_failure() {
     let mut c = human();
     let links = c.project().robots[0].links.clone();
@@ -263,6 +437,15 @@ fn authored_pose_matches_mujoco_keyframe_and_simulation_is_not_double_posed() {
     )
     .unwrap();
     let wrist = id(&c, "left_wrist");
+    let anchor = c.joint_ranges(wrist).unwrap().origin;
+    edit(
+        &mut c,
+        Command::SetJointAnchor {
+            id: wrist,
+            anchor: [anchor[0] + 0.05, anchor[1] + 0.03, anchor[2]],
+        },
+    )
+    .unwrap();
     edit(
         &mut c,
         Command::SetJointAngle {
@@ -272,6 +455,21 @@ fn authored_pose_matches_mujoco_keyframe_and_simulation_is_not_double_posed() {
         },
     )
     .unwrap();
+    let roots: Vec<_> = c.project().robots.iter().map(|robot| robot.root).collect();
+    for root in roots {
+        let mut transform = Transform::from(c.object(root).unwrap());
+        transform.position[0] += 0.7;
+        transform.position[1] += 0.3;
+        transform.rotation = [0.31, -0.62, 0.27];
+        edit(
+            &mut c,
+            Command::Transform {
+                id: root,
+                transform,
+            },
+        )
+        .unwrap();
+    }
     let temp = tempfile::tempdir().unwrap();
     let xml = temp.path().join("posed.xml");
     let expected = temp.path().join("posed.json");

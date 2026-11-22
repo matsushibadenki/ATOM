@@ -59,6 +59,7 @@ pub struct Renderer {
     guide_view: Option<guides::GuideView>,
     ranges: joint_ranges::Ranges,
     range_view: Option<joint_ranges::JointRanges>,
+    path_guide: Option<joint_ranges::PathGuide>,
     geometries: [MeshBuffers; 3],
     custom: MeshCache<MeshBuffers>,
     mesh_budget: MeshBudget,
@@ -155,6 +156,7 @@ impl Renderer {
             imported,
             ranges,
             range_view: None,
+            path_guide: None,
             guides,
             guide_view: None,
             device,
@@ -185,6 +187,9 @@ impl Renderer {
         meshes: impl IntoIterator<Item = imported::MeshView<'a>>,
     ) -> Result<(), String> {
         self.imported.sync(&self.device, meshes)
+    }
+    pub fn set_path_guide(&mut self, path: Option<joint_ranges::PathGuide>) {
+        self.path_guide = path;
     }
     pub fn set_joint_ranges(&mut self, view: Option<joint_ranges::JointRanges>) {
         self.range_view = view;
@@ -471,7 +476,7 @@ impl Renderer {
                 &self.instances,
             );
         }
-        if let Some(view) = &self.range_view {
+        if self.range_view.is_some() || self.path_guide.is_some() {
             self.ranges.encode(
                 &self.queue,
                 &mut encoder,
@@ -479,7 +484,8 @@ impl Renderer {
                 region,
                 vp,
                 self.guide_view.as_ref().map_or(1., |v| v.scale),
-                view,
+                self.range_view.as_ref(),
+                self.path_guide.as_ref(),
             );
         }
         self.queue.submit([encoder.finish()]);
